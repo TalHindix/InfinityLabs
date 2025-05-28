@@ -1,0 +1,8 @@
+##### Ignore all files
+
+#####################
+## except ignore files
+!*.md
+
+
+#####
