@@ -6,3 +6,4 @@ alias gc9='gcc -std=c99 -pedantic-errors -Wall -Wextra -DNDEBUG -o3'
 
 # Valgrind alias
 alias vlg='valgrind --leak-check=yes --track-origins=yes'
+alias his='history'
