@@ -1,5 +1,11 @@
 #include "string.h"
 
+/******************************
+Author: Tal Hindi
+Reviewer:
+Status:
+******************************/
+
 
 int StrLen(const char *str)
 {
