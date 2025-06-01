@@ -1,18 +1,18 @@
 ##### Ignore all files
 *
-#### except directories
-!*/
 
+#### except gitignore
+*
+
+## except ignore files
+!**/
+!**/*.c
+!**/*.h
+!**/makefile
 !.gitignore
 !.myfuncs
 
-#####################
-## except ignore files
-!*.md
-!*.c
-!*.h
-!*.txt
+
+
 !*mak
 !makefile
-
-#####
