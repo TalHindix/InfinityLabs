@@ -1,9 +1,6 @@
 ##### Ignore all files
 *
 
-#### except gitignore
-*
-
 ## except ignore files
 !**/
 !**/*.c
