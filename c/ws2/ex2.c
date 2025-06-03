@@ -1,13 +1,19 @@
 #include <stdio.h> /*printf*/
 
+/**************************
+author:	Tal Hindi
+reviewer: Baruch Haimson
+approved: approved
+
+**************************/
 
 
-void CopyArray(const int *src, int *dest, int size)
+void CopyArray(const int *arr_src, int *arr_dest, int size)
 {
 	int i;
 	for (i = 0; i < size; i++)
 	{
-		dest[i] = src[i];
+		*(arr_dest+i) = *(arr_src +i);
 	}
 }
 

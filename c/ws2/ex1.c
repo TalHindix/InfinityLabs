@@ -1,6 +1,13 @@
 #include <stdio.h> /*printf*/
 
 
+/**********************
+author: Tal Hindi
+reviewer: Baruch Haimson
+status:	approved
+
+***********************/
+
 void Swap(int *x, int *y)
 {
 	int temp;
