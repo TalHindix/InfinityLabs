@@ -1,4 +1,4 @@
-#include "string.h"
+#include "string.h" /*StrLen,StrCmp*/
 
 /******************************
 Author: Tal Hindi
@@ -11,7 +11,7 @@ int StrLen(const char *str)
 {
 	int len = 0;
 	assert(str);
-	while ('\0' != str[len])
+	while ('\0' != *(str+len))
 	{
 		len++;
 	}

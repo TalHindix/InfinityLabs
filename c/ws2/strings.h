@@ -1,7 +1,6 @@
 #ifndef MY_STRING_H
 #define MY_STRING_H
 
-#include <stddef.h> /* size_t */
 #include <assert.h> /* assert */
 
 /******************************
