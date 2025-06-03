@@ -61,16 +61,16 @@ void ReverseString(char *s)
 
 int main()
 {
-	char c[] = "Hello worlD";
+	char string[] = "Hello worlD";
 	size_t i;
 	/*Q1*/
 	TF(15);
 	
 	/*Q2*/
 	ReverseString(c);
-	for(i = 0; i < strlen(c); i++)
+	for(i = 0; i < strlen(string); i++)
   	{
-    printf("%c",*(c+i));
+    	printf("%c",*(string+i));
  	}
   	printf("\n");
   	
