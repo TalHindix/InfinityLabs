@@ -31,49 +31,58 @@ char *StrCpy(char *dst, const char *src)
     char *start = dst;
     assert(dst && src);
 
-    while ('\0' != (*dst = *src))
+    while ('\0' != *src)
     {
+    	*dst = *src;
         dst++;
         src++;
     }
+    *dst = '\0';
+    
     return start;
 }
 
 char *StrNCpy(char *dst, const char *src, size_t size)
 {
-    size_t i = 0;
+    char *start = dst;
     assert(dst && src);
 
-    while ((i < size) && ('\0' != src[i]))
+    while ((size > 0) && ('\0' != *src))
     {
-        dst[i] = src[i];
-        i++;
+    	*dst = *src;
+        dst++;
+        src++;
+        size--;
     }
-    while (i < size)
+    while (size > 0)
     {
-        dst[i] = '\0';
-        i++;
+        *dst = '\0';
+        dst++;
+        size--;
     }
-    return dst;
+    
+    return start;
 }
 
 int StrNCmp(const char *s1, const char *s2, size_t n)
 {
-    size_t i = 0;
     assert(s1 && s2);
 
-    while ((i < n) && s1[i] && s2[i])
+    while ((n>0) && ('\0' != *s1) && ('\0' != *s2))
     {
-        if (s1[i] != s2[i])
+        if (*s1 != *s2)
         {
-            return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+            return ((unsigned char)(*s1) - (unsigned char)(*s2));
         }
-        i++;
+        
+        s1++;
+        s2++;
+        n--;
     }
 
-    if (i < n)
+    if (n > 0)
     {
-        return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+        return ((unsigned char)(*s1) - (unsigned char)(*s2));
     }
 
     return 0;
@@ -97,8 +106,11 @@ int StrCaseCmp(const char *s1, const char *s2)
         s1++;
         s2++;
     }
-
-    return ((unsigned char)(*s1 ? *s1 : 0) - (unsigned char)(*s2 ? *s2 : 0));
+	
+	c1 = (*s1 >= 'A' && *s1 <= 'Z') ? (*s1 + 32) : *s1;
+    c2 = (*s2 >= 'A' && *s2 <= 'Z') ? (*s2 + 32) : *s2;
+	
+	return ((unsigned char)c1 - (unsigned char)c2);
 }
 
 char *StrChr(const char *s, int c)
@@ -134,8 +146,10 @@ char *StrDup(const char *s)
     {
         return NULL;
     }
-
-    return StrCpy(copy, s);
+    
+    StrCpy(copy, s);
+    
+    return copy;
 }
 
 char *StrCat(char *dst, const char *src)
@@ -148,11 +162,13 @@ char *StrCat(char *dst, const char *src)
         dst++;
     }
 
-    while ('\0' != (*dst = *src))
+    while ('\0' != *src)
     {
+  		*dst = *src;
         dst++;
         src++;
     }
+    *dst = '\0';
 
     return start;
 }
@@ -167,7 +183,7 @@ char *StrNCat(char *dest, const char *src, size_t n)
         dest++;
     }
 
-    while ((0 != n) && ('\0' != *src))
+    while ((n > 0) && ('\0' != *src))
     {
         *dest = *src;
         dest++;
@@ -181,119 +197,122 @@ char *StrNCat(char *dest, const char *src, size_t n)
 
 char *StrStr(const char *haystack, const char *needle)
 {
-    size_t i = 0;
-    if ('\0' == *needle)
+   const char *h, *n;
+   
+   if ('\0' == *needle)
+   {
+   		return (char *)haystack;
+   }
+   
+   while ('\0' != *haystack)
     {
-        return (char *)haystack;
-    }
+        h = haystack;
+        n = needle;
 
-    while ('\0' != *haystack)
-    {
-        i = 0;
-        while (needle[i] && haystack[i] && (haystack[i] == needle[i]))
+        while (*h && *n && (*h == *n))
         {
-            i++;
+            h++;
+            n++;
         }
 
-        if ('\0' == needle[i])
+        if (*n == '\0')
         {
             return (char *)haystack;
         }
 
         haystack++;
     }
-
+    
     return NULL;
 }
 
-size_t StrSpn(const char *s, const char *accept)
+size_t StrSpn(const char *str, const char *accept)
 {
     size_t count = 0;
-    const char *a;
+    const char *curr_accept;
 
-    assert(s && accept);
+    assert(str && accept);
 
-    while ('\0' != *s)
+    while ('\0' != *str)
     {
-        a = accept;
-        while ('\0' != *a && *a != *s)
+        curr_accept = accept;
+
+        while (*curr_accept && *curr_accept != *str)
         {
-            a++;
+            curr_accept++;
         }
 
-        if ('\0' == *a)
+        if ('\0' == *curr_accept)
         {
             break;
         }
 
         count++;
-        s++;
+        str++;
     }
 
     return count;
 }
 
-char *StrTok(char *input_str, const char *delimiters)
-{
-    static char *next_token = NULL;
-    char *token_start;
-    const char *delim_char;
-    int is_delim;
 
-    if (NULL != input_str)
+
+char *StrTok(char *str, const char *delimiters)
+{
+    static char *next = NULL;
+    char *start;
+
+    if (str != NULL)
     {
-        next_token = input_str;
+        next = str;
     }
 
-    if (NULL == next_token)
+    if (next == NULL)
     {
         return NULL;
     }
 
-    while ('\0' != *next_token)
+    while (*next)
     {
-        delim_char = delimiters;
-        is_delim = 0;
-        while ('\0' != *delim_char)
+        const char *d = delimiters;
+        while (*d && *d != *next)
         {
-            if (*delim_char == *next_token)
-            {
-                is_delim = 1;
-                break;
-            }
-            delim_char++;
+            d++;
         }
-        if (!is_delim)
+
+        if ('\0' == *d)
         {
             break;
         }
-        next_token++;
+
+        next++;
     }
 
-    if ('\0' == *next_token)
+    if ('\0' == *next)
     {
-        next_token = NULL;
+        next = NULL;
         return NULL;
     }
 
-    token_start = next_token;
+    start = next;
 
-    while ('\0' != *next_token)
+  
+    while (*next)
     {
-        delim_char = delimiters;
-        while ('\0' != *delim_char)
+        const char *d = delimiters;
+        while (*d)
         {
-            if (*delim_char == *next_token)
+            if (*d == *next)
             {
-                *next_token = '\0';
-                next_token++;
-                return token_start;
+                *next = '\0';
+                next++;
+                return start;
             }
-            delim_char++;
+            d++;
         }
-        next_token++;
+        next++;
     }
 
-    next_token = NULL;
-    return token_start;
+    next = NULL;
+    return start;
 }
+
