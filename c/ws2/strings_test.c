@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <stdio.h> /* printf() */
+#include <string.h> /* strlen() , strcmp() , ... */
 #include "strings.h"
 
 void PrintResult(const char *desc, int condition)

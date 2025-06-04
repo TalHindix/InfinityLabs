@@ -1,6 +1,7 @@
-#include <assert.h>
-#include <stdlib.h>
+#include <assert.h>       /* for assertion */
+#include <stdlib.h>       /* for malloc() */
 #include "string.h"
+
 
 size_t StrLen(const char *str)
 {
