@@ -2,6 +2,13 @@
 #include <string.h>
 #include <assert.h>
 
+/**********
+ Exercise: 	WS2
+ Date: 		05/06/25
+ Developer: Tal Hindi
+ Reviewer: 	Baruch Haimson
+ Status: 	Approved
+ **********/
 
 int IsPalindrome(const char *str, size_t size)
 {
