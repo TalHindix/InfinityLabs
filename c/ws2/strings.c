@@ -1,7 +1,15 @@
 #include <assert.h>       /* for assertion */
 #include <stdlib.h>       /* for malloc() */
 #include "string.h"
+#include <stdlib.h> 
 
+/**********
+ Exercise: 	WS2
+ Date: 		05/06/25
+ Developer: Tal Hindi
+ Reviewer: 	Baruch Haimson
+ Status: 	Approved
+ **********/
 
 size_t StrLen(const char *str)
 {
@@ -61,6 +69,11 @@ char *StrNCpy(char *dst, const char *src, size_t size)
         dst++;
         size--;
     }
+   	
+   	if(size == 0)
+   	{
+   		*dst = '\0';
+   	}
     
     return start;
 }

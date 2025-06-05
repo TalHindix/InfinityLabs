@@ -5,11 +5,13 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-/******************************
-Author: Tal Hindi
-Reviewer:
-Status:
-******************************/
+/**********
+ Exercise: 	WS2
+ Date: 		05/06/25
+ Developer: Tal Hindi
+ Reviewer: 	Baruch Haimson
+ Status: 	Approved
+ **********/
 
 
 /* Returns the length of the string 'str' (excluding the null terminator). */
