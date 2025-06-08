@@ -12,7 +12,7 @@
  Reviewer: 	Baruch Haimson
  Status: 	Approved
  **********/
-
+m
 
 /* Returns the length of the string 'str' (excluding the null terminator). */
 size_t StrLen(const char *str);

@@ -8,6 +8,8 @@
 !**/makefile
 !.gitignore
 !.myfuncs
+!**/*.jpeg
+!**/*.jpg
 
 
 
