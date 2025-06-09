@@ -1,16 +1,22 @@
+/*****************
+author: Tal Hindi
+reviewer: Menny Markovich
+status: Approved
+******************/
+
+
 #include <stdio.h>
 
-int main(void)
+#define ESC 27
+int main()
 {
     int ch;
 
 	system("stty -icanon -echo");	
 	
-    printf("Press A / T, Esc to quit …\n");
-
     while ((ch = getchar()))
     {
-        if (ch == 27)     /* esc in ASCII */    
+        if (ch == ESC)     /* esc in ASCII */    
             break;
         else if (ch == 'A')
             printf("A-pressed\n");

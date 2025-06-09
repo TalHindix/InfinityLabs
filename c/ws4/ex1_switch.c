@@ -1,17 +1,24 @@
+/****************
+author: Tal Hindi
+reviewer: Menny Markovich
+status: Approved
+****************/
+
 #include <stdio.h>
+
+#define ESC 27
 
 int main()
 {
-	int ch;
-	
+
+	int ch;	
 	system("stty -icanon -echo");
-	printf("Press A / T , Esc To quit ...\n");
 	
 	while ((ch = getchar()))
     {
         switch (ch)
         {
-            case 27: 
+            case ESC: 
                 return 0;
             case 'A':
                 printf("A-pressed\n");
