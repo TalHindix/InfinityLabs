@@ -44,7 +44,7 @@ ActionStatus RemoveAction(const char *filename,const char *str)
     	}
     	else
     	{
-    		printf("Recreated the file successfuly!\n");
+    		printf("Prepend to the file successfuly!\n");
     		
     	}
     	return ACTION_OK;
