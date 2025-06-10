@@ -39,9 +39,9 @@ ActionStatus RemoveAction(const char *filename,const char *str)
 {
 	(void)str;
 	
-	if (0 == remove(filename)) 
+	if (0 == remove(filename)) /* remove() -> return 0 if the file deleted successfuly */
 	{	
-    	return e_ACTION_OK_REMOVE;
+    	return e_ACTION_OK_REMOVE; 
     }
     else
     {
@@ -112,8 +112,8 @@ ActionStatus CountAction(const char *filename, const char *str)
 {
 
 	FILE *fp = fopen(filename, "r");
-    char line[SIZE];
-    int count = 0;
+    int lines = 0;
+    int ch = 0;
     
     (void)str;
 
@@ -123,16 +123,17 @@ ActionStatus CountAction(const char *filename, const char *str)
         return e_ACTION_ERR_OPENFILE;
     }
 
-    while (fgets(line, SIZE, fp))
-    {
-     	if (strcmp(line, "\n") != 0 && strcmp(line, "\r\n") != 0)
-        {
-            ++count;
-        }
-    }
+    while(!feof(fp)) /* end of file flag */
+	{
+	  ch = fgetc(fp);
+	  if(ch == '\n')
+	  {
+		lines++;
+	  }
+	}
 
     fclose(fp);
-    printf("The file contains %d line(s).\n", count);
+    printf("The file contains %d line(s).\n", lines);
     return e_ACTION_OK;
 }
 
@@ -170,7 +171,8 @@ int main(int argc, char **argv)
 		printf("Please enter a string: \n");
 		fgets(input,SIZE,stdin);
 		
-		input[strcspn(input, "\n")] = '\0';
+		/*strcspn return the pos (int) for this first occurences of '\n' */
+		input[strcspn(input, "\n")] = '\0'; /* The most elegant way in the internet to remove '\n' */
 		
 		for (i = 0; handlers[i].command != NULL; ++i)
 		{
