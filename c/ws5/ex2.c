@@ -13,9 +13,12 @@ status:
 
 typedef enum
 {
-	ACTION_OK = 0,
-	ACTION_ERR = 1,
-	ACTION_EXIT = 2
+	e_ACTION_OK = 0,
+	e_ACTION_ERR_OPENFILE = 1,
+	e_ACTION_ERR_REMOVE = 2,
+	e_ACTION_OK_REMOVE = 3,
+	e_ACTION_EXIT = 4
+	
 } ActionStatus;
 
 
@@ -38,11 +41,11 @@ ActionStatus RemoveAction(const char *filename,const char *str)
 	
 	if (0 == remove(filename)) 
 	{	
-    	return ACTION_OK;
+    	return e_ACTION_OK_REMOVE;
     }
     else
     {
-    	return ACTION_ERR;
+    	return e_ACTION_ERR_REMOVE;
     }
 } 
 
@@ -57,7 +60,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     if (!f) 
     {
 		perror("Error opening file for reading");
-    	return ACTION_ERR;   
+    	return e_ACTION_ERR_OPENFILE;   
     }
     
     while (fgets(line, sizeof(line), f) != NULL) /* with '\n' include */
@@ -75,7 +78,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     if (!f)
     {
         perror("Error opening file for writing");
-        return ACTION_ERR;
+        return e_ACTION_ERR_OPENFILE;
     }
     
     fprintf(f, "%s\n", str + 1); 
@@ -86,7 +89,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     
     printf("Added prefix line: %s\n", str + 1);
     
-    return ACTION_OK;
+    return e_ACTION_OK;
 
 }
 
@@ -96,12 +99,12 @@ ActionStatus AppendAction(const char *filename, const char *str)
     if (!fp)
     {
         perror("fopen append");
-        return ACTION_ERR;
+        return e_ACTION_ERR_OPENFILE;
     }
     fprintf(fp, "%s\n", str);
     fclose(fp);
     
-    return ACTION_OK;
+    return e_ACTION_OK;
 }
 
 
@@ -117,7 +120,7 @@ ActionStatus CountAction(const char *filename, const char *str)
     if (!fp)
     {
         perror("fopen count");
-        return ACTION_ERR;
+        return e_ACTION_ERR_OPENFILE;
     }
 
     while (fgets(line, SIZE, fp))
@@ -130,7 +133,7 @@ ActionStatus CountAction(const char *filename, const char *str)
 
     fclose(fp);
     printf("The file contains %d line(s).\n", count);
-    return ACTION_OK;
+    return e_ACTION_OK;
 }
 
 ActionStatus ExitAction(const char* filename,const char *str)
@@ -139,7 +142,7 @@ ActionStatus ExitAction(const char* filename,const char *str)
     (void)str;
 
     
-    return ACTION_EXIT;
+    return e_ACTION_EXIT;
 }
 
 
@@ -148,7 +151,7 @@ int main(int argc, char **argv)
     char input[SIZE];
     const char *filename;
     size_t i = 0;
-    ActionStatus status = ACTION_OK;
+    ActionStatus status;
         
     struct CommandHandler handlers[] = {
     	{"<",CmpPrepand,PrepandAction},
@@ -185,12 +188,18 @@ int main(int argc, char **argv)
 		
 		switch (status)
 		{
-			case ACTION_OK:
+			case e_ACTION_OK:
 				break;
-			case ACTION_ERR:
-				fprintf(stderr, "Action failed. Please try again.\n");
+			case e_ACTION_ERR_OPENFILE:
+				printf("Error, Open FILE Not SUCCESS !\n");
 				break;
-			case ACTION_EXIT:
+			case e_ACTION_ERR_REMOVE:
+				printf("Error in the remove file action func().\n");
+				break;
+			case e_ACTION_OK_REMOVE:
+				printf("The File Is Removed Successfully.\n");
+				break;
+			case e_ACTION_EXIT:
 				printf("Exiting program. Goodbye!\n");
 				exit(0);
 				break;
