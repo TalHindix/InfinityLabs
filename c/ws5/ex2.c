@@ -9,6 +9,7 @@ status:
 #include <stdlib.h> /* exit() */
 
 #define SIZE 100
+#define TMPSIZE 10000
 
 typedef enum
 {
@@ -58,67 +59,46 @@ ActionStatus RemoveAction(const char *filename,const char *str)
 
 ActionStatus PrepandAction(const char *filename, const char *str)
 {
-    const char *p_start = str;
-    FILE *src  = fopen(filename, "r");
-    char tmpname[SIZE];
-    FILE *dst;
+
+	/* Open To Read */
+    FILE* f = fopen(filename, "r");
+    char existing_content[TMPSIZE] = "";
+    char line[SIZE];
     
-    if ('<' == p_start[0])
+    if (!f) 
     {
-        ++p_start;
-        
-        if (' ' == *p_start)
-        {
-         	++p_start; 
-        }
+		perror("Error opening file for reading");
+    	return ACTION_ERR;   
     }
-	
-	
-	
-	if (strlen(filename) + 4 >= SIZE)
-	{
-		fprintf(stderr, "tmpname buffer too small\n");
-		return ACTION_ERR;
-	}
-	
-	strcpy(tmpname, filename);
-	strcat(tmpname, ".tmp");
-
-
-    dst = fopen(tmpname, "w");
-    if (!dst)
+    
+    while (fgets(line, sizeof(line), f) != NULL) /* with '\n' include */
     {
-        perror("fopen temp");
-        if (src) fclose(src);
+    	strcat(existing_content, line)
+    };
+    
+    fclose(f);
+    
+    
+    
+    /* Open To Write */
+    f = fopen(filename, "w");
+    
+    if (!f)
+    {
+        perror("Error opening file for writing");
         return ACTION_ERR;
     }
-
-    fputs(p_start, dst);
-    fputc('\n',dst);
-
-    if (src)
-    {
-        int ch;
-        while ((ch = fgetc(src)) != EOF)
-        {
-            fputc(ch, dst);
-        }
-        fclose(src);
-    }
-    fclose(dst);
-
- 
-    RemoveAction(filename,"prepand");
     
-    if (rename(tmpname, filename) != 0)
-	{
-		perror("rename");
-		return ACTION_ERR;
-	}
-
+    fprintf(f, "%s\n", str + 1); 
+    
+    fprintf(f, "%s", existing_content);
+    
+    fclose(f);
+    
+    printf("Added prefix line: %s\n", str + 1);
     
     return ACTION_OK;
-    
+
 }
 
 ActionStatus AppendAction(const char *filename, const char *str)
@@ -139,7 +119,6 @@ ActionStatus AppendAction(const char *filename, const char *str)
 ActionStatus CountAction(const char *filename, const char *str)
 {
 
-	
 	FILE *fp = fopen(filename, "r");
     char line[SIZE];
     int count = 0;
@@ -181,51 +160,51 @@ int main(int argc, char **argv)
     const char *filename;
     size_t i = 0;
     ActionStatus status = ACTION_OK;
-    
+        
     struct CommandHandler handlers[] = {
     	{"<",CmpPrepand,PrepandAction},
         {"-remove", CmpRemove,RemoveAction},
         {"-count",  CmpCount,CountAction},
         {"-exit",   CmpExit,ExitAction},
         {NULL, NULL, NULL}
-    }; 
-
-    if (argc < 2)
-    {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-        return 1;
-    }
+    };
+    
+     (void)argc;
 
     filename = argv[1];
     
-    printf("Please enter a string: \n");
-    fgets(input,SIZE,stdin);
-    
-    input[strcspn(input, "\n")] = '\0';
-    
-    for (i = 0; handlers[i].command != NULL; ++i)
+    while (1)
     {
-        if (handlers[i].cmp_func(input))
-        {
-            status = handlers[i].act_func(filename, input);
-            break;
-        }
-    }
+		printf("Please enter a string: \n");
+		fgets(input,SIZE,stdin);
+		
+		input[strcspn(input, "\n")] = '\0';
+		
+		for (i = 0; handlers[i].command != NULL; ++i)
+		{
+			if (handlers[i].cmp_func(input))
+			{
+				status = handlers[i].act_func(filename, input);
+				break;
+			}
+		}
 
-    if (handlers[i].command == NULL)
-    {
-        status = AppendAction(filename,input);
-    }
-    
-    switch (status)
-    {
-        case ACTION_OK:
-            break;
-        case ACTION_ERR:
-            fprintf(stderr, "Action failed. Please try again.\n");
-            break;
-        case ACTION_EXIT:
-            return 0;
+		if (handlers[i].command == NULL)
+		{
+			status = AppendAction(filename,input);
+		}
+		
+		switch (status)
+		{
+			case ACTION_OK:
+				break;
+			case ACTION_ERR:
+				fprintf(stderr, "Action failed. Please try again.\n");
+				break;
+			case ACTION_EXIT:
+				exit(0);
+				break;
+		}
     }
     
    
