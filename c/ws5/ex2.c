@@ -59,7 +59,7 @@ ActionStatus RemoveAction(const char *filename,const char *str)
 ActionStatus PrepandAction(const char *filename, const char *str)
 {
     const char *p_start = str;
-    FILE *src  = fopen(filename, "rb");
+    FILE *src  = fopen(filename, "r");
     char tmpname[SIZE];
     FILE *dst;
     
@@ -85,7 +85,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
 	strcat(tmpname, ".tmp");
 
 
-    dst = fopen(tmpname, "wb");
+    dst = fopen(tmpname, "w");
     if (!dst)
     {
         perror("fopen temp");

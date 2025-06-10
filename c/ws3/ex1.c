@@ -10,8 +10,6 @@ void SumRows(int a[][COLS], size_t rows, int res[])
 	size_t j = 0;
 	int sum_row;
 	
-	printf("the sizeof() of the recieved array is:%lu\n",sizeof(a)[COLS]);
-	
 	assert(a != NULL);
 	assert(res != NULL);
 	
@@ -32,11 +30,11 @@ int main()
 	
 	int matrix[3][COLS] = {{1,2,3,4,5},{6,7,8,9,10},{11,12,13,14,15}};
 	int sum[3]= {0};
-	int i;
+	int i = 0;
 	
 	SumRows(matrix,3,sum);
 	
-	for (i = 0 ; i < 3 ; i++)
+	for (i; i < 3 ; i++)
 	{
 		printf("Sum row %d: = %d!\n",i,sum[i]);
 	}

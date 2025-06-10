@@ -2,19 +2,19 @@
  Exercise:  WS3
  Date: 	    05/08/25
  Developer: Tal Hindi
- Reviewer:  Menachem Merkovich
- Status:    
+ Reviewer:  Menachem Markovich
+ Status: 	Approved
 ***************************/
 
 
 #define _POSIX_C_SOURCE 200809L
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <stdio.h>  /* printf() */
+#include <stdlib.h> /* malloc() , free() */
+#include <string.h> /* strdup() */
+#include <ctype.h> /* tolower() */
 
 
-size_t CountEnvVariables(char **envp)
+static size_t CountEnvVariables(char **envp)
 {
 	size_t n = 0;
 	while(NULL != envp[n])
@@ -26,7 +26,7 @@ size_t CountEnvVariables(char **envp)
 }
 
 
-char **DupEnv(char **envp)
+static char **DupEnv(char **envp)
 {
 	size_t count = CountEnvVariables(envp);
 	char **copy = (char**)malloc((count + 1) * sizeof(char *));

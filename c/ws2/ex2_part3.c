@@ -1,3 +1,9 @@
+/**********
+author: Tal Hindi
+reviewer: Baruch Haimson
+status: Approved
+ **********/
+
 #include <stdio.h>
 
 int ContainSeven(int num)

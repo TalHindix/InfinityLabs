@@ -17,7 +17,7 @@ void Print(int value)
 struct print_me
 {
 	int myNum;
-	void (*print_func)(int); 
+	void (*PrintPtr)(int); 
 };
 
 
@@ -30,8 +30,8 @@ int main()
 	for (i = 0; i < 10 ; i++)
 	{
 		arr[i].myNum = i * 2;
-		arr[i].print_func = Print;
-		arr[i].print_func(arr[i].myNum);
+		arr[i].PrintPtr = Print;
+		arr[i].PrintPtr(arr[i].myNum);
 	}
 	
 	return 0;

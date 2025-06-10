@@ -1,3 +1,11 @@
+
+/**********
+author: Tal Hindi
+reviewer: Baruch Haimson
+status: Approved
+ **********/
+
+
 #include <stdio.h> /* printf() */
 
 void CleanSpaces(char *input)
