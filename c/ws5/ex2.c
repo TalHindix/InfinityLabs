@@ -22,14 +22,14 @@ typedef enum
 struct CommandHandler
 {
 	char *command;
-	int (*cmp_func)(const char*);
+	int (*cmp_func)(const char*,const char*);
 	ActionStatus (*act_func)(const char*, const char*);
 };
 
-int CmpPrepand(const char *input) { return strncmp(input, "<", 1) == 0; }
-int CmpRemove(const char *input) { return strncmp(input, "-remove", 7) == 0; }
-int CmpCount(const char *input)  { return strncmp(input, "-count", 6) == 0; }
-int CmpExit(const char *input)   { return strncmp(input, "-exit", 5) == 0; }
+int CmpPrepand(const char *input,const char *command) { return strncmp(input, command,1) == 0; }
+int CmpRemove(const char *input,const char *command) { return strcmp(input, command) == 0; }
+int CmpCount(const char *input,const char *command)  { return strcmp(input, command) == 0; }
+int CmpExit(const char *input,const char *command)   { return strcmp(input, command) == 0; }
 
 
 ActionStatus RemoveAction(const char *filename,const char *str)
@@ -37,22 +37,11 @@ ActionStatus RemoveAction(const char *filename,const char *str)
 	(void)str;
 	
 	if (0 == remove(filename)) 
-	{
-		if(*str != 'p')
-		{
-    		printf("File deleted successfully.\n");
-    		
-    	}
-    	else
-    	{
-    		printf("Prepend to the file successfuly!\n");
-    		
-    	}
+	{	
     	return ACTION_OK;
     }
     else
     {
-    	printf("Error: Unable to delete the file.\n");
     	return ACTION_ERR;
     }
 } 
@@ -73,7 +62,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     
     while (fgets(line, sizeof(line), f) != NULL) /* with '\n' include */
     {
-    	strcat(existing_content, line)
+    	strcat(existing_content, line);
     };
     
     fclose(f);
@@ -149,7 +138,7 @@ ActionStatus ExitAction(const char* filename,const char *str)
 	(void)filename;
     (void)str;
 
-    printf("Exiting program. Goodbye!\n");
+    
     return ACTION_EXIT;
 }
 
@@ -182,7 +171,7 @@ int main(int argc, char **argv)
 		
 		for (i = 0; handlers[i].command != NULL; ++i)
 		{
-			if (handlers[i].cmp_func(input))
+			if (handlers[i].cmp_func(input,handlers[i].command))
 			{
 				status = handlers[i].act_func(filename, input);
 				break;
@@ -202,6 +191,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Action failed. Please try again.\n");
 				break;
 			case ACTION_EXIT:
+				printf("Exiting program. Goodbye!\n");
 				exit(0);
 				break;
 		}
