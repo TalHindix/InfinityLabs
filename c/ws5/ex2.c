@@ -8,8 +8,8 @@ status:
 #include <string.h> /* strcmp() strncmp() */
 #include <stdlib.h> /* exit() */
 
-#define SIZE 100
-#define TMPSIZE 10000
+#define INPUT_BUF 100
+#define TEMP_BUF 10000
 
 typedef enum
 {
@@ -17,22 +17,43 @@ typedef enum
 	e_ACTION_ERR_OPENFILE = 1,
 	e_ACTION_ERR_REMOVE = 2,
 	e_ACTION_OK_REMOVE = 3,
-	e_ACTION_EXIT = 4
-	
+	e_ACTION_EXIT = 4,
+	e_ACTION_ERR_CLOSEFILE = 5
 } ActionStatus;
 
 
 struct CommandHandler
 {
 	char *command;
-	int (*cmp_func)(const char*,const char*);
+	int (*cmp_func)(const char*, const char*);
 	ActionStatus (*act_func)(const char*, const char*);
 };
 
-int CmpPrepand(const char *input,const char *command) { return strncmp(input, command,1) == 0; }
-int CmpRemove(const char *input,const char *command) { return strcmp(input, command) == 0; }
-int CmpCount(const char *input,const char *command)  { return strcmp(input, command) == 0; }
-int CmpExit(const char *input,const char *command)   { return strcmp(input, command) == 0; }
+int CmpPrepand(const char *input, const char *command)
+{
+    return (strncmp(input, command, 1) == 0);
+}
+
+int CmpRemove(const char *input, const char *command)
+{
+    return (strcmp(input, command) == 0);
+}
+
+int CmpCount(const char *input, const char *command)
+{
+    return (strcmp(input, command) == 0);
+}
+
+int CmpExit(const char *input, const char *command)
+{
+    return (strcmp(input, command) == 0);
+}
+int CmpAppend(const char *input, const char *command)
+{
+	(void)input;
+	(void)command;
+	return 1;
+}
 
 
 ActionStatus RemoveAction(const char *filename,const char *str)
@@ -51,41 +72,56 @@ ActionStatus RemoveAction(const char *filename,const char *str)
 
 ActionStatus PrepandAction(const char *filename, const char *str)
 {
-
-	/* Open To Read */
-    FILE* f = fopen(filename, "r");
-    char existing_content[TMPSIZE] = "";
-    char line[SIZE];
+	FILE* filep = fopen(filename, "r");
+    char existing_content[TEMP_BUF] = "";
+    char line[INPUT_BUF];
     
-    if (!f) 
+    if (!filep) 
     {
 		perror("Error opening file for reading");
     	return e_ACTION_ERR_OPENFILE;   
     }
     
-    while (fgets(line, sizeof(line), f) != NULL) /* with '\n' include */
+    while (fgets(line, sizeof(line), filep) != NULL) /* with '\n' include */
     {
-    	strcat(existing_content, line);
+    	size_t remaining = TEMP_BUF - strlen(existing_content) - 1;
+    	
+    	if (strlen(line) < remaining)
+        {
+            strncat(existing_content, line, remaining);
+        }
+        else
+        {
+            fprintf(stderr, "Buffer overflow risk. Stopping read.\n");
+            fclose(filep);
+            return e_ACTION_ERR_OPENFILE;
+        }
     };
     
-    fclose(f);
+    if (fclose(filep) == EOF)
+	{
+		perror("Error close the file after writing");
+		return e_ACTION_ERR_CLOSEFILE;
+	}
     
     
+    filep = fopen(filename, "w");
     
-    /* Open To Write */
-    f = fopen(filename, "w");
-    
-    if (!f)
+    if (!filep)
     {
         perror("Error opening file for writing");
         return e_ACTION_ERR_OPENFILE;
     }
     
-    fprintf(f, "%s\n", str + 1); 
+    fprintf(filep, "%s\n", str + 1); 
     
-    fprintf(f, "%s", existing_content);
+    fprintf(filep, "%s", existing_content);
     
-    fclose(f);
+    if (fclose(filep) == EOF)
+    {
+        perror("Error closing file after writing");
+        return e_ACTION_ERR_OPENFILE;
+    }
     
     printf("Added prefix line: %s\n", str + 1);
     
@@ -96,13 +132,20 @@ ActionStatus PrepandAction(const char *filename, const char *str)
 ActionStatus AppendAction(const char *filename, const char *str)
 {
 	FILE *fp = fopen(filename, "a");
+	
     if (!fp)
     {
         perror("fopen append");
         return e_ACTION_ERR_OPENFILE;
     }
+    
     fprintf(fp, "%s\n", str);
-    fclose(fp);
+    
+    if (fclose(fp) == EOF)
+    {
+    	perror("Error close the file after append");
+    	return e_ACTION_ERR_CLOSEFILE;
+    }
     
     return e_ACTION_OK;
 }
@@ -112,7 +155,7 @@ ActionStatus CountAction(const char *filename, const char *str)
 {
 
 	FILE *fp = fopen(filename, "r");
-    int lines = 0;
+    size_t lines = 0;
     int ch = 0;
     
     (void)str;
@@ -123,17 +166,21 @@ ActionStatus CountAction(const char *filename, const char *str)
         return e_ACTION_ERR_OPENFILE;
     }
 
-    while(!feof(fp)) /* end of file flag */
-	{
-	  ch = fgetc(fp);
-	  if(ch == '\n')
-	  {
-		lines++;
-	  }
-	}
+    while ((ch = fgetc(fp)) != EOF)
+    {
+        if (ch == '\n')
+        {
+            ++lines;
+        }
+    }
 
-    fclose(fp);
-    printf("The file contains %d line(s).\n", lines);
+    if (fclose(fp) == EOF)
+    {
+        perror("Error close the file after counting");
+        return e_ACTION_ERR_CLOSEFILE;
+    }
+    
+    printf("The file contains %lu line(s).\n", lines);
     return e_ACTION_OK;
 }
 
@@ -141,40 +188,39 @@ ActionStatus ExitAction(const char* filename,const char *str)
 {
 	(void)filename;
     (void)str;
-
-    
+ 
     return e_ACTION_EXIT;
 }
 
 
 int main(int argc, char **argv)
 {
-    char input[SIZE];
+	char input[INPUT_BUF];
     const char *filename;
     size_t i = 0;
     ActionStatus status;
         
     struct CommandHandler handlers[] = {
-    	{"<",CmpPrepand,PrepandAction},
-        {"-remove", CmpRemove,RemoveAction},
-        {"-count",  CmpCount,CountAction},
-        {"-exit",   CmpExit,ExitAction},
-        {NULL, NULL, NULL}
+    	{"<",		CmpPrepand,	PrepandAction},
+        {"-remove", CmpRemove,	RemoveAction},
+        {"-count",  CmpCount,	CountAction},
+        {"-exit",   CmpExit,	ExitAction},
+        {NULL, 		CmpAppend, 	AppendAction}
     };
     
-     (void)argc;
+    (void)argc;
 
     filename = argv[1];
     
     while (1)
     {
-		printf("Please enter a string: \n");
-		fgets(input,SIZE,stdin);
+		printf("Please enter a string:\n");
+		fgets(input,INPUT_BUF,stdin);
 		
 		/*strcspn return the pos (int) for this first occurences of '\n' */
 		input[strcspn(input, "\n")] = '\0'; /* The most elegant way in the internet to remove '\n' */
 		
-		for (i = 0; handlers[i].command != NULL; ++i)
+		for (i = 0; handlers[i].cmp_func != NULL; ++i)
 		{
 			if (handlers[i].cmp_func(input,handlers[i].command))
 			{
@@ -183,10 +229,6 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (handlers[i].command == NULL)
-		{
-			status = AppendAction(filename,input);
-		}
 		
 		switch (status)
 		{
@@ -201,10 +243,12 @@ int main(int argc, char **argv)
 			case e_ACTION_OK_REMOVE:
 				printf("The File Is Removed Successfully.\n");
 				break;
+			case e_ACTION_ERR_CLOSEFILE:
+                printf("Error: Failed to close file properly.\n");
+                break;
 			case e_ACTION_EXIT:
 				printf("Exiting program. Goodbye!\n");
 				exit(0);
-				break;
 		}
     }
     
