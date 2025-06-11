@@ -3,67 +3,90 @@
 
 #include "ex.c"
 #include "ex.h"
-#include <Math.h>
+#include <math.h>
 
-void TestEx1(int x, int y)
+#define SIZE 10
+
+
+void TestEx1()
 {
-	unsigned long result = Pow2(x,y);
-	printf("---------ex1-------------Result of ex1 :%lu---------ex1-------------\n",result);
+	double x = 0;
+    double y = 0;
+    
+    x=2;
+    y=3;
+       
+    if(Pow2(x,y) == x*pow(2,y))
+    {
+    	printf("SUCCESS\n");
+    }
+    else
+    {
+    	printf("FAIL\n");
+    }
+
+	x = 0;
+	y = 0;
+	
+	if(Pow2(x,y) == x*pow(2,y))
+    {
+    	printf("SUCCESS\n");
+    }
+    else
+    {
+    	printf("FAIL\n");
+    }
+	
+	
 }
 
+void TestEx2_loop()
+{
+	
+}
+
+void TestEx2_NoLoop()
+{
+
+}
+
+void TestEx3()
+{
+
+}
 
 
 int main()
 {
-	unsigned int n = 7;
-	int n1 = 16;
-	
-	TestEx1(2,3);
-	
-	
-	if ( IsPowerOfTwoLoop(n) )
+	unsigned int num;
+	/*
+	unsigned int *arr = (unsigned int*)malloc(sizeof(unsigned int) * SIZE);
+
+	if (arr == NULL)
 	{
-		printf("--------ex2-----------The number %d is a power of 2------------ex2------------\n",n);
-	}
-	else
-	{
-		printf("--------ex2-----------The number %d is NOT a power of 2-------------ex2-----------\n",n);
+		printf("Memory not allocated \n");
+		return 1;
 	}
 	
-	if ( IsPowerOfTwoLoop(n1) )
-	{
-		printf("--------ex2-----------The number %d is a power of 2------------ex2------------\n",n1);
-	}
-	else
-	{
-		printf("--------ex2-----------The number %d is NOT a power of 2-------------ex2-----------\n",n1);
-	}
-	
-	if ( IsPowerOfTwo(n) )
-	{
-		printf("--------ex2-----------The number %d is a power of 2------------ex2------------\n",n);
-	}
-	else
-	{
-		printf("--------ex2-----------The number %d is NOT a power of 2-------------ex2-----------\n",n);
-	}
-	
-	if ( IsPowerOfTwo(n1) )
-	{
-		printf("--------ex2-----------The number %d is a power of 2------------ex2------------\n",n1);
-	}
-	else
-	{
-		printf("--------ex2-----------The number %d is NOT a power of 2-------------ex2-----------\n",n1);
-	}
-	
-	printf("Before add one: %d\n",n);
-	AddOne(&n);
-	printf("after add one: %d\n",n);
-	
-		
+	arr[0] = 7;
+	arr[1] = 3;
+	arr[2] = 11;
+	arr[3] = 23;
 	
 	
+
+	PrintWithThreeBits(arr,SIZE);
+	
+	free(arr);
+	*/
+	TestEx1();
+	
+	num = ByteMirrorLoop(1);
+	
+	printf("%d\n",num);
+	
+	
+
 	
 	
 	
