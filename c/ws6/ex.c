@@ -77,7 +77,7 @@ void PrintWithThreeBits (unsigned int *arr, size_t size)
 }
 
 
-unsigned int ByteMirrorLoop(unsigned int n)
+/*unsigned int ByteMirrorLoop(unsigned int n)
 {
 	unsigned int res = 0;	
 	while(n)
@@ -86,7 +86,7 @@ unsigned int ByteMirrorLoop(unsigned int n)
 		n = n >> 1; 
 	}	
 	return res;
-}
+}*/
 
 
 

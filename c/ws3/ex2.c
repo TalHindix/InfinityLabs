@@ -10,7 +10,7 @@ int JosephusWithArray(size_t soldiers_count)
     size_t  soldiers_alive = soldiers_count;
     size_t  sword_holder   = 0;
     size_t  i;
-    int victim_index;
+    size_t next_victim;
 
 
  	if(NULL == arr)
@@ -18,29 +18,25 @@ int JosephusWithArray(size_t soldiers_count)
  		return -1;
  	}
  	
- 	for (i=0; i < soldiers_count; i++)
+ 	for (i=0; i < soldiers_count; ++i)
  	{
  		arr[i] = i + 1;
  	} 
     
  	while (soldiers_alive > 1)
  	{
- 		victim_index = (sword_holder + 1) % soldiers_alive; /* Its a circle */
+ 		next_victim = (sword_holder + 1) % soldiers_alive; /* Its a circle */
  		
- 		for (i = victim_index; i < soldiers_alive - 1; i++) /* Loop to delete */
+ 		for (i = next_victim; i < soldiers_alive - 1; ++i) /* Loop to delete */
  		{
  			arr[i] = arr[i+1];
  		}
  		
- 		soldiers_alive--;
+ 		--soldiers_alive;
  		
  		
- 		sword_holder = victim_index; /* Pass the sword */
+ 		sword_holder = next_victim; /* Pass the sword */
  		
- 		if (sword_holder == soldiers_alive)
- 		{
- 			sword_holder = 0;
-		}
  	}
  	
  	i = arr[0];
