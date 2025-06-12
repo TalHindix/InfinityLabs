@@ -10,6 +10,9 @@
  Status: 	Approved
 ******************************/
 
+#define CHAR_VALUES 256
+#define INT_VALUES 256
+
 long Pow2(unsigned int x,unsigned int y)
 {
 	return (long)x<<y;
@@ -102,7 +105,33 @@ unsigned char ByteMirrorLoop(unsigned char n)
 	}
 	
 	return n_reverse;
+}
+
+
+
+static unsigned char s_mirror_lut[CHAR_VALUES] = {0};
+
+static void InitMirrorLUT()
+{
+	size_t i = 0;
+	
+	for (i = 0; i < CHAR_VALUES; ++i)
+	{
+		s_mirror_lut[i] = ByteMirrorLoop(i);
+	}
 } 
+
+
+unsigned char ByteMirror(unsigned char n)
+{
+	static int was_init = 0;
+	if(!was_init)
+	{
+		InitMirrorLUT(&s_mirror_lut);
+		was_init = 1;
+	}
+	return s_mirror_lut[n];
+}
 
 int Is_2And6_On(unsigned char n)
 {
@@ -143,11 +172,11 @@ int RoundDownTo16(unsigned char n)
 void SwapInPlace(int *x , int *y)
 {
 	*x = *x ^ *y;
-	*y = *x ^ *y;
+	*y = *x ^ *y; 
 	*x = *x ^ *y;
 }
 
-size_t CountBits(int n)
+size_t CountBitsLoop(int n)
 {
 	size_t count = 0;
 	
@@ -159,6 +188,42 @@ size_t CountBits(int n)
 	
 	return count;	
 }
+
+static int s_countbit_lut[INT_VALUES] = {0};
+
+static void InitCountBitLUT()
+{
+	size_t i = 0;
+	
+	for (i = 0; i < INT_VALUES; ++i)
+	{
+		s_countbit_lut[i] = (i & 1) + s_countbit_lut [i / 2];
+	}
+}
+
+size_t CountBits(int n)
+{
+	static int was_init = 0;
+	if(!was_init)
+	{
+		InitCountBitLUT(&s_countbit_lut);
+		was_init = 1;
+	}
+	
+	return (s_countbit_lut[n & 0xff] + 
+            s_countbit_lut[(n >> 8) & 0xff] + 
+            s_countbit_lut[(n >> 16) & 0xff] + 
+            s_countbit_lut[n >> 24]); 
+}
+
+
+size_t FloatAnalsys(float f)
+{
+	
+	return
+}
+
+
 
 
 

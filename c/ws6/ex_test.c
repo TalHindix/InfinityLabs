@@ -201,6 +201,15 @@ void TestEx4_PrintWithThreeBits()
     printf("\n");
 }
 
+void TestEx5()
+{
+	unsigned char num = 1;
+	unsigned char result = ByteMirror(num);
+	
+	printf("******************Running TestEx5_NOLOOP******************\n");
+	printf("%d\n",result);
+}
+
 void TestEx5_Loop()
 {
 	unsigned char num = 1;
@@ -248,9 +257,17 @@ void TestEx8()
 void TestEx9()
 {
 	int num = 16;
-	size_t result = CountBits(num);
+	size_t result = CountBitsLoop(num);
 	printf("******************Running TestEx9******************\n");
 	
+	printf("There is %lu bits SET (ON) in number:%d!\n",result,num);
+}
+
+void TestEx9_2()
+{
+	int num = 16;
+	size_t result = CountBits(num);
+	printf("******************Running TestEx9_LUT ******************\n");
 	printf("There is %lu bits SET (ON) in number:%d!\n",result,num);
 }
 
@@ -265,13 +282,15 @@ int main()
     TestEx3_AddOne();
     TestEx4_PrintWithThreeBits();
     TestEx5_Loop();
+    TestEx5();
     TestEx6();
 	TestEx6_Swap();
 	TestEx7();
-
 	TestEx8();
+	TestEx9();
+	TestEx5();
 */
-	TestEx9();	
+	TestEx9_2();	
 
     return 0;
 }
