@@ -271,6 +271,13 @@ void TestEx9_2()
 	printf("There is %lu bits SET (ON) in number:%d!\n",result,num);
 }
 
+void TestEx10()
+{
+	float f = 3.0;
+	size_t result = FloatAnalsys(&f);
+	printf("******************Running TestEx10 ******************\n");
+	printf("Ex10: %lx \n",result); /* Print In Hexadecimal */
+}
 
 
 int main()
@@ -282,16 +289,16 @@ int main()
     TestEx3_AddOne();
     TestEx4_PrintWithThreeBits();
     TestEx5_Loop();
-    TestEx5();
+    TestEx5();       
     TestEx6();
 	TestEx6_Swap();
 	TestEx7();
 	TestEx8();
 	TestEx9();
-	TestEx5();
-*/
 	TestEx9_2();	
-
+*/
+	TestEx10();
+	
     return 0;
 }
 

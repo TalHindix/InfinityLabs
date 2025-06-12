@@ -14,7 +14,7 @@ int RoundDownTo16(unsigned char n);
 void SwapInPlace(int *x,int *y);
 size_t CountBitsLoop(int n);
 size_t CountBits(int n);
-size_t FloatAnalsys(float f);
+size_t FloatAnalsys(float *f);
 
 #endif
 

@@ -217,10 +217,11 @@ size_t CountBits(int n)
 }
 
 
-size_t FloatAnalsys(float f)
+size_t FloatAnalsys(float *fp)
 {
-	
-	return
+	unsigned int* ip = 0;
+	ip = (unsigned int *)fp;
+	return (size_t)*ip;
 }
 
 
