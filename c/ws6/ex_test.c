@@ -201,13 +201,77 @@ void TestEx4_PrintWithThreeBits()
     printf("\n");
 }
 
+void TestEx5_Loop()
+{
+	unsigned char num = 1;
+	unsigned char result = ByteMirrorLoop(num);
+	
+	printf("******************Running TestEx5_LOOP******************\n");
+	printf("%d\n",result);
+}
+
+void TestEx6()
+{
+	unsigned char n = 67;
+	int result = Is_2And6_On(n);
+	printf("******************Running TestEx6_2_AND_6******************\n");
+	printf("%d \n",result);
+}
+
+void TestEx6_Swap()
+{
+	unsigned char n = 8;
+	int result = Swap3And5(n);
+	printf("******************Running TestEx6_SWAP******************\n");
+	printf("%d \n",result);
+}
+
+void TestEx7()
+{
+	unsigned char n = 33;
+	int result = RoundDownTo16(n);
+	printf("******************Running TestEx7******************\n");
+	printf("%d \n",result);
+}
+
+void TestEx8()
+{
+	int a = 3;
+	int b = 5;
+	printf("******************Running TestEx8******************\n");
+	
+	printf("before swap ->  a:%d , b:%d\n",a,b);
+	SwapInPlace(&a,&b);
+	printf("before swap ->  a:%d , b:%d\n",a,b);
+}
+
+void TestEx9()
+{
+	int num = 16;
+	size_t result = CountBits(num);
+	printf("******************Running TestEx9******************\n");
+	
+	printf("There is %lu bits SET (ON) in number:%d!\n",result,num);
+}
+
+
+
 int main()
 {
+/*
     TestEx1();
     TestEx2_Loop();
     TestEx2_NoLoop();
     TestEx3_AddOne();
     TestEx4_PrintWithThreeBits();
+    TestEx5_Loop();
+    TestEx6();
+	TestEx6_Swap();
+	TestEx7();
+
+	TestEx8();
+*/
+	TestEx9();	
 
     return 0;
 }

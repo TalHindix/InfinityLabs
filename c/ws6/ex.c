@@ -1,12 +1,14 @@
 #include "ex.h"
 #include <stdlib.h>
-#include <math.h>
+#include <stdio.h>
 
 /******************************
-author: Tal Hindi
-reviewer: Menny Markovich
-status: Approved
-*****************************/
+ Exercise: 	WS6 bitwise ex.
+ Date: 		11/06/25
+ Developer: Tal Hindi
+ Reviewer: 	Menny Markovich
+ Status: 	Approved
+******************************/
 
 long Pow2(unsigned int x,unsigned int y)
 {
@@ -76,17 +78,91 @@ void PrintWithThreeBits (unsigned int *arr, size_t size)
 	}
 }
 
+/******************************
+ Exercise: 	WS6 bitwise ex.
+ Date: 		11/06/25
+ Developer: Tal Hindi
+ Reviewer: 	Menny Markovich
+ Status: 	Approved
+******************************/
 
-/*unsigned int ByteMirrorLoop(unsigned int n)
+unsigned char ByteMirrorLoop(unsigned char n)
 {
-	unsigned int res = 0;	
-	while(n)
+	size_t i = 0;
+	unsigned char n_reverse = 0;
+	
+	
+	for (i = 0; i < 7; ++i)
 	{
-		res = ( res << 1 ) + ( n % 2);
-		n = n >> 1; 
-	}	
-	return res;
-}*/
+		if (n & (1 << i))
+		{
+			
+			n_reverse = (n_reverse | (1 << (7 - i)));
+		}
+	}
+	
+	return n_reverse;
+} 
+
+int Is_2And6_On(unsigned char n)
+{
+	
+	return ((n & (1<<2) && n & (1<<6)));
+}
+
+int Is_2_Or_6_On(unsigned char n)
+{
+	
+	return ((n & (1<<2) || n & (1<<6)));
+}
+
+int Swap3And5(unsigned char c)
+{
+	unsigned char bit3 =  (c >> 3) & 1;
+	unsigned char bit5 = (c >> 5) & 1;	
+	unsigned char mask = bit3 ^ bit5;
+	
+	c = c ^ ((mask << 3) | (mask << 5));
+	   	
+	return c;
+}
+
+/******************************
+ Exercise: 	WS6 bitwise ex.
+ Date: 		11/06/25
+ Developer: Tal Hindi
+ Reviewer: 	Menny Markovich
+ Status: 	Approved
+******************************/
+
+int RoundDownTo16(unsigned char n)
+{
+	return n & (~((1 << 4) - 1));
+}
+
+void SwapInPlace(int *x , int *y)
+{
+	*x = *x ^ *y;
+	*y = *x ^ *y;
+	*x = *x ^ *y;
+}
+
+size_t CountBits(int n)
+{
+	size_t count = 0;
+	
+	while(0 != n)
+	{
+		n = n & (n - 1);
+		count++;
+	}
+	
+	return count;	
+}
+
+
+
+
 
 
 
