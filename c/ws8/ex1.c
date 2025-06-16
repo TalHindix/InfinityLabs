@@ -4,6 +4,16 @@
 
 #define STRING_MAX_SIZE 250
 
+#define MAX2(X,Y) ((X) > (Y) ? (X) : (Y))
+#define MAX3(X, Y, Z) ( MAX2( MAX2((X), (Y)), (Z) ) )
+#define SIZEOF_VAR(X) ((size_t)((unsigned char *)(&X + 1) - (unsigned char *)(&X)))
+#define SIZEOF_TYPE(type) \
+    ((size_t)( \
+        (unsigned char *)((type *)NULL + 1) - \
+        (unsigned char *)((type *)NULL) \
+    ))
+
+
 typedef struct 
 {
 	void *data;
@@ -96,6 +106,7 @@ void NoCleanup(void *ptr)
 
 int main()
 {
+	int a = 3, b = 6, c = 7;
 	element_t elements[6];
 	int data1 = 4;
     float data2 = 4.5f;
@@ -157,6 +168,15 @@ int main()
     PrintAll(elements, 6);
 
     CleanUpAll(elements, 6);
+    
+    printf("MAX2: %d\n", MAX2(a, b));      
+    printf("MAX3: %d\n", MAX3(a, b, c));
+    
+    printf("Sizeof X is: %lu\n",SIZEOF_VAR(elements[0]));
+    
+    printf("Sizeof int is: %lu\n",SIZEOF_TYPE(int));
+    printf("Sizeof element structure type is: %lu\n",SIZEOF_TYPE(element_t));
+
 
     return 0;
 }
