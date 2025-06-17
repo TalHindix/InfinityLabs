@@ -27,55 +27,52 @@ void AddInt(element_t *element_ptr)
 	*(int *)&(element_ptr->data) += 10;
 }
 
-void PrintFloat(element_t *element_ptr)
-{
-	printf("%f\n", *(float *)&(element_ptr->data));
-}
+
 
 void AddFloat(element_t *element_ptr)
 {
 	*(float *)&(element_ptr->data) += 10.0f;
 }
 
+void PrintFloat(element_t *element_ptr)
+{
+	printf("%f\n", *(float *)&(element_ptr->data));
+}
+
 void PrintString(element_t *element_ptr)
 {
-	printf("%s\n", *(char * const *)(element_ptr->data));
+    printf("%s\n", (char *)element_ptr->data);
 }
 
 void AddString(element_t *element_ptr)
 {
-	char **pp = (char **)element_ptr->data;
-	char *str = *pp;
-	char buf[12];
-	size_t need;
-	char *tmp;
+    char *str = (char *)element_ptr->data;
+    char buf[12];
+    char *tmp;
+    size_t new_len;
 
-	if (!str)
-	{
-		printf("AddString: NULL");
-		return;
-	}
+    if (!str)
+    {
+        printf("AddString: NULL\n");
+        return;
+    }
 
-	sprintf(buf, "%d", 10);
+    sprintf(buf, "%d", 10);
+    new_len = strlen(str) + strlen(buf) + 1;
+    tmp = realloc(str, new_len);
+    if (!tmp)
+    {
+        printf("realloc failed\n");
+        return;
+    }
 
-	need = strlen(str) + strlen(buf) + 1;
-	tmp = realloc(str, need);
-
-	if (!tmp)
-	{
-		printf("realloc failed");
-		return;
-	}
-
-	strcat(tmp, buf);
-	*pp = tmp;
+    strcat(tmp, buf);
+    element_ptr->data = tmp;
 }
 
 void CleanUpString(void *ptr_string)
 {
-	char **pp = (char **)ptr_string;
-	free(*pp);
-	free(pp);
+    free(ptr_string);
 }
 
 void NoCleanup(void *ptr)
@@ -106,41 +103,29 @@ void InitFloat(element_t *elem, float value)
 
 void InitString(element_t *elem, const char *str)
 {
-	char *copy;
-	char **holder;
+    char *copy;
 
-	if (!str)
-	{
-		elem->data = NULL;
-		elem->print = NULL;
-		elem->add = NULL;
-		elem->cleanup = NULL;
-		return;
-	}
+    if (!str)
+    {
+        elem->data = NULL;
+        elem->print = NULL;
+        elem->add = NULL;
+        elem->cleanup = NULL;
+        return;
+    }
 
-	copy = (char *)malloc(strlen(str) + 1);
+    copy = (char *)malloc(strlen(str) + 1);
+    if (!copy)
+    {
+        elem->data = NULL;
+        return;
+    }
 
-	if (!copy)
-	{
-		return;
-	}
-
-	strcpy(copy, str);
-
-	holder = (char **)malloc(sizeof(char *));
-
-	if (!holder)
-	{
-		free(copy);
-		return;
-	}
-
-	*holder = copy;
-
-	elem->data = holder;
-	elem->print = PrintString;
-	elem->add = AddString;
-	elem->cleanup = CleanUpString;
+    strcpy(copy, str);
+    elem->data = copy;
+    elem->print = PrintString;
+    elem->add = AddString;
+    elem->cleanup = CleanUpString;
 }
 
 
