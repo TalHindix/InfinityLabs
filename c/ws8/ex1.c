@@ -1,221 +1,210 @@
-/******************
-author: Tal Hindi
-reviewer: 
-status: 
-*******************/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define ELEMENT_SIZE 6
 
-typedef struct 
+typedef struct element_s element_t;
+
+struct element_s
 {
 	void *data;
-	void (*print)(const void *);
-    void (*add)(void *);
-    void (*cleanup)(void *);
-} element_t;
+	void (*print)(element_t *);
+	void (*add)(element_t *);
+	void (*cleanup)(void *);
+};
 
 
 /************************OPERATIONS ***************************************/
-void PrintInt(const void *ptr_int)
+void PrintInt(element_t *element_ptr)
 {
-	printf("%d\n", *(const int *)ptr_int);
+	printf("%d\n", *(int *)&(element_ptr->data));
 }
 
-void AddInt(void *ptr_int)
+void AddInt(element_t *element_ptr)
 {
-	*(int *)ptr_int += 10;
+	*(int *)&(element_ptr->data) += 10;
 }
 
-void PrintFloat(const void *ptr_float)
+void PrintFloat(element_t *element_ptr)
 {
-	printf("%f\n", *(const float *)ptr_float);
+	printf("%f\n", *(float *)&(element_ptr->data));
 }
 
-void AddFloat(void *ptr_float)
+void AddFloat(element_t *element_ptr)
 {
-	*(float *)ptr_float += 10.0;
+	*(float *)&(element_ptr->data) += 10.0f;
 }
 
-void PrintString(const void *ptr_string)
+void PrintString(element_t *element_ptr)
 {
-    printf("%s\n", *(const char * const *)ptr_string);
+	printf("%s\n", *(char * const *)(element_ptr->data));
 }
 
-
-void AddString(void *ptr_string)
+void AddString(element_t *element_ptr)
 {
-    char  **pp   = (char **)ptr_string;
-    char   *str  = *pp;
-    char    buf[12];
-    size_t need;
-    char *tmp;
+	char **pp = (char **)element_ptr->data;
+	char *str = *pp;
+	char buf[12];
+	size_t need;
+	char *tmp;
 
-    if (!str)
-    {
-    	printf("AddString: NULL");
-    	return;
-    }
+	if (!str)
+	{
+		printf("AddString: NULL");
+		return;
+	}
 
-    sprintf(buf, "%d", 10);
+	sprintf(buf, "%d", 10);
 
-    need = strlen(str) + strlen(buf) + 1;
-    tmp = realloc(str, need);
-    
-    if (!tmp) 
-    {
-    	printf("realloc failed");
-    	return;
-    }
+	need = strlen(str) + strlen(buf) + 1;
+	tmp = realloc(str, need);
 
-    strcat(tmp, buf);
-    *pp = tmp;  
+	if (!tmp)
+	{
+		printf("realloc failed");
+		return;
+	}
+
+	strcat(tmp, buf);
+	*pp = tmp;
 }
 
 void CleanUpString(void *ptr_string)
 {
-    char **pp = (char **)ptr_string;
-    free(*pp);   
-    free(pp);
+	char **pp = (char **)ptr_string;
+	free(*pp);
+	free(pp);
 }
 
 void NoCleanup(void *ptr)
 {
-    (void)ptr; 
+	(void)ptr;
 }
 
 
 /*********************INIT Funcs ***********************************/
 
-void InitInt(element_t *elem, int *value)
+void InitInt(element_t *elem, int value)
 {
-    elem->data = value;
-    elem->print = PrintInt;
-    elem->add = AddInt;
-    elem->cleanup = NoCleanup;
+	elem->data = NULL;
+	*(int *)&(elem->data) = value;
+	elem->print = PrintInt;
+	elem->add = AddInt;
+	elem->cleanup = NoCleanup;
 }
 
-void InitFloat(element_t *elem, float *value)
+void InitFloat(element_t *elem, float value)
 {
-    elem->data = value;
-    elem->print = PrintFloat;
-    elem->add = AddFloat;
-    elem->cleanup = NoCleanup;
+	elem->data = NULL;
+	*(float *)&(elem->data) = value;
+	elem->print = PrintFloat;
+	elem->add = AddFloat;
+	elem->cleanup = NoCleanup;
 }
 
 void InitString(element_t *elem, const char *str)
 {
 	char *copy;
 	char **holder;
-	
-    if (!str)
-    {
-        elem->data = NULL;
-        elem->print = NULL;
-        elem->add = NULL;
-        elem->cleanup = NULL;
-        return;
-    }
-	
-	/* we can use strdup() */
-    copy = (char *)malloc(strlen(str) + 1);
-    
-    if (!copy)
-    {
-        return;
-    }
 
-    strcpy(copy, str);
-    
-    holder = (char **)malloc(sizeof(char *));
-    
-    if (!holder)
-    {
-    	free(copy);
-    	return;
-    }
-    
-    *holder = copy;
-    
+	if (!str)
+	{
+		elem->data = NULL;
+		elem->print = NULL;
+		elem->add = NULL;
+		elem->cleanup = NULL;
+		return;
+	}
+
+	copy = (char *)malloc(strlen(str) + 1);
+
+	if (!copy)
+	{
+		return;
+	}
+
+	strcpy(copy, str);
+
+	holder = (char **)malloc(sizeof(char *));
+
+	if (!holder)
+	{
+		free(copy);
+		return;
+	}
+
+	*holder = copy;
+
 	elem->data = holder;
-    elem->print = PrintString;
-    elem->add = AddString;   
-    elem->cleanup = CleanUpString;
+	elem->print = PrintString;
+	elem->add = AddString;
+	elem->cleanup = CleanUpString;
 }
 
 
 /************************UTIL ***************************************/
 
-static void PrintAll(const element_t *arr, size_t size)
+static void PrintAll(element_t *arr, size_t size)
 {
-    size_t i;
-    for (i = 0; i < size; ++i)
-    {
-        arr[i].print(arr[i].data);
-    }
+	size_t i;
+	for (i = 0; i < size; ++i)
+	{
+		arr[i].print(&arr[i]);
+	}
 }
 
 static void AddAll(element_t *arr, size_t size)
 {
-    size_t i;
-    for (i = 0; i < size; ++i)
-    {
-        arr[i].add(arr[i].data);
-    }
+	size_t i;
+	for (i = 0; i < size; ++i)
+	{
+		arr[i].add(&arr[i]);
+	}
 }
 
 static void CleanUpAll(element_t *arr, size_t size)
 {
-    size_t i;
-    for (i = 0; i < size; ++i)
-    {       
-        arr[i].cleanup(arr[i].data);
-    }
+	size_t i;
+	for (i = 0; i < size; ++i)
+	{
+		arr[i].cleanup(arr[i].data);
+	}
 }
-
 
 
 int main()
 {
-
 	element_t elements[ELEMENT_SIZE];
-	
+
 	/* Group A */
 	int int_val_a = 4;
-    float float_val_a = 4.5f;
-    char *string_val_a = "chapter";
-    
-    /* Group B */
-    int int_val_b = 8;
+	float float_val_a = 4.5f;
+	char *string_val_a = "chapter";
+
+	/* Group B */
+	int int_val_b = 8;
 	float float_val_b = 8.5f;
 	char *string_val_b = "hindi";
-    
-    InitInt(&elements[0], &int_val_a);
-    InitFloat(&elements[1], &float_val_a);
-    InitString(&elements[2], string_val_a);
-    InitInt(&elements[3], &int_val_b);
-    InitFloat(&elements[4], &float_val_b);
-    InitString(&elements[5], string_val_b);
-	
-    
-    
-    
-    
 
-    printf("Before add:\n");
-    PrintAll(elements, ELEMENT_SIZE);
+	InitInt(&elements[0], int_val_a);
+	InitFloat(&elements[1], float_val_a);
+	InitString(&elements[2], string_val_a);
+	InitInt(&elements[3], int_val_b);
+	InitFloat(&elements[4], float_val_b);
+	InitString(&elements[5], string_val_b);
 
-    AddAll(elements, ELEMENT_SIZE);
+	printf("Before add:\n");
+	PrintAll(elements, ELEMENT_SIZE);
 
-    printf("\nAfter add:\n");
-    PrintAll(elements, ELEMENT_SIZE);
+	AddAll(elements, ELEMENT_SIZE);
 
-    CleanUpAll(elements, ELEMENT_SIZE);
-    
+	printf("\nAfter add:\n");
+	PrintAll(elements, ELEMENT_SIZE);
 
+	CleanUpAll(elements, ELEMENT_SIZE);
 
-    return 0;
+	return 0;
 }
+
