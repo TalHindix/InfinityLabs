@@ -1,18 +1,14 @@
+/******************
+author: Tal Hindi
+reviewer: 
+status: 
+*******************/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#define STRING_MAX_SIZE 250
-
-#define MAX2(X,Y) ((X) > (Y) ? (X) : (Y))
-#define MAX3(X, Y, Z) ( MAX2( MAX2((X), (Y)), (Z) ) )
-#define SIZEOF_VAR(X) ((size_t)((unsigned char *)(&X + 1) - (unsigned char *)(&X)))
-#define SIZEOF_TYPE(type) \
-    ((size_t)( \
-        (unsigned char *)((type *)NULL + 1) - \
-        (unsigned char *)((type *)NULL) \
-    ))
-
+#define ELEMENT_SIZE 6
 
 typedef struct 
 {
@@ -22,6 +18,8 @@ typedef struct
     void (*cleanup)(void *);
 } element_t;
 
+
+/************************OPERATIONS ***************************************/
 void PrintInt(const void *ptr_int)
 {
 	printf("%d\n", *(const int *)ptr_int);
@@ -44,33 +42,112 @@ void AddFloat(void *ptr_float)
 
 void PrintString(const void *ptr_string)
 {
-    printf("%s\n", (const char *)ptr_string);
+    printf("%s\n", *(const char * const *)ptr_string);
 }
+
 
 void AddString(void *ptr_string)
 {
-    char *str = (char *)ptr_string;
-    char num_str[12];
-    size_t current_len;
+    char  **pp   = (char **)ptr_string;
+    char   *str  = *pp;
+    char    buf[12];
+    size_t need;
+    char *tmp;
 
-    sprintf(num_str, "%d", 10);
-    current_len = strlen(str);
-    
-    if (current_len + strlen(num_str) + 1 > STRING_MAX_SIZE)
+    if (!str)
     {
-    	printf("error, not enough space in string");
+    	printf("AddString: NULL");
     	return;
     }
-   
+
+    sprintf(buf, "%d", 10);
+
+    need = strlen(str) + strlen(buf) + 1;
+    tmp = realloc(str, need);
     
-    strcat(str, num_str);
+    if (!tmp) 
+    {
+    	printf("realloc failed");
+    	return;
+    }
+
+    strcat(tmp, buf);
+    *pp = tmp;  
 }
 
 void CleanUpString(void *ptr_string)
 {
-    free(ptr_string);
+    char **pp = (char **)ptr_string;
+    free(*pp);   
+    free(pp);
 }
 
+void NoCleanup(void *ptr)
+{
+    (void)ptr; 
+}
+
+
+/*********************INIT Funcs ***********************************/
+
+void InitInt(element_t *elem, int *value)
+{
+    elem->data = value;
+    elem->print = PrintInt;
+    elem->add = AddInt;
+    elem->cleanup = NoCleanup;
+}
+
+void InitFloat(element_t *elem, float *value)
+{
+    elem->data = value;
+    elem->print = PrintFloat;
+    elem->add = AddFloat;
+    elem->cleanup = NoCleanup;
+}
+
+void InitString(element_t *elem, const char *str)
+{
+	char *copy;
+	char **holder;
+	
+    if (!str)
+    {
+        elem->data = NULL;
+        elem->print = NULL;
+        elem->add = NULL;
+        elem->cleanup = NULL;
+        return;
+    }
+	
+	/* we can use strdup() */
+    copy = (char *)malloc(strlen(str) + 1);
+    
+    if (!copy)
+    {
+        return;
+    }
+
+    strcpy(copy, str);
+    
+    holder = (char **)malloc(sizeof(char *));
+    
+    if (!holder)
+    {
+    	free(copy);
+    	return;
+    }
+    
+    *holder = copy;
+    
+	elem->data = holder;
+    elem->print = PrintString;
+    elem->add = AddString;   
+    elem->cleanup = CleanUpString;
+}
+
+
+/************************UTIL ***************************************/
 
 static void PrintAll(const element_t *arr, size_t size)
 {
@@ -99,83 +176,45 @@ static void CleanUpAll(element_t *arr, size_t size)
     }
 }
 
-void NoCleanup(void *ptr)
-{
-    (void)ptr; 
-}
+
 
 int main()
 {
-	int a = 3, b = 6, c = 7;
-	element_t elements[6];
-	int data1 = 4;
-    float data2 = 4.5f;
-    char *data3 = (char *)malloc(STRING_MAX_SIZE);   
-    int data4 = 8;
-    float data5 = 8.5f;
-    char *data6 = (char *)malloc(STRING_MAX_SIZE);
-    if (!data6)
-    {
-        printf("malloc error\n");
-        return 1;
-    }
-    if (!data3)
-    {
-        printf("malloc error\n");
-        return 1;
-    }
-    strcpy(data3, "chapter");
-    strcpy(data6, "hindi");
-    
-    
-    elements[0].data    = &data1;
-	elements[0].print   = PrintInt;
-	elements[0].add     = AddInt;
-	elements[0].cleanup = NoCleanup;
 
-	elements[1].data    = &data2;
-	elements[1].print   = PrintFloat;
-	elements[1].add     = AddFloat;
-	elements[1].cleanup = NoCleanup;
-
-	elements[2].data    = data3;
-	elements[2].print   = PrintString;
-	elements[2].add     = AddString;
-	elements[2].cleanup = CleanUpString;
+	element_t elements[ELEMENT_SIZE];
 	
-	elements[3].data    = &data4;
-	elements[3].print   = PrintInt;
-	elements[3].add     = AddInt;
-	elements[3].cleanup = NoCleanup;
-
-	elements[4].data    = &data5;
-	elements[4].print   = PrintFloat;
-	elements[4].add     = AddFloat;
-	elements[4].cleanup = NoCleanup;
-
-	elements[5].data    = data6;
-	elements[5].print   = PrintString;
-	elements[5].add     = AddString;
-	elements[5].cleanup = CleanUpString;
-
+	/* Group A */
+	int int_val_a = 4;
+    float float_val_a = 4.5f;
+    char *string_val_a = "chapter";
+    
+    /* Group B */
+    int int_val_b = 8;
+	float float_val_b = 8.5f;
+	char *string_val_b = "hindi";
+    
+    InitInt(&elements[0], &int_val_a);
+    InitFloat(&elements[1], &float_val_a);
+    InitString(&elements[2], string_val_a);
+    InitInt(&elements[3], &int_val_b);
+    InitFloat(&elements[4], &float_val_b);
+    InitString(&elements[5], string_val_b);
+	
+    
+    
+    
+    
 
     printf("Before add:\n");
-    PrintAll(elements, 6);
+    PrintAll(elements, ELEMENT_SIZE);
 
-    AddAll(elements, 6);
+    AddAll(elements, ELEMENT_SIZE);
 
     printf("\nAfter add:\n");
-    PrintAll(elements, 6);
+    PrintAll(elements, ELEMENT_SIZE);
 
-    CleanUpAll(elements, 6);
+    CleanUpAll(elements, ELEMENT_SIZE);
     
-    printf("MAX2: %d\n", MAX2(a, b));      
-    printf("MAX3: %d\n", MAX3(a, b, c));
-    
-    printf("Sizeof X is: %lu\n",SIZEOF_VAR(elements[0]));
-    
-    printf("Sizeof int is: %lu\n",SIZEOF_TYPE(int));
-    printf("Sizeof element structure type is: %lu\n",SIZEOF_TYPE(element_t));
 
 
     return 0;
