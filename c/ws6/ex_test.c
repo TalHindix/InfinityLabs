@@ -273,7 +273,7 @@ void TestEx9_2()
 
 void TestEx10()
 {
-	float f = 3.0;
+	float f = 3.71;
 	size_t result = FloatAnalsys(&f);
 	printf("******************Running TestEx10 ******************\n");
 	printf("Ex10: %lx \n",result); /* Print In Hexadecimal */
@@ -294,11 +294,12 @@ int main()
 	TestEx6_Swap();
 	TestEx7();
 	TestEx8();
+*/
 	TestEx9();
 	TestEx9_2();	
-*/
+/*
 	TestEx10();
-	
+*/	
     return 0;
 }
 

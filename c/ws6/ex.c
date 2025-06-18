@@ -11,7 +11,6 @@
 ******************************/
 
 #define CHAR_VALUES 256
-#define INT_VALUES 256
 
 long Pow2(unsigned int x,unsigned int y)
 {
@@ -189,13 +188,13 @@ size_t CountBitsLoop(int n)
 	return count;	
 }
 
-static int s_countbit_lut[INT_VALUES] = {0};
+static int s_countbit_lut[CHAR_VALUES] = {0};
 
 static void InitCountBitLUT()
 {
 	size_t i = 0;
 	
-	for (i = 0; i < INT_VALUES; ++i)
+	for (i = 0; i < CHAR_VALUES; ++i)
 	{
 		s_countbit_lut[i] = (i & 1) + s_countbit_lut [i / 2];
 	}
@@ -206,7 +205,7 @@ size_t CountBits(int n)
 	static int was_init = 0;
 	if(!was_init)
 	{
-		InitCountBitLUT(&s_countbit_lut);
+		InitCountBitLUT();
 		was_init = 1;
 	}
 	
