@@ -9,16 +9,15 @@ status:
 #include <assert.h>
 
 /* Helper function BuildPattern */
-static unsigned long BuildPattern(int c)
+static size_t BuildPattern(int c)
 {
 	unsigned char byte = (unsigned char)c;
-	unsigned long pattern = 0;
+	size_t pattern = 0;
 	size_t i;
-	
-	for(i = 0; i < sizeof(unsigned long); ++i)
+
+	for(i = 0; i < sizeof(size_t); ++i)
 	{
-		pattern = pattern << 8; /* Clear space for the next byte */
-		pattern = pattern | byte;
+		pattern = (pattern << 8) | byte;
 	}
 	
 	return pattern;
@@ -27,16 +26,15 @@ static unsigned long BuildPattern(int c)
 void *MemSet(void *s, int c, size_t n)
 {
 	unsigned char *byte_ptr; /* write one byte at a time */
-	unsigned long *word_ptr; /* write word by word */
+	size_t *word_ptr; /* write word by word */
 	size_t word_size; /* size of a word on this cpu */
 	size_t i; /* for loop */
-	unsigned long pat; /* word-sizeed reapting pattern */
+	size_t pat; /* word-sizeed reapting pattern */
 	
 	byte_ptr = (unsigned char *)s;
 	word_size = sizeof(size_t); /* 8 */
 	
-	/* Byte by Byte until the word-aligned */
-	
+	/* Byte by Byte until the word-aligned */	
 	while (((size_t)byte_ptr & (word_size - 1)) && n)
 	{
 		*byte_ptr = (unsigned char)c;
@@ -45,19 +43,19 @@ void *MemSet(void *s, int c, size_t n)
 	}
 	
 	
-	/* Word at a time fill */
-	
-	if ( n > word_size ) /* */
+	/* Word at a time fill */	
+	if (n > word_size)
 	{
-		pat = BuildPattern(c); /* if c=0x5A and sizeof(unsigned long) = 8 then: pat = 0x5A5A5A5A5A5A5A5A */
-
-		word_ptr = (unsigned long *)byte_ptr; /* the pointer byte_ptr(pointing to destination memory as bytes) is cast to a unsigned long *, allowing word-sized writes*/
+		size_t num_words = n / word_size;
+		pat = BuildPattern(c); /* if c=0x5A and sizeof(size_t) = 8 then: pat = 0x5A5A5A5A5A5A5A5A */
+		word_ptr = (size_t *)byte_ptr; /* the pointer byte_ptr(pointing to destination memory as bytes) is cast to a size_t *, allowing word-sized writes*/
 		
 		/* This loop writes full word_size chunks to memory using the helper func - pat() */  /* n / word_size give the number of full words we can fit.*/
-		for(i = n / word_size; i; --i) 
+		
+		for (i = 0; i < num_words; ++i)
 		{
-			*word_ptr = pat; /* to fill each word */
-			++word_ptr; /* move the pointer forward */
+			*word_ptr = pat;
+			++word_ptr;
 		}
 		
 		byte_ptr = (unsigned char *)word_ptr; /* byte_ptr is updated to point to the remaining byte area (if any) after all the word writes. */
@@ -78,14 +76,6 @@ void *MemSet(void *s, int c, size_t n)
 }
 
 
-
-
-
-
-
-
-
-
 void *MemCpy(void *dest, const void *src, size_t byte_count)
 {
 	unsigned char *dest_byte = (unsigned char *)dest; /* to "WALK" byte byte on dest */
@@ -104,7 +94,8 @@ void *MemCpy(void *dest, const void *src, size_t byte_count)
 		return dest;
 	}
 	
-	while ( byte_count > 0 && (((sizeof(dest_byte) % word_size != 0) || (sizeof(src_byte) % word_size != 0))))
+	/* move both pointers byte-by-byte until both are aligned */
+	while ( byte_count > 0 && ((((size_t)dest_byte % word_size != 0) || ((size_t)src_byte % word_size != 0))))
 	{
 		*dest_byte++ = *src_byte++;
 		--byte_count;
@@ -124,7 +115,7 @@ void *MemCpy(void *dest, const void *src, size_t byte_count)
 	dest_byte = (unsigned char *)(dest_word + word_to_copy);
 	src_byte = (unsigned char *)(src_word + word_to_copy);
 	
-	byte_count %=  word_size;
+	byte_count %= word_size;
 	
 	while (byte_count > 0)
 	{
