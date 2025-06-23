@@ -51,7 +51,7 @@ int RunMemCpyTest(size_t offset, size_t len)
 {
     unsigned char src_buf[BUF_SIZE];
     unsigned char dst_std[BUF_SIZE];
-    unsigned char dst_my [BUF_SIZE];
+    unsigned char dst_my[BUF_SIZE];
     size_t i;
 
 
