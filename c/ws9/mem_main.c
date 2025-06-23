@@ -22,7 +22,8 @@ int RunMemSetTest(size_t offset, size_t len, int value)
     unsigned char buf_my[BUF_SIZE];
     size_t i;
 
-    for (i = 0; i < BUF_SIZE; ++i) {
+    for (i = 0; i < BUF_SIZE; ++i)
+    {
         buf_std[i] = FILL_BYTE;
         buf_my[i]  = FILL_BYTE;
     }
@@ -37,9 +38,9 @@ static void TestMemSet()
 {
     printf("\nTesting MemSet function:\n\n");
 
-    TEST_RESULT(RunMemSetTest(0, 0, 0x00), "n == 0 leaves buffer unchanged");
+    TEST_RESULT(RunMemSetTest(0, 0, 0x00), "n == 0 buffer unchanged");
     TEST_RESULT(RunMemSetTest(0, 1, 0x5A), "fill 1 byte at start");
-    TEST_RESULT(RunMemSetTest(0, sizeof(unsigned long), 0xFF), "fill exactly one word");
+    TEST_RESULT(RunMemSetTest(0, sizeof(size_t), 0xFF), "fill exactly one word");
     TEST_RESULT(RunMemSetTest(3, 13, 0x7E), "fill across alignment boundary");
     TEST_RESULT(RunMemSetTest(0, BUF_SIZE, 0x00), "fill entire buffer");
 
@@ -75,7 +76,7 @@ static void TestMemCpy()
 
     TEST_RESULT(RunMemCpyTest(0, 0),"n == 0 leaves buffer unchanged");
     TEST_RESULT(RunMemCpyTest(0, 1),"copy 1 byte at start");
-    TEST_RESULT(RunMemCpyTest(0, sizeof(unsigned long)), "copy exactly one word");
+    TEST_RESULT(RunMemCpyTest(0, sizeof(size_t)),"copy exactly one word");
     TEST_RESULT(RunMemCpyTest(3, 13), "copy unaligned span");
     TEST_RESULT(RunMemCpyTest(0, BUF_SIZE), "copy full buffer");
 
@@ -104,10 +105,10 @@ static void TestMemMove()
 {
     printf("\nTesting MemMove function:\n");
 
-    TEST_RESULT(RunMemMoveTest(0, 0, 0), "n == 0 leaves buffer unchanged");
+    TEST_RESULT(RunMemMoveTest(0, 0, 0), "n == 0 buffer unchanged");
     TEST_RESULT(RunMemMoveTest(0, 5, 5), "non-overlapping copy");
-    TEST_RESULT(RunMemMoveTest(0, 3, 10), "overlap: dest < src (safe forward)");
-    TEST_RESULT(RunMemMoveTest(3, 0, 10), "overlap: dest > src (needs backward)");
+    TEST_RESULT(RunMemMoveTest(0, 3, 10), "overlap: dest < src");
+    TEST_RESULT(RunMemMoveTest(3, 0, 10), "overlap: dest > src");
     TEST_RESULT(RunMemMoveTest(0, 0, BUF_SIZE), "copy full buffer");
 
     printf("\n");
