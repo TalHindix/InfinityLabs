@@ -62,6 +62,43 @@ void TestBitArrSetAllOff()
 	}
 }
 
+void TestBitArrMirrorLUT()
+{
+	bit_arr_t val = 0x00000000000000F0;
+	bit_arr_t expected = 0x0F00000000000000;
+	bit_arr_t result = BitArrMirrorLUT(val);
+
+	printf("\n------------ TestBitArrMirrorLUT ------------\n");
+
+
+	if (result == expected)
+	{
+		printf("Mirror of 0x%lX: PASS\n", val);
+	}
+	else
+	{
+		printf("Mirror of 0x%lX: FAIL (got 0x%lX, want 0x%lX)\n", val, result, expected);
+	}
+}
+
+void TestBitArrCountOnLUT()
+{
+	bit_arr_t val = 0xF0F0F0F0F0F0F0F0;
+	size_t expected = 32;
+	size_t result = BitArrCountOnLUT(val);
+
+	printf("\n------------ TestBitArrCountOnLUT -----------\n");
+
+
+	if (result == expected)
+	{
+		printf("CountOn of 0x%lX: PASS\n", val);
+	}
+	else
+	{
+		printf("CountOn of 0x%lX: FAIL (got %lu, want %lu)\n", val, result, expected);
+	}
+}
 
 
 
@@ -69,6 +106,8 @@ int main()
 {
 	TestBitArrSetAllOn();
 	TestBitArrSetAllOff();
+	TestBitArrMirrorLUT();
+	TestBitArrCountOnLUT();
 	
 	return 0;
 }

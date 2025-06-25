@@ -6,6 +6,85 @@ status:
 
 #include "../include/bit_arr.h"
 
+#define BITS_IN_BYTE 8
+
+static unsigned char mirror_lut[BYTE_VALUES_LUT_SIZE];
+static unsigned char counton_lut[BYTE_VALUES_LUT_SIZE];
+
+
+/* fill the luts table only once */
+
+static void InitLuts()
+{
+	static int is_Init = 0; /* flag to ensure only once !*/
+	size_t byte_index = 0;
+	
+	if (is_Init)
+	{
+		return;
+	}
+	
+	for (byte_index = 0; byte_index < BYTE_VALUES_LUT_SIZE; ++byte_index)
+	{
+		unsigned char original_byte = (unsigned char)byte_index;
+		unsigned char bit_index = 0;
+		unsigned char reversed_byte = 0;
+		unsigned char ones_in_byte = 0;
+		
+		for (bit_index = 0; bit_index < BITS_IN_BYTE; ++bit_index)
+		{
+			reversed_byte = (unsigned char)((reversed_byte << 1) | (original_byte & 1));
+            ones_in_byte  = (unsigned char)(ones_in_byte + (original_byte & 1));
+            original_byte >>= 1;
+		}
+		
+		mirror_lut[byte_index]  = reversed_byte;
+        counton_lut[byte_index] = ones_in_byte;		
+	}
+	
+	is_Init = 1;	
+	
+}
+
+bit_arr_t BitArrMirrorLUT(bit_arr_t bit_arr)
+{
+	bit_arr_t mirrored = (bit_arr_t)0;
+	size_t byte_index = 0;
+	size_t total_bytes = sizeof(bit_arr_t);
+	
+	InitLuts();
+	
+	for (byte_index = 0; byte_index < total_bytes; ++byte_index)
+	{
+		/* extract one byte from original word */
+		unsigned char curr_byte = (unsigned char)(bit_arr >> (CHAR_BIT * byte_index));
+		/* Look up its bits-mirrored form */
+		unsigned char part_mirrored = mirror_lut[curr_byte];
+		
+		size_t dest_shift = CHAR_BIT * (total_bytes - 1 - byte_index);
+		
+		mirrored |= (bit_arr_t)part_mirrored << dest_shift;
+	}
+	
+	return mirrored;
+}
+
+size_t BitArrCountOnLUT(bit_arr_t value)
+{
+    size_t ones_total = 0;
+    size_t byte_index = 0;
+    size_t total_bytes = sizeof(bit_arr_t);
+
+    InitLuts();
+
+    for (byte_index = 0; byte_index < total_bytes; ++byte_index)
+    {
+        unsigned char curr_byte = (unsigned char)(value >> (CHAR_BIT * byte_index));
+        ones_total += counton_lut[curr_byte];
+    }
+
+    return ones_total;
+}
 
 bit_arr_t BitArrSetAllOn(bit_arr_t bit_arr)
 {

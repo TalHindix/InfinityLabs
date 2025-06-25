@@ -11,8 +11,10 @@ status:
 #include <stddef.h>   /* size_t   */
 #include <assert.h>   /* assert   */
 
-typedef size_t bit_arr_t;
-enum { BITARR_BITS = sizeof(bit_arr_t) * CHAR_BIT };
+
+typedef size_t bit_arr_t; /* */
+enum { BITARR_BITS = sizeof(bit_arr_t) * CHAR_BIT }; /* */
+enum { BYTE_VALUES_LUT_SIZE = 1 << CHAR_BIT }; /* 0-255 */
 
 /*
 	BitArrSetAllOn
@@ -153,6 +155,12 @@ bit_arr_t BitArrMirror(bit_arr_t bit_arr);
 	Time Complexity : O(BITARR_BITS) – constant time!
 */
 char *BitArrToString(bit_arr_t bit_arr, char* str);
+
+
+
+bit_arr_t BitArrMirrorLUT(bit_arr_t bit_arr);
+
+size_t BitArrCountOnLUT(bit_arr_t value);
 	
 #endif /* _ILRD_BIT_ARR_ */
 
