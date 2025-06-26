@@ -82,14 +82,14 @@ int main()
     strcpy(tal.first_name, "Tal");
     strcpy(tal.last_name, "Hindi");
 
-    tal.record.science.math = 99.5f;
-    tal.record.science.physics = 99.0f;
-    tal.record.science.chemistry = 97.3f;
+    tal.record.science.math = 99.5;
+    tal.record.science.physics = 99.0;
+    tal.record.science.chemistry = 97.3;
 
-    tal.record.humanities.sociology = 88.0f;
-    tal.record.humanities.psychology = 90.0f;
+    tal.record.humanities.sociology = 88.0;
+    tal.record.humanities.psychology = 90.0;
 
-    tal.record.sports = 91.0f;
+    tal.record.sports = 91.0;
 
 	if (Save_Student_Binary("tal.bin", &tal))
 	{
@@ -104,11 +104,11 @@ int main()
     
     if (memcmp(&tal, &loaded_tal, sizeof(Student_t)) == 0)
 	{
-		puts("PASS: everything equal");
+		printf("PASS: everything equal");
 	}
 	else
 	{
-		puts("FAIL: structs not equal");
+		printf("FAIL: structs not equal");
 	}
     
     
