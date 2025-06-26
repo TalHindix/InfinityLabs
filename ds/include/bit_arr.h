@@ -1,8 +1,8 @@
-/********************
+/**********************
 author: Tal Hindi
-reviewer: 
-status: 
-********************/
+reviewer: Baruch Haimson
+status: Approved
+**********************/
 
 #ifndef __ILRD_BIT_ARR__
 #define __ILRD_BIT_ARR__
@@ -11,12 +11,10 @@ status:
 #include <stddef.h>   /* size_t   */
 #include <assert.h>   /* assert   */
 #include <stdlib.h>
-#include <string.h>
 
 
 typedef size_t bit_arr_t; /* */
-enum { BITARR_BITS = sizeof(bit_arr_t) * CHAR_BIT }; /* */
-enum { BYTE_VALUES_LUT_SIZE = 1 << CHAR_BIT }; /* 0-255 */
+enum { BITARR_BITS = sizeof(bit_arr_t) * CHAR_BIT }; /* 64 */
 
 /*
 	BitArrSetAllOn
@@ -159,6 +157,7 @@ bit_arr_t BitArrMirror(bit_arr_t bit_arr);
 char *BitArrToString(bit_arr_t bit_arr, char* str);
 
 
+/*********************************************Question 9 - Implements LUT *****************************************************************/
 
 bit_arr_t BitArrMirrorLUT(bit_arr_t bit_arr);
 

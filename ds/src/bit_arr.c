@@ -1,18 +1,20 @@
-/********************
+/**********************
 author: Tal Hindi
-reviewer: 
-status: 
-********************/
+reviewer: Baruch Haimson
+status: Approved
+**********************/
+
 
 #include "../include/bit_arr.h"
 
 #define BITS_IN_BYTE 8
 
+enum { BYTE_VALUES_LUT_SIZE = 1 << CHAR_BIT }; /* 0-255 */
+
 static unsigned char mirror_lut[BYTE_VALUES_LUT_SIZE];
 static unsigned char counton_lut[BYTE_VALUES_LUT_SIZE];
 
 
-/* fill the luts table only once */
 
 static void InitLuts()
 {
@@ -107,11 +109,11 @@ bit_arr_t BitArrSetBit(bit_arr_t bit_arr, size_t index, int value)
 	assert(index < BITARR_BITS);		
 	assert(value == 1 || value == 0);
 	
-	if (value) /* 1 */
+	if (value)
 	{
 		bit_arr |= mask;
 	}
-	else       /* 0 */
+	else  
 	{
 		bit_arr &= ~mask; /* '~' make the mask index to zero than we make '&' with zero. */
 	}
@@ -166,11 +168,9 @@ bit_arr_t BitArrRotateLeft(bit_arr_t bit_arr, size_t shift)
 	}
 	
 	/* Shifting left */
-	left_part = bit_arr << shift;
-	
+	left_part = bit_arr << shift;	
 	/* wrap part */
-	wrap_part = bit_arr >> (BITARR_BITS - shift);
-	
+	wrap_part = bit_arr >> (BITARR_BITS - shift);	
 	/* rotated */
 	rotated_completed = left_part | wrap_part;
 		
@@ -191,16 +191,15 @@ bit_arr_t BitArrRotateRight(bit_arr_t bit_arr, size_t shift)
 	}
 	
 	/* Shifting right */
-	right_part = bit_arr >> shift;
-	
+	right_part = bit_arr >> shift;	
 	/* wrap part */
-	wrap_part = bit_arr << (BITARR_BITS - shift);
-	
+	wrap_part = bit_arr << (BITARR_BITS - shift);	
 	/* rotated */
 	rotated_completed = right_part | wrap_part;
 		
 	return rotated_completed; 
 }
+
 bit_arr_t BitArrFlipBit(bit_arr_t bit_arr, size_t index)
 {
 	bit_arr_t mask = (bit_arr_t)0;
