@@ -250,7 +250,7 @@ bit_arr_t BitArrMirror(bit_arr_t bit_arr)
 char *BitArrToString(bit_arr_t bit_arr, char *str)
 {
     size_t i;
-	size_t mirror_index;
+	char bit = ' ';
 	
     if (NULL == str)
     {
@@ -260,13 +260,14 @@ char *BitArrToString(bit_arr_t bit_arr, char *str)
 	/* Walk from MSB to LSB and write '1' or '0' */
     for (i = 0; i < BITARR_BITS; ++i)
     {
-     
-        mirror_index = BITARR_BITS - 1 - i;
-        str[i] = (bit_arr & ((bit_arr_t)1 << mirror_index)) ? '1' : '0';
+    
+     	bit = BitArrGetBit(bit_arr,i) ? '1' : '0';              
+        str[BITARR_BITS - 1 - i] = bit;
     
     }   
      
     str[BITARR_BITS] = '\0';                    
+    
     return str;
 }
 
