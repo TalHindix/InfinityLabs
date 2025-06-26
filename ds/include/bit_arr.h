@@ -10,6 +10,8 @@ status:
 #include <limits.h>   /* CHAR_BIT */
 #include <stddef.h>   /* size_t   */
 #include <assert.h>   /* assert   */
+#include <stdlib.h>
+#include <string.h>
 
 
 typedef size_t bit_arr_t; /* */

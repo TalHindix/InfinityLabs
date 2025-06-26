@@ -190,7 +190,7 @@ bit_arr_t BitArrRotateRight(bit_arr_t bit_arr, size_t shift)
 		return bit_arr;
 	}
 	
-	/* Shifting left */
+	/* Shifting right */
 	right_part = bit_arr >> shift;
 	
 	/* wrap part */
