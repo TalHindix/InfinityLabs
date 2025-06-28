@@ -1,7 +1,7 @@
 /********************
 author: Tal Hindi
-reviewer: 
-status:
+reviewer: Menachem Markovich 
+status: Approved
 
 *******************/
 
@@ -9,6 +9,9 @@ status:
 #include "../include/stack.h"
 
 #include <assert.h>
+#include <stddef.h> /* for size_t */
+#include <stdlib.h> /* malloc , free */
+#include <string.h> /* memcpy */
 
 
 struct Stack
@@ -33,7 +36,7 @@ stack_t* StackCreate(size_t capacity, size_t element_size)
 	
 	if(NULL == new_stack) 
 	{
-		return NULL; /* malloc failed */
+		return NULL;
 	}
 	
 	buffer = (char *)malloc(capacity * element_size);
@@ -62,22 +65,21 @@ void StackDestroy(stack_t* stack)
 	}
 	
 	free(stack->elements);
-	stack->elements = NULL; 
 	free(stack);
 }
 
 
 void StackPush(stack_t* stack, const void* element)
 {
-	char* dest = NULL;
+	char* byte_offset = NULL;
 
 	assert(NULL != stack);
 	assert(NULL != element);
 	assert(stack->top < stack->capacity);
 	
-	dest = stack->elements + (stack->top * stack->element_size); /* the offset in byte */
+	byte_offset = stack->elements + (stack->top * stack->element_size); /* the offset in byte */
 	
-	memcpy(dest,element,stack->element_size);
+	memcpy(byte_offset,element,stack->element_size);
 	++stack->top;
 	
 }
@@ -85,7 +87,7 @@ void StackPush(stack_t* stack, const void* element)
 
 void StackPop(stack_t* stack)
 {
-	assert(stack != NULL);
+	assert(NULL != stack);
     assert(stack->top > 0);
     
     --stack->top;

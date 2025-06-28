@@ -1,9 +1,7 @@
 #ifndef _ILRD_STACK_
 #define _ILRD_STACK_
 
-#include <stddef.h> /* for size_t */
-#include <stdlib.h> /* malloc , free */
-#include <string.h> /* memcpy */
+
 
 typedef struct Stack stack_t;
 
