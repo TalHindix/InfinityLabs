@@ -75,7 +75,8 @@ void StackPush(stack_t* stack, const void* element)
 
 	assert(NULL != stack);
 	assert(NULL != element);
-	assert(stack->top < stack->capacity);
+	assert(stack->top < stack->capacity); /* If there is a space in stack */
+	
 	
 	byte_offset = stack->elements + (stack->top * stack->element_size); /* the offset in byte */
 	

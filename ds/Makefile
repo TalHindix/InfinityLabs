@@ -14,6 +14,11 @@ SRC_FOO = src/foo.c
 SRC_TST = test/main.c
 HDR_FOO = include/foo.h
 
+# Archieve variables
+
+AR := ar
+RCS := rcs
+RANLIB := ranlib
 
 # Default Target
 
@@ -27,7 +32,8 @@ foo.o: $(SRC_FOO) $(HDR_FOO)
 
 main.o: $(SRC_TST) $(HDR_FOO)
 	$(CC) $(CFLAGS) -Iinclude -c $(SRC_TST) -o main.o
-	
+
+
 # Helpers
 
 .PHONY: clean debug release
@@ -44,3 +50,4 @@ release:
 	
 clean:
 	rm -f *.o $(TARGET)
+	
