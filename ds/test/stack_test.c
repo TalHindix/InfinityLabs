@@ -1,3 +1,9 @@
+/********************
+author: Tal Hindi
+reviewer: Menachem Markovich 
+status: Approved
+
+*******************/
 
 #include "../include/stack.h"
 
