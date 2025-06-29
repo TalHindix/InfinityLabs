@@ -10,9 +10,7 @@ TARGET := fooer.out
 OBJS := foo.o main.o
 
 #  PATH
-SRC_FOO = src/foo.c
-SRC_TST = test/main.c
-HDR_FOO = include/foo.h
+
 
 # Default Target
 
@@ -21,11 +19,9 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(TARGET)
 
-foo.o: $(SRC_FOO) $(HDR_FOO)
-	$(CC) $(CFLAGS) -Iinclude -c $(SRC_FOO) -o foo.o
+foo.o: foo.h
 
-main.o: $(SRC_TST) $(HDR_FOO)
-	$(CC) $(CFLAGS) -Iinclude -c $(SRC_TST) -o main.o
+main.o: foo.h
 
 
 # Helpers
