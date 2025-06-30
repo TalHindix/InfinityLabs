@@ -14,11 +14,11 @@ enum { BYTE_VALUES_LUT_SIZE = 1 << CHAR_BIT }; /* 0-255 */
 static unsigned char mirror_lut[BYTE_VALUES_LUT_SIZE];
 static unsigned char counton_lut[BYTE_VALUES_LUT_SIZE];
 
-
+/*
 
 static void InitLuts()
 {
-	static int is_Init = 0; /* flag to ensure only once !*/
+	static int is_Init = 0; /* flag to ensure only once !
 	size_t byte_index = 0;
 	
 	if (is_Init)
@@ -48,6 +48,7 @@ static void InitLuts()
 	
 }
 
+
 bit_arr_t BitArrMirrorLUT(bit_arr_t bit_arr)
 {
 	bit_arr_t mirrored = (bit_arr_t)0;
@@ -58,9 +59,9 @@ bit_arr_t BitArrMirrorLUT(bit_arr_t bit_arr)
 	
 	for (byte_index = 0; byte_index < total_bytes; ++byte_index)
 	{
-		/* extract one byte from original word */
+		/* extract one byte from original word 
 		unsigned char curr_byte = (unsigned char)(bit_arr >> (CHAR_BIT * byte_index));
-		/* Look up its bits-mirrored form */
+		/* Look up its bits-mirrored form 
 		unsigned char part_mirrored = mirror_lut[curr_byte];
 		
 		size_t dest_shift = CHAR_BIT * (total_bytes - 1 - byte_index);
@@ -71,6 +72,8 @@ bit_arr_t BitArrMirrorLUT(bit_arr_t bit_arr)
 	return mirrored;
 }
 
+
+/*
 size_t BitArrCountOnLUT(bit_arr_t value)
 {
     size_t ones_total = 0;
@@ -87,6 +90,8 @@ size_t BitArrCountOnLUT(bit_arr_t value)
 
     return ones_total;
 }
+
+*/
 
 bit_arr_t BitArrSetAllOn(bit_arr_t bit_arr)
 {
