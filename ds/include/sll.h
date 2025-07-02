@@ -180,6 +180,18 @@ sll_iter_t SLLFind(sll_iter_t from, sll_iter_t to, is_match_func_t is_match, voi
  * Complexity: O(n)
  ******************************************************************************/
 int SLLForEach(sll_iter_t from, sll_iter_t to, action_func_t action_func, void* param);
+/******************************************************************************
+ * Function:   SLLAppend
+ *
+ * Purpose:    To combine to SLL src to dst
+ *
+ * Params:     sll_t* src, sll_t* dst
+ 
+ * Returns:    sll_t* (dst)
+ *
+ * Complexity: O(n)
+ ******************************************************************************/
+sll_t* SLLAppend(sll_t* src, sll_t* dst);
 
 #endif /* _ILRD_SLL_ */
 

@@ -3,7 +3,7 @@ Exercise: 	ds - SLL
 Date:		2/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Lotem Kitaroo
-Status:		
+Status:		Approved
 **************************************/
 
 #include "../include/sll.h"
@@ -58,8 +58,8 @@ sll_t* SLLCreate(void)
 
 void SLLDestroy(sll_t* list)
 {
-	assert(list);
 	node_t* current_node = NULL;
+	assert(list);
 	
 	if (NULL == list)
 	{
@@ -111,6 +111,7 @@ void* SLLGetData(sll_iter_t iter)
 
 void SLLSetData(sll_iter_t iter, void* data)
 {
+	assert(iter);
 	iter->data = data;
 }
 
@@ -189,6 +190,8 @@ size_t SLLCount(const sll_t *list)
 sll_iter_t SLLFind(sll_iter_t from, sll_iter_t to,is_match_func_t is_match, void *param) 
 {
     assert(is_match);
+    assert(NULL != from);
+    assert(NULL != to);
     while (0 == SLLIsEqual(from, to))
     {
         if (0 != is_match(from->data, param))
@@ -205,6 +208,8 @@ int SLLForEach(sll_iter_t from, sll_iter_t to,action_func_t action_func, void *p
 {
     int rc = 0;
     assert(action_func);
+    assert(NULL != from);
+    assert(NULL != to);
 
     while ((0 == SLLIsEqual(from, to)) && (0 == rc))
     {
@@ -212,6 +217,26 @@ int SLLForEach(sll_iter_t from, sll_iter_t to,action_func_t action_func, void *p
         from = SLLNext(from);
     }
     return rc;
+}
+
+
+sll_t* SLLAppend(sll_t* src, sll_t* dst)
+{
+    node_t *dst_end = SLLEnd(dst);
+    node_t *src_begin = SLLBegin(src);
+    node_t *src_end = SLLEnd(src);
+
+    if (src_begin == src_end)
+    {
+        return dst;
+    }
+
+    dst_end->next = src_begin;
+    SLLRemove(dst_end);
+    
+    dst->tail = SLLEnd(src);  
+    src->head = SLLEnd(src);
+    return dst;
 }
 
 
