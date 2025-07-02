@@ -5,7 +5,7 @@
 #define SUCCESS 1
 #define FAILURE 0
 
-
+#if 0
 static int PrintElement(void *data, void *unused)
 {
     (void)unused;
@@ -140,8 +140,8 @@ static void TestSLL()
     printf("Single List successfully destroyed.\n");
    
 }
+#endif /* 0 */
 
-/*
 
 static void TestQueueCreateDestroy(void)
 {
@@ -149,7 +149,7 @@ static void TestQueueCreateDestroy(void)
 
     printf("QueueCreate returned %p\n", (void *)q);
     QueueDestroy(q);
-    puts("QueueDestroy completed");
+    printf("QueueDestroy completed\n");
 }
 
 void TestQueue(void)
@@ -157,15 +157,15 @@ void TestQueue(void)
     TestQueueCreateDestroy();
 }
 
-*/
+
 int main()
 {
-
+/*
     TestSLL();
     TestSLLAppend();
-/*
-	TestQueue();
 */
+	TestQueue();
+
     return 0;
 }
 

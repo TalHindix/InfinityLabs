@@ -14,9 +14,15 @@ Status:
 
 struct queue
 {
-    sll_t* queue;
+    sll_t* list;
 };
 
+
+/*           helper                         */
+static int IsQueueInvalid(const queue_t *queue)
+{
+    return (NULL == queue) || (NULL == queue->list);
+}
 
 queue_t *QueueCreate(void)
 {
@@ -26,8 +32,8 @@ queue_t *QueueCreate(void)
         return NULL;
     }
 
-    q->queue = SLLCreate();        
-    if (NULL == q->queue)
+    q->list = SLLCreate();        
+    if (NULL == q->list)
     {
         free(q);
         return NULL;
@@ -37,10 +43,15 @@ queue_t *QueueCreate(void)
 }
 
 
-void QueueDestroy(queue_t *queue)
+void QueueDestroy(queue_t* queue)
 {
-    (void)queue; /* Prevent unused parameter warning */
-    /* TODO: Free memory and cleanup */
+	if(IsQueueInvalid(queue))
+	{
+		return;
+	}
+	
+	SLLDestroy(queue->list);
+	free(queue);
 }
 
 
