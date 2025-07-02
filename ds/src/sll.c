@@ -6,7 +6,7 @@ Reviewer: 	Lotem Kitaroo
 Status:		Approved
 **************************************/
 
-#include "../include/sll.h"
+#include "sll.h"
 
 #include <stdlib.h>   /* malloc, free */
 #include <stddef.h>
@@ -24,6 +24,17 @@ struct sll
     node_t* head;
     node_t* tail;
 };
+
+
+/*--- SLLCount now reuses SLLForEach --------------------------------*/
+static int CountAction(void *data, void *param)
+{
+    (void)data;                   
+    ++(*(size_t *)param);
+    return 0;
+}
+
+
 
 sll_t* SLLCreate(void)                        
 {
@@ -164,26 +175,22 @@ sll_iter_t SLLRemove(sll_iter_t to_remove)
 
 
 
-int SLLIsEmpty(const sll_t* list)
+int SLLIsEmpty(const sll_t *list)
 {
-	assert(list);
-	return SLLBegin(list) == SLLEnd(list);
+    assert(list);
+    return SLLIsEqual(SLLBegin(list), SLLEnd(list));
 }
+
 
 size_t SLLCount(const sll_t *list)
 {
     size_t count = 0;
-    node_t* iter = NULL;
-
-    if (NULL == list)
+    if (!list)
     {
-    	return 0;
+        return 0;
     }
 
-    for (iter = SLLBegin(list); SLLNext(iter); iter = SLLNext(iter))
-    {
-        ++count;
-    }
+    SLLForEach(SLLBegin(list), SLLEnd(list), CountAction, &count);
     return count;
 }
 
@@ -220,16 +227,31 @@ int SLLForEach(sll_iter_t from, sll_iter_t to,action_func_t action_func, void *p
 }
 
 
+
 sll_t* SLLAppend(sll_t* src, sll_t* dst)
 {
-    node_t *dst_end = SLLEnd(dst);
-    node_t *src_begin = SLLBegin(src);
-    node_t *src_end = SLLEnd(src);
+	
+    sll_iter_t dst_end = NULL; 
+    sll_iter_t src_begin = NULL;
+    
+	assert(src);
+	assert(dst);
 
-    if (src_begin == src_end)
+	if (SLLIsEmpty(src) || src == dst)   
     {
         return dst;
     }
+    
+    if (SLLIsEmpty(dst))
+    {
+    	return src;
+    }
+  
+	dst_end = SLLEnd(dst);
+	src_begin = SLLBegin(src);
+
+	
+
 
     dst_end->next = src_begin;
     SLLRemove(dst_end);
@@ -238,7 +260,6 @@ sll_t* SLLAppend(sll_t* src, sll_t* dst)
     src->head = SLLEnd(src);
     return dst;
 }
-
 
 
 

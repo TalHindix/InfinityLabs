@@ -1,8 +1,10 @@
 #include <stdio.h>
-#include "../include/sll.h"
+#include "sll.h"
+#include "queue.h"
 
 #define SUCCESS 1
 #define FAILURE 0
+
 
 static int PrintElement(void *data, void *unused)
 {
@@ -18,7 +20,7 @@ static int CompareInt(const void *data, void *target)
 
 static void ShowResult(const char *desc, int expected, int actual)
 {
-    printf("%-35s | Expected: %d | Actual: %d | %s\n", desc, expected, actual,(expected == actual) ? "SUCCESS" : "FAILURE");
+    printf("%s | Expected: %d | Actual: %d | %s\n", desc, expected, actual,(expected == actual) ? "SUCCESS" : "FAILURE");
 }
 
 
@@ -45,6 +47,7 @@ static void TestSLLAppend()
 
     /* build dst list: 10 -> 20 */
     dst  = SLLCreate();
+    
     iter = SLLBegin(dst);
     iter = SLLInsert(iter, &d);          
     SLLInsert(SLLNext(iter), &e);
@@ -75,7 +78,6 @@ static void TestSLLAppend()
 
     SLLDestroy(src);
 }
-
 
 static void TestSLL()
 {
@@ -139,10 +141,31 @@ static void TestSLL()
    
 }
 
+/*
+
+static void TestQueueCreateDestroy(void)
+{
+    queue_t *q = QueueCreate();
+
+    printf("QueueCreate returned %p\n", (void *)q);
+    QueueDestroy(q);
+    puts("QueueDestroy completed");
+}
+
+void TestQueue(void)
+{
+    TestQueueCreateDestroy();
+}
+
+*/
 int main()
 {
+
     TestSLL();
     TestSLLAppend();
+/*
+	TestQueue();
+*/
     return 0;
 }
 
