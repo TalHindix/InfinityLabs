@@ -131,6 +131,8 @@ sll_iter_t SLLInsert(sll_iter_t where, void* data)
 	node_t* node = NULL;
 	node = (node_t*)malloc(sizeof(node_t));
 	
+	assert(NULL != where);
+		
 	if (NULL == node)
 	{
 		while (SLLNext(where))
