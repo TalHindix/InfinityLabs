@@ -2,7 +2,7 @@
 Exercise: 	DS - Queue
 Date:		3/7/2025
 Developer:	Tal Hindi
-Reviewer: 	
+Reviewer: 	Lotem Kitaroo
 Status:		
 **************************************/
 
@@ -11,6 +11,9 @@ Status:
 #include "queue.h"
 #include "sll.h"
 #include <stdlib.h>
+#include <stddef.h>
+#include <assert.h>
+
 
 struct queue
 {
@@ -18,7 +21,7 @@ struct queue
 };
 
 
-/*           helper                         */
+/*helper func*/
 static int IsQueueInvalid(const queue_t *queue)
 {
     return (NULL == queue) || (NULL == queue->list);
@@ -45,54 +48,58 @@ queue_t *QueueCreate(void)
 
 void QueueDestroy(queue_t* queue)
 {
-	if(IsQueueInvalid(queue))
-	{
-		return;
-	}
-	
-	SLLDestroy(queue->list);
-	free(queue);
+	if (!IsQueueInvalid(queue)) { SLLDestroy(queue->list); free(queue); }
 }
+
 
 
 int QueueEnqueue(queue_t *queue, void *data)
 {
-    (void)queue;
-    (void)data;
-    return 0;
-}
+    sll_iter_t tail_it     = NULL;
+    sll_iter_t new_node_it = NULL;
 
+    assert(!IsQueueInvalid(queue));
+
+    tail_it     = SLLEnd(queue->list);
+    new_node_it = SLLInsert(tail_it, data);
+
+    return (new_node_it == tail_it) ? 1 /* FAIL */ : 0 /* OK */;
+}
 
 void QueueDequeue(queue_t *queue)
 {
-    (void)queue;
-    /* TODO: Remove front element */
+   	assert(!IsQueueInvalid(queue));
+   	
+   	SLLRemove(SLLBegin(queue->list));
+	
+}
+
+int QueueIsEmpty(const queue_t* queue)
+{
+    assert(!IsQueueInvalid(queue));
+
+    return SLLIsEmpty(queue->list);
 }
 
 
-int QueueIsEmpty(const queue_t *queue)
+size_t QueueSize(const queue_t* queue)
 {
-    (void)queue;
-    return 1; /* Assume empty for now */
+	assert(!IsQueueInvalid(queue));
+  
+    return SLLCount(queue->list);
 }
 
 
-size_t QueueSize(const queue_t *queue)
+void* QueuePeek(const queue_t* queue)
 {
-    (void)queue;
-    return 0; /* Placeholder value */
-}
+    assert(!IsQueueInvalid(queue));
 
-
-void *QueuePeek(const queue_t *queue)
-{
-    (void)queue;
-    return NULL; /* Placeholder */
+    return QueueIsEmpty(queue) ? NULL : SLLGetData(SLLBegin(queue->list));
 }
 
 
 queue_t *QueueAppend(queue_t *src, queue_t *dst)
 {
-    (void)src;
-    return dst; /* Return destination as per contract */
+    dst->list = SLLAppend(src->list, dst->list);
+    return dst; 
 }
