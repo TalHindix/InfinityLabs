@@ -1,6 +1,8 @@
 #ifndef _ILRD_QUEUE_
 #define _ILRD_QUEUE_
 
+#include "sll.h"
+
 typedef struct queue queue_t;
 
 

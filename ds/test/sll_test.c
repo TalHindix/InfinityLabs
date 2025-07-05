@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "sll.h"
 #include "queue.h"
 
 #define SUCCESS 1

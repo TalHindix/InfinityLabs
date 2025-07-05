@@ -9,7 +9,6 @@ Status:
 
 #include <stddef.h>    /* size_t */
 #include "queue.h"
-#include "sll.h"
 #include <stdlib.h>
 #include <stddef.h>
 #include <assert.h>
