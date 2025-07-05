@@ -41,7 +41,7 @@ sll_t* SLLCreate(void)
     sll_t* list = NULL;
     node_t* dummy = NULL;
     
-    list =  (sll_t *)malloc(sizeof(sll_t));
+    list = (sll_t *)malloc(sizeof(sll_t));
     
     if (NULL == list)
     {
@@ -69,7 +69,7 @@ sll_t* SLLCreate(void)
 
 void SLLDestroy(sll_t* list)
 {
-	node_t* current_node = NULL;
+	sll_iter_t current_node = NULL;
 	assert(list);
 	
 	if (NULL == list)
@@ -81,7 +81,7 @@ void SLLDestroy(sll_t* list)
 	
 	while(current_node)
 	{ 
-		node_t* next = SLLNext(current_node);
+		sll_iter_t next = SLLNext(current_node);
 		free(current_node);
 		current_node = next;
 	}
@@ -128,9 +128,7 @@ void SLLSetData(sll_iter_t iter, void* data)
 
 sll_iter_t SLLInsert(sll_iter_t where, void* data)
 {
-	node_t* node = NULL;
-	node = (node_t*)malloc(sizeof(node_t));
-	
+	sll_iter_t node = (sll_iter_t)malloc(sizeof(sll_iter_t));
 	assert(NULL != where);
 		
 	if (NULL == node)
@@ -158,7 +156,7 @@ sll_iter_t SLLInsert(sll_iter_t where, void* data)
     
 sll_iter_t SLLRemove(sll_iter_t to_remove)
 {
-	node_t* tmp = SLLNext(to_remove);
+	sll_iter_t tmp = SLLNext(to_remove);
 	assert(NULL != tmp);
 	
 	to_remove->data = SLLGetData(tmp);
@@ -251,9 +249,6 @@ sll_t* SLLAppend(sll_t* src, sll_t* dst)
   
 	dst_end = SLLEnd(dst);
 	src_begin = SLLBegin(src);
-
-	
-
 
     dst_end->next = src_begin;
     SLLRemove(dst_end);

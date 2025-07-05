@@ -1,9 +1,9 @@
 /**************************************
-Exercise: 	DS - Queue
+Exercise: 	DS - Exercise Single - LinkedList 
 Date:		3/7/2025
 Developer:	Tal Hindi
-Reviewer: 	
-Status:		
+Reviewer: 	Lotem Kitaroo	
+Status:		Approved
 **************************************/
 
 #include <stdio.h>
@@ -12,30 +12,23 @@ Status:
 
 typedef struct node
 {
-
     void *data;
-    struct node *next;
-    
+    struct node *next;  
 } node_t;
 
-
-node_t *Flip(node_t *head);
-int     HasLoop(const node_t *head);
-node_t *FindIntersection(node_t *head_1, node_t *head_2);
 
 /* helpers */
 static node_t *NewNode(int val, node_t *next)
 {
     node_t *n = (node_t *)malloc(sizeof(node_t));
-    int    *p = (int *)malloc(sizeof(int));
+    int *p = (int *)malloc(sizeof(int));
 
-    if (n == NULL || p == NULL)
+    if (NULL == n || NULL == p)
     {
-        printf("malloc failed\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 
-    *p      = val;
+    *p = val;
     n->data = p;
     n->next = next;
     return n;
@@ -43,9 +36,9 @@ static node_t *NewNode(int val, node_t *next)
 
 static void FreeList(node_t *head)
 {
-    node_t *tmp = NULL;
+    node_t* tmp = NULL;
 
-    while (head != NULL)
+    while (NULL != head)
     {
         tmp  = head->next;
         free(head->data);
@@ -54,39 +47,22 @@ static void FreeList(node_t *head)
     }
 }
 
-static int IsEqual(node_t *head, const int *arr, size_t n)
+static int IsEqual(const node_t *head, const int *arr, size_t n)
 {
     size_t i = 0;
 
     for (i = 0; i < n; ++i)
     {
-        if (head == NULL)
+        if (!head || *(int *)head->data != arr[i])
         {
             return 0;
         }
-        if (*(int *)head->data != arr[i])
-        {
-            return 0;
-        }
+
         head = head->next;
     }
+
     return (head == NULL);
 }
-
-/* test-groups */
-static void FlipTests(void);
-static void HasLoopTests(void);
-static void IntersectionTests(void);
-
-
-int main(void)
-{
-    FlipTests();
-    HasLoopTests();
-    IntersectionTests();
-    return 0;
-}
-
 
 static void FlipTests(void)
 {
@@ -151,8 +127,7 @@ static void HasLoopTests(void)
         c3->next = c2;           
 
         printf("HasLoop – simple loop: %s\n",(HasLoop(head)) ? "PASS" : "FAIL");
-
-        c3->next = NULL;              /* break loop before free */
+        c3->next = NULL;
         FreeList(head);
     }
 
@@ -200,13 +175,10 @@ static void IntersectionTests(void)
     {
         node_t *a2 = NewNode(2, NULL);
         node_t *a1 = NewNode(1, a2);
-
         node_t *b2 = NewNode(20, NULL);
         node_t *b1 = NewNode(10, b2);
-
         node_t *res = FindIntersection(a1, b1);
         printf("FindIntersection – none  : %s\n",(res == NULL) ? "PASS" : "FAIL");
-
         FreeList(a1);
         FreeList(b1);
     }
@@ -215,9 +187,7 @@ static void IntersectionTests(void)
     {
         node_t *shared = NewNode(99, NULL);
         node_t *res = FindIntersection(shared, shared);
-
         printf("FindIntersection – heads : %s\n",(res == shared) ? "PASS" : "FAIL");
-
         FreeList(shared);
     }
 
@@ -225,9 +195,7 @@ static void IntersectionTests(void)
     {
         node_t *listB = NewNode(7, NULL);
         node_t *res = FindIntersection(NULL, listB);
-
         printf("FindIntersection – NULL  : %s\n",(res == NULL) ? "PASS" : "FAIL");
-
         FreeList(listB);
     }
 }
@@ -287,6 +255,18 @@ node_t *FindIntersection(node_t *head_1, node_t *head_2)
     }
     return NULL;
 }
+
+
+
+int main(void)
+{
+    FlipTests();
+    HasLoopTests();
+    IntersectionTests();
+    return 0;
+}
+
+
 
 
 
