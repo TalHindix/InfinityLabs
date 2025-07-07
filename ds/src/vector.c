@@ -12,7 +12,6 @@ status: Approved
 #define GROWTH_FACTOR (2)
 #define SHRINK_THRESHOLD_DIVISOR (4)
 
-
 struct Vector
 {
 	size_t size;
