@@ -10,7 +10,7 @@ status:
 
 
 /*  Helper Function to Check Overflow  */
-int WillOverflow(long result, int digit, int base, int sign)
+int WillOverflow(long result, int digit, unsigned int base, int sign)
 {
     if (sign > 0)
     {
@@ -23,7 +23,7 @@ int WillOverflow(long result, int digit, int base, int sign)
 }
 
 /*  Helper Function to Reverse  */
-void Reverse(char buf[], size_t len)
+void Reverse(char *buf, size_t len)
 {
     size_t i = 0;
     size_t j = len - 1;
@@ -115,11 +115,11 @@ int Atoi10(const char* s)
 }
 
 /* String to long Base 2-36 */
-long AtoiBase(const char *text, int base)
+long AtoiBase(const char *text, unsigned int base)
 {
     long result = 0;
     int sign = 1;
-    int digit = 0;
+    unsigned int digit = 0;
     int has_digits = 0;
 
     if (text == NULL || base < 2 || base > 36)
