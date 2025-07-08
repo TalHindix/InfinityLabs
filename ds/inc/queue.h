@@ -3,7 +3,7 @@
 
 #include "sll.h"
 
-typedef struct queue queue_t;
+
 
 
 queue_t* QueueCreate(void); /* O(1) */

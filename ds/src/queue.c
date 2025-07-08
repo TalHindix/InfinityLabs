@@ -7,12 +7,14 @@ Status:		Approved
 **************************************/
 
 
-#include <stddef.h>    /* size_t */
-#include "queue.h"
-#include <stdlib.h>
+#include <stddef.h>    /* size_t */		
+#include <stdlib.h>	
 #include <stddef.h>
 #include <assert.h>
 
+#include "queue.h"
+
+typedef struct queue queue_t;
 
 struct queue
 {
@@ -28,7 +30,9 @@ static int IsQueueInvalid(const queue_t *queue)
 
 queue_t *QueueCreate(void)
 {
-    queue_t* q = (queue_t *)malloc(sizeof(queue_t));
+	queue_t* q = NULL;
+	
+    q = (queue_t *)malloc(sizeof(queue_t));
     if (NULL == q)
     {
         return NULL;

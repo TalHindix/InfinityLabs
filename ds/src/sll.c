@@ -1,5 +1,5 @@
 /**************************************
-Exercise: 	ds - SLL
+Exercise: 	DS - SLL
 Date:		2/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Lotem Kitaroo
@@ -9,8 +9,8 @@ Status:		Approved
 #include "sll.h"
 
 #include <stdlib.h>   /* malloc, free */
-#include <stddef.h>
-#include <assert.h>
+#include <stddef.h>   /* size_t 	*/
+#include <assert.h>   /* assert     */
 
 
 struct node
@@ -25,8 +25,6 @@ struct sll
     node_t* tail;
 };
 
-
-/*--- SLLCount now reuses SLLForEach --------------------------------*/
 static int CountAction(void *data, void *param)
 {
     (void)data;                   
@@ -34,15 +32,12 @@ static int CountAction(void *data, void *param)
     return 0;
 }
 
-
-
 sll_t* SLLCreate(void)                        
 {
     sll_t* list = NULL;
     node_t* dummy = NULL;
     
-    list = (sll_t *)malloc(sizeof(sll_t));
-    
+    list = (sll_t *)malloc(sizeof(sll_t));  
     if (NULL == list)
     {
         return NULL;
@@ -71,11 +66,6 @@ void SLLDestroy(sll_t* list)
 {
 	sll_iter_t current_node = NULL;
 	assert(list);
-	
-	if (NULL == list)
-	{
-		return;
-	}
 	
 	current_node = SLLBegin(list);
 	
@@ -128,9 +118,11 @@ void SLLSetData(sll_iter_t iter, void* data)
 
 sll_iter_t SLLInsert(sll_iter_t where, void* data)
 {
-	sll_iter_t node = (sll_iter_t)malloc(sizeof(sll_iter_t));
+	sll_iter_t node = NULL;
+	
 	assert(NULL != where);
-		
+	
+	node = (sll_iter_t)malloc(sizeof(sll_iter_t));
 	if (NULL == node)
 	{
 		while (SLLNext(where))
