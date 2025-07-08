@@ -3,7 +3,7 @@ Exercise: 	DS - Circuler Buffer
 Date:		7/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Baruch Haimson
-Status:		
+Status:		Approved
 **************************************/
 
 #ifndef _ILRD_CBUFF_
@@ -12,14 +12,14 @@ Status:
 #include <stddef.h>		/* size_t  */
 #include <sys/types.h> 	/* ssize_t */
 
-#define DEFAULT_SIZE (8)
+#define DEFAULT_SIZE (8) /* If (Capacity < 8) ? DEFAULT_SIZE : Capacity */
 
 typedef struct cbuff cbuff_t;
 
 /**
  * @brief  Allocate and initialize a circular buffer.
  *
- * @param  capacity  Logical capacity in bytes.  
+ * @param  capacity  Capacity in bytes.  
  *                   Values below #DEFAULT_SIZE are rounded up to
  *                   #DEFAULT_SIZE.
  *
@@ -45,8 +45,7 @@ void CBuffDestroy(cbuff_t *cbuff);
  * @brief  Write exactly @p bytes from @p src into the buffer.
  *
  * The function succeeds only if the buffer has enough free space to
- * accommodate *all* requested bytes.  Partial writes are **not**
- * performed.
+ *  *all* requested bytes.
  *
  * @param  cbuff  Destination buffer.
  * @param  src    Source memory block (must be non-NULL).
@@ -54,12 +53,12 @@ void CBuffDestroy(cbuff_t *cbuff);
  *
  * @return
  *  * **@p bytes** (cast to cb_ssize_t) on success;  
- *  * **-1** if insufficient free space or if @p bytes == 0.
+ *  * **-1** if src **NULL** .
  *
  * @complexity O(1)
  *
  * @warning  The implementation is **not thread-safe**.  
- *           External synchronisation is required for concurrent access.
+ *           
  */
 ssize_t CBuffWrite(cbuff_t *cbuff, const void *src, size_t bytes);
 
@@ -67,7 +66,7 @@ ssize_t CBuffWrite(cbuff_t *cbuff, const void *src, size_t bytes);
  * @brief  Read (and remove) exactly @p bytes from the buffer into @p dst.
  *
  * The function succeeds only if the buffer currently stores at least
- * @p bytes.  Partial reads are **not** performed.
+ * @p bytes.
  *
  * @param  cbuff  Source buffer.
  * @param  dst    Destination memory block (must be non-NULL).
@@ -75,15 +74,14 @@ ssize_t CBuffWrite(cbuff_t *cbuff, const void *src, size_t bytes);
  *
  * @return
  *  * **@p bytes** (cast to cb_ssize_t) on success;  
- *  * **-1** if the buffer contains fewer than @p bytes
- *           or if @p bytes == 0.
+ *  * **-1** if dst == **NULL** 
  *
  * @complexity O(1)
  */
 ssize_t CBuffRead(cbuff_t *cbuff, void *dst, size_t bytes);
 
 /**
- * @brief  Test whether the buffer is empty.
+ * @brief  Test If the buffer is empty.
  *
  * @param  cbuff  Buffer to query.
  *
@@ -110,7 +108,7 @@ size_t CBuffFreeSpace(cbuff_t *cbuff);
  *
  * @param  cbuff  Buffer to query.
  *
- * @return Occupied size in bytes (0 ≤ value ≤ capacity).
+ * @return size in bytes (0 ≤ value ≤ capacity).
  *
  * @complexity O(1)
  */

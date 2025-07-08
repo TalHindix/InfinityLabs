@@ -3,7 +3,7 @@ Exercise: 	DS - Circuler Buffer
 Date:		7/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Baruch Haimson
-Status:		
+Status:		Approved
 **************************************/
 
 #include "cbuff.h" 		/* CBuffCreate() 			*/
@@ -30,7 +30,8 @@ cbuff_t* CBuffCreate(size_t capacity)
 	
 	capacity = (DEFAULT_SIZE < capacity) ? capacity : DEFAULT_SIZE;
 	
-	cbuff = (cbuff_t*)malloc(sizeof(cbuff_t) * capacity);	
+	cbuff = (cbuff_t*)malloc(sizeof(cbuff_t) + (capacity - DEFAULT_SIZE));
+	
 	if(NULL == cbuff)
 	{
 		return NULL;
@@ -47,12 +48,9 @@ void CBuffDestroy(cbuff_t* cbuff)
 {
 	assert(cbuff);
 	
-	if (cbuff == NULL)
-	{
-		return;
-	}
-	
 	free(cbuff);	
+
+	cbuff = NULL;
 }
 
 ssize_t CBuffWrite(cbuff_t* cbuff, const void* src, size_t bytes)
@@ -67,14 +65,14 @@ ssize_t CBuffWrite(cbuff_t* cbuff, const void* src, size_t bytes)
 	
 	if (NULL == src)
 	{
-		return (ssize_t)-1;	
+		return -1;	
 	}
 		
 	bytes_to_write = MIN(bytes, CBuffFreeSpace(cbuff));
 	
 	if (0 == bytes_to_write)
 	{
-		return (ssize_t)-1;
+		return 0;
 	}
 	
 	write_index  = (cbuff->front + cbuff->size) % cbuff->capacity;
@@ -101,16 +99,23 @@ ssize_t CBuffRead(cbuff_t* cbuff, void* dst, size_t bytes)
 	assert(cbuff);
 	assert(dst);
 	
+	if (NULL == dst)
+	{
+		return -1;
+	}
+	
 	available = cbuff->size;
 	
 	if (0 == available)
 	{
-		return -1;
+		return 0;
 	}
+	
 	if (bytes > available)
 	{
 		bytes = available;
 	}
+	
 	if (0 == bytes)
 	{
 		return 0;
@@ -126,7 +131,8 @@ ssize_t CBuffRead(cbuff_t* cbuff, void* dst, size_t bytes)
 	}
 		
 	cbuff->front = (cbuff->front + bytes) % cbuff->capacity;
-	cbuff->size  -= bytes;
+	
+	cbuff->size -= bytes;
 	
 	return (ssize_t)bytes;
 }
