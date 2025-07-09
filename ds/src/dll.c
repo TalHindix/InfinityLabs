@@ -301,14 +301,14 @@ int DLLMultiFind(dll_iter_t from, dll_iter_t to,int (*is_match_func_t)(const voi
 	return 0;
 }
         
-int DLLForEach(dll_iter_t from, dll_iter_t to, dll_action_t action, void *param)
+int DLLForEach(dll_iter_t from, dll_iter_t to, int (*action_func_t)(void* data, void* param), void *param)
 {
     int status = 0;
-    assert(IterToNode(from) && IterToNode(to) && action);
+    assert(IterToNode(from) && IterToNode(to) && action_func_t);
 
     while (!DLLIsEqual(from, to) && 0 == status)
     {
-        status = action(IterToNode(from)->data, param);
+        status = action_func_t(IterToNode(from)->data, param);
         from   = DLLNext(from);
     }
     return status;

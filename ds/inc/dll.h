@@ -16,7 +16,6 @@ typedef struct dll dll_t;
 typedef struct node node_t;
 typedef node_t* dll_iter_t;
 
-typedef int (*dll_action_t)(void *data, void *param);
 
 /**
  * @brief  Make an empty list (only the two dummy nodes exist).
@@ -103,7 +102,7 @@ int DLLMultiFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const vo
  * @brief Run “action” on every node in [from, to) until action says stop.
  * @return 0 if full pass, or first non-zero value from action.
  */
-int DLLForEach(dll_iter_t from, dll_iter_t to, dll_action_t action, void *param);
+int DLLForEach(dll_iter_t from, dll_iter_t to, int (*action_func_t)(void* data, void* param), void *param);
 
 /**
  * @brief  Cut range and paste it right before “where” [from,to).      
