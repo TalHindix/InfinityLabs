@@ -18,10 +18,9 @@ typedef node_t* dll_iter_t;
 
 typedef int (*dll_action_t)(void *data, void *param);
 
-
 /**
  * @brief  Make an empty list (only the two dummy nodes exist).
- * @return Pointer to list, or NULL if malloc failed.
+ * @return pointer to list, or NULL if malloc failed.
  * @complexity O(1)
  */
 dll_t *DLLCreate(void);
@@ -32,7 +31,6 @@ dll_t *DLLCreate(void);
  * @complexity O(n)
  */
 void DLLDestroy(dll_t *list);
-
 
 /** @brief First real element (dummy head -> next).  O(1) */
 dll_iter_t DLLBegin(const dll_t *list);
@@ -89,9 +87,9 @@ size_t DLLCount(const dll_t *list);
 int DLLIsEmpty(const dll_t *list);
 
 /**
- * @brief   Scan [from, to) until match function says “yep”.
+ * @brief   Scan [from, to) until match function return true;
  * @return  Iterator to match, or “to” if none found.
- * @complexity O(k) where k = nodes checked
+ * @complexity O(k) 
  */
 dll_iter_t DLLFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const void *data,const void *param), const void *param);
 
@@ -108,10 +106,9 @@ int DLLMultiFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const vo
 int DLLForEach(dll_iter_t from, dll_iter_t to, dll_action_t action, void *param);
 
 /**
- * @brief  Cut range and paste it right before “where”.
- *         Works even if range comes from another list.
- * @return Pointer to the list that now owns the moved nodes.
- * @complexity O(1) (only pointer rewiring)
+ * @brief  Cut range and paste it right before “where” [from,to).      
+ * @return Pointer to the iterator that now owns the moved nodes.
+ * @complexity O(1)
  */
 dll_iter_t DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to);
 

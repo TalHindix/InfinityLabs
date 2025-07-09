@@ -12,13 +12,6 @@ Status:
 
 #include "dll.h" 	/* DLLCreate 	*/
 
-
-typedef enum {
-        SUCCESS = 0,
-        FAILURE = -1,
-        PARTIAL_FAILURE = 1
-} Status;
-
 struct node
 {
     void* data;
@@ -32,9 +25,6 @@ struct dll
     node_t tail;
 };
 
-/******* HELPER FUNCTIONS ****************/
-
-
 static dll_iter_t NodeToIter(node_t* node)
 {
 	return (dll_iter_t)node;
@@ -44,7 +34,6 @@ static node_t* IterToNode(dll_iter_t iter)
 {
 	return (node_t*)iter;
 }
-
 
 static node_t* CreateNode(void* data)
 {
@@ -90,10 +79,6 @@ static int CountAction(void *data, void *param)
     ++*(size_t *)param;       
     return 0;                 
 }
-
-
-
-/******* END OF HELPER FUNCTIONS *********/
 
 dll_t* DLLCreate(void)
 {
@@ -372,3 +357,4 @@ dll_iter_t DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to)
 	
 	return where;
 }
+

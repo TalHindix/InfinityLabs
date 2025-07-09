@@ -70,7 +70,7 @@ int MatchIntValues(const void* data, const void* param)
 
 static void TestCreateDestroy(void)
 {
-    dll_t *list;
+    dll_t* list = NULL;
 
     printf("-- TestCreateDestroy --");
     list = DLLCreate();
