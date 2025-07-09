@@ -1,53 +1,80 @@
-# Variables ********************************************************************
+# ********************************************************************
+# Makefile – Data-Structures Project
+# ********************************************************************
 
-SRC_DIR := src
-TEST_DIR := test
+# ---------- Paths ---------------------------------------------------
+SRC_DIR     := src
+TEST_DIR    := test
 INCLUDE_DIR := inc
 
-CC := gcc
-DEBUG := -ansi -pedantic-errors -Wall -Wextra -g
+# ---------- Compiler & Flags ----------------------------------------
+CC      := gcc
+DEBUG   := -ansi -pedantic-errors -Wall -Wextra -g
 RELEASE := -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3
-CFLAGS := $(DEBUG)
+
+# --------------------------------------------------------------------
+# Build type selection:
+#   make … BUILD=release   → CFLAGS = $(RELEASE)
+#   make …                 → CFLAGS = $(DEBUG)  (default)
+# --------------------------------------------------------------------
+BUILD ?= debug
+
+ifeq ($(BUILD),release)
+    CFLAGS := $(RELEASE)
+else
+    CFLAGS := $(DEBUG)
+endif
+
 INCLUDES := -I$(INCLUDE_DIR)
 
-SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
+# ---------- Source & Test files -------------------------------------
+SRC_FILES  := $(wildcard $(SRC_DIR)/*.c)
 TEST_FILES := $(wildcard $(TEST_DIR)/*_test.c)
 
-# notedir - remove directories from filename, basename remove ending from filename (e.g dir/file.c -> file)
-PROJECTS := $(notdir $(basename $(TEST_FILES)))
-EXECUTABLES := $(PROJECTS:%=%)
+# Project names (e.g. queue_test.c → queue) --------------------------
+PROJECTS     := $(notdir $(basename $(TEST_FILES)))
+EXECUTABLES  := $(PROJECTS:%=%)
 
-SRC_OBJS := $(SRC_FILES:.c=.o)
+# Object files -------------------------------------------------------
+SRC_OBJS  := $(SRC_FILES:.c=.o)
 TEST_OBJS := $(TEST_FILES:.c=.o)
-OBJS := $(SRC_OBJS) $(TEST_OBJS)
+OBJS      := $(SRC_OBJS) $(TEST_OBJS)
 
-# Targets ***********************************************************************
+# ********************************************************************
+# Targets
+# ********************************************************************
 
+# Build all unit-test executables
 all: $(EXECUTABLES)
 
+# Pattern rule – build <name>.out from matching sources
 %.out: $(SRC_DIR)/%.c $(TEST_DIR)/%_test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
+# Special rule for queue.out (uses extra source file)
 queue.out: $(SRC_DIR)/queue.c $(SRC_DIR)/sll.c $(TEST_DIR)/queue_test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
+# Build only object files (rarely needed)
 objects: $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# .PONEY *************************************************************************
+# --------------------------------------------------------------------
+# Convenience targets
+# --------------------------------------------------------------------
+debug:   BUILD := debug
+debug:   clean all            # make debug
 
-debug: CFLAGS := $(DEBUG)
-debug: clean all
+release: BUILD := release
+release: clean all            # make release
 
-release: CFLAGS := $(RELEASE)
-release: clean all
-
+# Clean build artefacts
 clean:
-	rm -f $(SRC_DIR)/*.o $(TEST_DIR)/*.o *.out
+	@echo "Cleaning…"
+	@rm -f $(SRC_DIR)/*.o $(TEST_DIR)/*.o *.out
 
-.PHONY: all clean debug release objects \
-        $(PROJECTS) \
-        $(PROJECTS:%=release-%) $(PROJECTS:%=debug-%)
-
+# --------------------------------------------------------------------
+.PHONY: all clean debug release objects $(PROJECTS)
+# ********************************************************************
