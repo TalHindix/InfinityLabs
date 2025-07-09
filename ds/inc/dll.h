@@ -14,7 +14,7 @@ Status:
 
 typedef struct dll dll_t;
 typedef struct node node_t;
-typedef node_t *dll_iter_t;
+typedef node_t* dll_iter_t;
 
 typedef int (*dll_action_t)(void *data, void *param);
 
@@ -97,7 +97,7 @@ dll_iter_t DLLFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const 
 
 /**
  * @brief   Like find, but collects all matches into ‘output’ list.
- * @return  How many matches were copied (-1 if malloc blew up).
+ * @return  0 - SUCCESS , '-1' Failed(no copies) , '-2' Failed (partiel copy)
  */
 int DLLMultiFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const void *data, const void *param), const void *param, dll_t *output);
 
@@ -105,8 +105,7 @@ int DLLMultiFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const vo
  * @brief Run “action” on every node in [from, to) until action says stop.
  * @return 0 if full pass, or first non-zero value from action.
  */
-int DLLForEach(dll_iter_t from, dll_iter_t to,
-               dll_action_t action, void *param);
+int DLLForEach(dll_iter_t from, dll_iter_t to, dll_action_t action, void *param);
 
 /**
  * @brief  Cut range and paste it right before “where”.
@@ -114,7 +113,7 @@ int DLLForEach(dll_iter_t from, dll_iter_t to,
  * @return Pointer to the list that now owns the moved nodes.
  * @complexity O(1) (only pointer rewiring)
  */
-dll_t *DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to);
+dll_iter_t DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to);
 
 #endif /* _ILRD_DLL_ */
 

@@ -6,13 +6,14 @@ Reviewer: 	Menny Markovich
 Status:		
 **************************************/
 
-#include <stdio.h>   /* printf  */
-#include <string.h>  
-#include <assert.h>  /* assert  */
-#include "dll.h"    /* DLLCreate */
+#include <stdio.h>   /* printf  	*/
+#include <assert.h>  /* assert  	*/
+#include "dll.h"     /* DLLCreate   */
 
-/* ------------- global counters + macro ----------- */
 static unsigned g_pass = 0, g_fail = 0;
+static int arr1[5] = {1,2,3,4,5};
+static int global_result = 1;
+static int current_test = 1; 
 
 #define CHECK(cond, msg)                                      \
     do {                                                     \
@@ -26,6 +27,18 @@ static unsigned g_pass = 0, g_fail = 0;
     } while (0)
 
 /* -------------- helpers ----------- */
+int FailPrint(void* data, void* param)
+{
+	if (*(int*)data == *(int*)param)
+	{
+		printf("\n## ActionFunc Failed!\n(THIS IS GOOD) ##\n");
+		return 1;
+	}
+	printf("%d, ",*(int*)data );
+	
+	return 0;
+}
+
 static size_t ManualCount(const dll_t* list)
 {
     size_t count         = 0;
@@ -51,8 +64,11 @@ static int SumAction(void* data,void* param)
 	return 0;
 }
 
+int MatchIntValues(const void* data, const void* param)
+{
+	return *(const int*)data == *(int*)param;
+}
 
-/* -------------------- tests implementation -------------------- */
 static void TestCreateDestroy(void)
 {
     dll_t *list;
@@ -156,6 +172,110 @@ static void TestCountAndForEach(void)
     DLLDestroy(list);
 }
 
+void TestSplice()
+{
+	dll_t* list1 = DLLCreate();
+	dll_t* list2 = DLLCreate();
+	dll_iter_t iter = NULL;
+	dll_iter_t iter2 = NULL;
+	printf("\nTest 8 - Splice:\n");
+	
+	DLLPushBack(list1, arr1);
+	DLLPushBack(list1, arr1+1);
+	
+	iter = DLLBegin(list1);
+	iter2 = DLLEnd(list1);
+		
+	iter = DLLSplice(DLLEnd(list2), iter, iter2);
+	CHECK(2 == DLLCount(list2), "Test 8.0");
+	CHECK(0 == DLLCount(list1), "Test 8.1");
+	CHECK((arr1+1) == DLLGetData(DLLPrev(iter)), "Test 8.2");
+	
+	DLLPushBack(list1, arr1);
+	DLLPushBack(list1, arr1+1);
+	iter = DLLBegin(list1);
+	iter2 = DLLEnd(list1);
+
+	iter = DLLSplice(DLLEnd(list2), iter, iter2);
+	CHECK(4 == DLLCount(list2), "Test 8.3");
+	CHECK(0 == DLLCount(list1), "Test 8.4");
+	
+	DLLPushBack(list1, arr1+2);
+	DLLPushBack(list1, arr1+3);
+	iter = DLLBegin(list1);
+	iter2 = DLLEnd(list1);
+	iter = DLLSplice(DLLPrev(DLLPrev(DLLEnd(list2))), iter, iter2);
+	
+	CHECK((arr1+3) == DLLGetData(DLLPrev(iter)), "Test 8.5");
+	
+	DLLDestroy(list1);
+	DLLDestroy(list2);
+	CHECK(current_test, "#### TEST 7 ####");
+}
+
+void TestMultiFind()
+{
+	dll_iter_t iter = NULL;
+	dll_iter_t iter2 = NULL;
+	dll_t* list = DLLCreate();
+	dll_t* output = DLLCreate();
+	
+	int x = 0;
+	printf("\nTest 7 - Find, MultyFind, PrintList, SumList:\n");
+	
+	CHECK(DLLIsEqual(DLLFind(DLLBegin(list),DLLEnd(list),&MatchIntValues,arr1),DLLEnd(list)), "Test 7.0");		
+	DLLPushBack(list,arr1+2);
+	DLLPushBack(list,arr1);
+	DLLPushBack(list,arr1+1);
+	DLLPushBack(list,arr1+2);
+	DLLPushBack(list,arr1+2);
+	DLLPushBack(list,arr1+3);
+	DLLPushBack(list,arr1+2);
+	
+	iter = DLLBegin(list);
+	CHECK(DLLIsEqual(DLLFind(iter,DLLEnd(list),&MatchIntValues, &x),DLLEnd(list)), "Test 7.1");	
+	iter = DLLFind(iter,DLLEnd(list),&MatchIntValues, arr1+2);
+	CHECK(DLLIsEqual(iter,DLLBegin(list)), "Test 7.2");	
+	
+	iter = DLLFind(DLLNext(iter),DLLEnd(list),&MatchIntValues, arr1+2);
+	CHECK(DLLIsEqual(iter,DLLNext(DLLNext(DLLNext(DLLBegin(list))))), "Test 7.3");
+	
+	iter = DLLNext(DLLNext(DLLBegin(list)));
+	iter2 = DLLNext(iter);
+	DLLMultiFind(iter, iter2, &MatchIntValues, arr1+1, output);
+	
+	CHECK((arr1+1) == DLLPopFront(output), "Test 7.4");
+	CHECK(1 == DLLIsEmpty(output), "Test 7.5");
+	
+	iter = DLLBegin(list);
+	iter2 = DLLEnd(list);
+	DLLMultiFind(iter, iter2, &MatchIntValues, arr1+2, output);
+	
+	CHECK((arr1+2) == DLLPopFront(output), "Test 7.6");
+	CHECK(3 == DLLCount(output), "Test 7.7");
+	
+	DLLMultiFind(iter, iter2, &MatchIntValues, &x, output);
+	CHECK(3 == DLLCount(output), "Test 7.8");
+	DLLMultiFind(iter, iter2, &MatchIntValues, arr1+2, output);
+	CHECK(7 == DLLCount(output), "Test 7.9");
+	
+	DLLDestroy(list);
+	list = DLLCreate();
+	DLLPushBack(list,arr1);
+	DLLPushBack(list,arr1+1);
+	DLLPushBack(list,arr1+2);
+	DLLPushBack(list,arr1+2);
+	DLLPushBack(list,arr1+3);
+	iter = DLLBegin(list);
+	iter2 = DLLEnd(list);
+	
+	DLLDestroy(list);
+	DLLDestroy(output);
+	CHECK(current_test, "#### TEST 7 ####");
+}
+
+
+
 
 /* -------------------- main -------------------- */
 int main(void)
@@ -167,6 +287,9 @@ int main(void)
     TestInsertRemove();
     TestFind();
     TestCountAndForEach();
+	TestMultiFind();
+	TestSplice();
+
 
     printf("\nSummary: %u passed, %u failed\n", g_pass, g_fail);
     return g_fail ? 1 : 0;
