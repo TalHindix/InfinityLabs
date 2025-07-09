@@ -12,7 +12,6 @@ Status:
 
 static unsigned g_pass = 0, g_fail = 0;
 static int arr1[5] = {1,2,3,4,5};
-static int global_result = 1;
 static int current_test = 1; 
 
 #define CHECK(cond, msg)                                      \
