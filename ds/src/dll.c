@@ -6,7 +6,6 @@ Reviewer: 	Menny Markovich
 Status:		
 **************************************/
 
-#include <stddef.h> /* size_t 		*/
 #include <stdlib.h> /* malloc 		*/
 #include <assert.h> /* assert 		*/
 
@@ -65,11 +64,12 @@ static void InsertBetween(node_t *left, node_t *right, node_t *new_node)
     JoinNode(new_node, right);
 }
 
-static dll_iter_t RemoveNode(node_t *n)
+static dll_iter_t RemoveNode(node_t* node)
 {
-    node_t *next = n->next;
-    JoinNode(n->prev, n->next);
-    free(n);
+    node_t* next = NULL;
+    next = node->next;
+    JoinNode(node->prev, node->next);
+    free(node);
     return next;
 }
 
@@ -82,8 +82,9 @@ static int CountAction(void *data, void *param)
 
 dll_t* DLLCreate(void)
 {
-	dll_t* list = (dll_t*)malloc(sizeof(dll_t));
+	dll_t* list = NULL;
 	
+	list = (dll_t*)malloc(sizeof(dll_t));
 	if (NULL == list)
 	{
 		return NULL;
@@ -100,28 +101,26 @@ dll_t* DLLCreate(void)
 	return list;
 }
 
-void DLLDestroy(dll_t *list)
+void DLLDestroy(dll_t* list)
 {
-    dll_iter_t iter = NULL;
-    dll_iter_t next = NULL;
+    dll_iter_t first_iter = NULL;
+    dll_iter_t next_iter = NULL;
 
     assert(list);
 
-    iter = DLLBegin(list);
+    first_iter = DLLBegin(list);
 
-    while (!DLLIsEqual(iter, DLLEnd(list)))
+    while (!DLLIsEmpty(list))
     {
-        next = DLLNext(iter);
-        free(IterToNode(iter));
-        iter = next;
+        next_iter = IterToNode(DLLRemove(first_iter));
+        first_iter = next_iter;
     }
 
     free(list);
-    
     list = NULL;
 }
 
-dll_iter_t DLLBegin(const dll_t *list)
+dll_iter_t DLLBegin(const dll_t* list)
 {
     assert(list);
     
@@ -150,33 +149,36 @@ dll_iter_t DLLPrev(dll_iter_t curr)
 }
 
 int DLLIsEqual(dll_iter_t iter1, dll_iter_t iter2)
-{	
+{
+	assert(IterToNode(iter1));
+	assert(IterToNode(iter2));
+		
 	return (IterToNode(iter1) == IterToNode(iter2));
 }
 
 void* DLLGetData(dll_iter_t iter)
 {
-    assert(iter);
+    assert(IterToNode(iter));
     
     return IterToNode(iter)->data;
 }
 
-void DLLSetData(dll_iter_t iter, void *data)
+void DLLSetData(dll_iter_t iter, void* data)
 {
-    assert(iter);
+    assert(IterToNode(iter));
     
     IterToNode(iter)->data = data;
 }
 
 dll_iter_t DLLInsert(dll_t *list, dll_iter_t where, void *data)
 {
-    node_t *n = NULL;
+    node_t* n = NULL;
 
     assert(list);
     assert(IterToNode(where));
 
     n = CreateNode(data);
-    if (!n)
+    if (NULL == n)
     {
         return DLLEnd(list);
     }
@@ -187,47 +189,27 @@ dll_iter_t DLLInsert(dll_t *list, dll_iter_t where, void *data)
 }
 
 
-dll_iter_t DLLRemove(dll_iter_t iter)
+dll_iter_t DLLRemove(dll_iter_t to_remove)
 {
-    assert(iter);
-    assert(iter->prev);
-    assert(iter->next);
+    assert(to_remove);
+    assert(to_remove->prev);
+    assert(to_remove->next);
     
-    return NodeToIter(RemoveNode(IterToNode(iter)));
+    return NodeToIter(RemoveNode(IterToNode(to_remove)));
 }
 
 dll_iter_t DLLPushFront(dll_t* list, void* data)
 {
-	node_t* new_node = NULL;
-	
 	assert(list);
 	
-	new_node = CreateNode(data);
-	if(NULL == new_node)
-	{
-		return DLLEnd(list);
-	}
-	
-	InsertBetween(&list->head,list->head.next,new_node);
-	
-	return NodeToIter(new_node);
+	return DLLInsert(list, DLLBegin(list), data);
 }
 
 dll_iter_t DLLPushBack(dll_t* list, void* data)
 {
-	node_t* new_node = NULL;
-	
 	assert(list);
 	
-	new_node = CreateNode(data);
-	if(NULL == new_node)
-	{
-		return DLLEnd(list);
-	}
-	
-	InsertBetween(list->tail.prev,&list->tail,new_node);
-	
-	return NodeToIter(new_node);
+	return DLLInsert(list, DLLEnd(list), data);
 }
 
 void* DLLPopFront(dll_t *list)
@@ -235,14 +217,10 @@ void* DLLPopFront(dll_t *list)
 	void* data = NULL;
 	
     assert(list);
+    assert(!DLLIsEmpty(list));
 
-    if (DLLIsEmpty(list))
-    {
-        return NULL;
-    }
-    
-   	data = list->head.next->data;
-    RemoveNode(list->head.next);
+   	data = DLLGetData(DLLBegin(list));
+    RemoveNode(DLLBegin(list));
     
     return data;
 }
@@ -250,16 +228,14 @@ void* DLLPopFront(dll_t *list)
 void* DLLPopBack(dll_t *list)
 {
 	void* data = NULL;
+	dll_iter_t back = NULL;
 	
     assert(list);
-
-    if (DLLIsEmpty(list))
-    {
-        return NULL;
-    }
+	assert(!DLLIsEmpty(list));
     
-	data = list->tail.prev->data;
-    RemoveNode(list->tail.prev);
+    back = DLLPrev(DLLEnd(list));
+	data = DLLGetData(back);
+    RemoveNode(back);
     
     return data;
 }
@@ -267,10 +243,8 @@ void* DLLPopBack(dll_t *list)
 size_t DLLCount(const dll_t* list)
 {
     size_t count = 0;
-    if (!list)
-    {
-        return 0;
-    }
+    
+    assert(list);
 
     DLLForEach(DLLBegin(list), DLLEnd(list), CountAction, &count);
     
@@ -344,10 +318,9 @@ dll_iter_t DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to)
 {
 	dll_iter_t last = NULL;
 		
-	if (DLLIsEqual(from,to))
-	{
-		return where;
-	}
+	assert(IterToNode(where));
+	assert(IterToNode(from));
+	assert(IterToNode(to));
 	
 	last = to->prev;
 	
