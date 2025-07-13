@@ -7,8 +7,8 @@ Status:
 **************************************/
 
 #include <stdlib.h>    	/* size_t free 	 */
-#include <assert.h>		/* assert		 */
-		
+#include <assert.h>		/* assert 		 */
+
 #include "sortedl.h"  	/* SortedLCreate */
 
 struct sortedl
