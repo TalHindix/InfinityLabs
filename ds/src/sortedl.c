@@ -84,12 +84,11 @@ sorted_iter_t SortedLRemove(sorted_iter_t to_remove)
 	after_iter = SortedLNext(to_remove);
 	
 	DLLRemove(to_remove.iter);
-	to_remove.iter = NULL;
-	
 	
 	return after_iter;
 
 }
+
 
 size_t SortedLSize(const sortedl_t* list)
 {
@@ -112,7 +111,6 @@ sorted_iter_t SortedLFind(sortedl_t *list, sorted_iter_t from, sorted_iter_t to,
 	assert(from.list);
 	assert(to.iter);
 	assert(to.list);
-	assert(from.list == to.list);
    
     from = GetSortedPosition(list, from, to, target);
     
@@ -135,7 +133,6 @@ sorted_iter_t SortedLFindIf(sorted_iter_t from, sorted_iter_t to, int (*is_match
 	assert(from.list);
 	assert(to.iter);
 	assert(to.list);
-	assert(from.list == to.list);
 	assert(is_match_func);
 	
 	from.iter = DLLFind(from.iter, to.iter, is_match_func, param);
@@ -178,12 +175,11 @@ sorted_iter_t SortedLEnd(const sortedl_t *list)
 
 void* SortedLPopFront(sortedl_t *list)
 {
-    sorted_iter_t front = SortedLBegin(list);
-    
-    void* data = SortedLGetData(front);
-    
-    SortedLRemove(front);
-    
+	sorted_iter_t front = SortedLBegin(list);
+	
+	void* data = SortedLGetData(front);
+	
+    SortedLRemove(front);    
     return data;
 }
 
@@ -198,7 +194,7 @@ void* SortedLPopBack(sortedl_t *list)
     return data;
 }
 
-void SortedLMerge(sortedl_t *dest, sortedl_t *src)
+void SortedLMerge(sortedl_t* dest, sortedl_t *src)
 {
     sorted_iter_t d 		= {0};
     sorted_iter_t s 		= {0};
@@ -217,8 +213,7 @@ void SortedLMerge(sortedl_t *dest, sortedl_t *src)
 
     while (!SortedLIsEqual(s, end_s))
     {
-        while (!SortedLIsEqual(d, end_d) &&
-               dest->cmp(SortedLGetData(d), SortedLGetData(s)) < 0)
+        while (!SortedLIsEqual(d, end_d) && dest->cmp(SortedLGetData(d), SortedLGetData(s)) < 0)
         {
             d = SortedLNext(d);
         }
@@ -233,10 +228,6 @@ void SortedLMerge(sortedl_t *dest, sortedl_t *src)
 
 int SortedLForEach(sorted_iter_t from, sorted_iter_t to, int (*action_func)(void* data, void* param), void* param)
 {
-	assert(from.iter);
-	assert(from.list);
-	assert(to.iter);
-	assert(to.list);
 	assert(from.list == to.list);
 	assert(action_func);
 
