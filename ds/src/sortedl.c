@@ -202,10 +202,10 @@ void SortedLMerge(sortedl_t *dest, sortedl_t *src)
     assert(src);
     assert(dest->cmp == src->cmp);
 
-    d      					= SortedLBegin(dest);
-    end_d 					= SortedLEnd(dest);
-    s      					= SortedLBegin(src);
-    end_s  					= SortedLEnd(src);
+    d      			= SortedLBegin(dest);
+    end_d 			= SortedLEnd(dest);
+    s      			= SortedLBegin(src);
+    end_s  			= SortedLEnd(src);
 
     while (!SortedLIsEqual(s, end_s))
     {
