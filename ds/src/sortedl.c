@@ -6,7 +6,7 @@ Reviewer:
 Status:		
 **************************************/
 
-#include <stdlib.h>  /* size_t malloc */
+#include <stdlib.h>  /* malloc */
 #include <assert.h>  /* assert */
 
 #include "sortedl.h" /* SortedLCreate */
@@ -53,8 +53,11 @@ void SortedLDestroy(sortedl_t* list)
 	assert(list);
 	
 	DLLDestroy(list->list);
-	
+	list->list = NULL;
+    list-> cmp = NULL;
+    	
 	free(list);
+	list = NULL;
 }
 
 sorted_iter_t SortedLInsert(sortedl_t* list, void *data)
@@ -78,6 +81,8 @@ sorted_iter_t SortedLRemove(sorted_iter_t to_remove)
 	after_iter = SortedLNext(to_remove);
 	
 	DLLRemove(to_remove.iter);
+	to_remove.iter = NULL;
+	
 	
 	return after_iter;
 
