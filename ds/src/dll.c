@@ -24,7 +24,7 @@ struct dll
     node_t tail;
 };
 
-static dll_iter_t NodeToIter(node_t* node);
+static dll_iter_t NodeToIter(const node_t* node);
 static node_t* IterToNode(dll_iter_t iter);
 static node_t* CreateNode(void* data);
 static void JoinNode(node_t *left, node_t *right);
@@ -81,7 +81,7 @@ dll_iter_t DLLEnd(const dll_t* list)
 {
     assert(list);
     
-    return NodeToIter((node_t*)&list->tail);
+    return NodeToIter(&list->tail);
 }
 
 dll_iter_t DLLNext(dll_iter_t curr)
@@ -293,7 +293,7 @@ dll_iter_t DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to)
 
 /* Implementation of the helper functions */
 
-static dll_iter_t NodeToIter(node_t* node)
+static dll_iter_t NodeToIter(const node_t* node)
 {
 	return (dll_iter_t)node;
 }

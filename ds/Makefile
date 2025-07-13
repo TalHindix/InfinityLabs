@@ -54,6 +54,9 @@ all: $(EXECUTABLES)
 # Special rule for queue.out (uses extra source file)
 queue.out: $(SRC_DIR)/queue.c $(SRC_DIR)/sll.c $(TEST_DIR)/queue_test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
+	
+sortedl.out: $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/sortedl_test.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
 # Build only object files (rarely needed)
 objects: $(OBJS)
