@@ -2,8 +2,8 @@
 Exercise:  DS - SortedL
 Date:      8/7/2025
 Developer: Tal Hindi
-Reviewer:  
-Status:    
+Reviewer:  Yael Keidar
+Status:    Approved
 **************************************/
 
 #ifndef _ILRD_SORTEDL_H_

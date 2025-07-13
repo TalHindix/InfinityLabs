@@ -1,9 +1,9 @@
 /**************************************
-Exercise: 	DS - SortedL
-Date:		8/7/2025
-Developer:	Tal Hindi
-Reviewer: 	
-Status:		
+Exercise:  DS - SortedL
+Date:      8/7/2025
+Developer: Tal Hindi
+Reviewer:  Yael Keidar
+Status:    Approved
 **************************************/
 
 #include <stdlib.h>  /* malloc */

@@ -2,8 +2,8 @@
 Exercise:  DS - SortedL
 Date:      8/7/2025
 Developer: Tal Hindi
-Reviewer:  
-Status:    In Progress
+Reviewer:  Yael Keidar
+Status:    Approved
 **************************************/
 
 #include <stdio.h>   /* printf 			*/
