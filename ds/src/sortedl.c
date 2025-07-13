@@ -62,12 +62,15 @@ void SortedLDestroy(sortedl_t* list)
 
 sorted_iter_t SortedLInsert(sortedl_t* list, void *data)
 {
-    sorted_iter_t result_iter = {0};
+    dll_iter_t where = {0};
+    dll_iter_t new_dll_iter = {0};
     
     assert(list);
-
-    result_iter.iter = DLLInsert(list->list, GetSortedPosition(list,SortedLBegin(list), SortedLEnd(list), data).iter, data);
-    return result_iter;
+    
+	where = GetSortedPosition(list, SortedLBegin(list), SortedLEnd(list), data).iter;
+	new_dll_iter = DLLInsert(list->list, where, data);
+	
+    return DLLIterToSortedIter(new_dll_iter, list);
 }
 
 sorted_iter_t SortedLRemove(sorted_iter_t to_remove)
@@ -134,10 +137,10 @@ sorted_iter_t SortedLFindIf(sorted_iter_t from, sorted_iter_t to, int (*is_match
 	assert(to.list);
 	assert(from.list == to.list);
 	assert(is_match_func);
-
+	
 	from.iter = DLLFind(from.iter, to.iter, is_match_func, param);
 	
-	return from;	
+	return DLLIterToSortedIter(from.iter, from.list);	
 }
 
 
@@ -184,7 +187,7 @@ void* SortedLPopFront(sortedl_t *list)
     return data;
 }
 
-void *SortedLPopBack(sortedl_t *list)
+void* SortedLPopBack(sortedl_t *list)
 {
     sorted_iter_t back = SortedLPrev(SortedLEnd(list));
     
