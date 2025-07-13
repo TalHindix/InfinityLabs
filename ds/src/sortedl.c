@@ -97,10 +97,7 @@ int SortedLIsEmpty(const sortedl_t* list)
     return DLLIsEmpty(list->list);
 }
 
-sorted_iter_t SortedLFind(sortedl_t *list,
-                          sorted_iter_t from,
-                          sorted_iter_t to,
-                          const void *target)
+sorted_iter_t SortedLFind(sortedl_t *list, sorted_iter_t from, sorted_iter_t to, const void *target)
 {
    	assert(list);
 	assert(from.iter);
