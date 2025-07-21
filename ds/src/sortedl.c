@@ -17,9 +17,16 @@ struct sortedl
     int (*cmp)(const void *data1, const void *data2);
 };
 
+struct cmp_wrapper
+{
+    int (*cmp)(const void *, const void *);
+    const void *data;
+};
+
 static sorted_iter_t DLLIterToSortedIter(dll_iter_t iter, sortedl_t* list);
 static dll_iter_t SortedIterToDLLIter(sorted_iter_t s_iter);
 static sorted_iter_t GetSortedPosition(sortedl_t* list, sorted_iter_t from, sorted_iter_t to, const void* data);
+static int IsNotLessThanInsertValue(const void *data_in_list, const void *param);
 
 sortedl_t* SortedLCreate(int (*comp)(const void* data1, const void* data2))
 {
@@ -251,16 +258,27 @@ static sorted_iter_t DLLIterToSortedIter(dll_iter_t iter, sortedl_t* list)
 	return s_iter;
 }
 
-static sorted_iter_t GetSortedPosition(sortedl_t* list, sorted_iter_t from, sorted_iter_t to, const void* data)
-{	
-	while (!(SortedLIsEqual(from, to)) && (list->cmp(SortedLGetData(from), data) < 0))
-	{
-		from = SortedLNext(from);
-	}
-	
-	return from;
+
+static int IsNotLessThanInsertValue(const void *data_in_list, const void *param)
+{
+    const struct cmp_wrapper *wrapper = (const struct cmp_wrapper *)param;
+
+    return wrapper->cmp(data_in_list, wrapper->data) >= 0;
 }
 
+
+static sorted_iter_t GetSortedPosition(sortedl_t* list, sorted_iter_t from, sorted_iter_t to, const void* data)
+{
+    struct cmp_wrapper param;
+    dll_iter_t where;
+
+    param.cmp = list->cmp;
+    param.data = data;
+
+    where = DLLFind(from.iter, to.iter, IsNotLessThanInsertValue, &param);
+
+    return DLLIterToSortedIter(where, list);
+}
 
 
 
