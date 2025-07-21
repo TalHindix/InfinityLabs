@@ -60,12 +60,8 @@ int PQEnqueue(pq_t* pq, const void* data)
     inserted = SortedLInsert(pq->slist, (void*)data);
     end_iter = SortedLEnd(pq->slist);
 
-    if (SortedLIsEqual(inserted, end_iter))
-    {
-        return 1;
-    }
-
-    return 0;
+    return SortedLIsEqual(inserted, end_iter);
+    
 }
 
 void* PQDequeue(pq_t* pq)
