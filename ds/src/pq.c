@@ -77,11 +77,6 @@ void* PQDequeue(pq_t* pq)
 {
     assert(pq);
 
-    if (PQIsEmpty(pq))
-    {
-        return NULL;
-    }
-
     return SortedLPopBack(pq->slist);
 }
 
@@ -91,12 +86,7 @@ void* PQPeek(const pq_t* pq)
     sorted_iter_t last = {0};
 
     assert(pq);
-    
-    if (PQIsEmpty(pq))
-    {
-        return NULL;
-    }
-
+   
     end = SortedLEnd(pq->slist);
     last = SortedLPrev(end);
 
