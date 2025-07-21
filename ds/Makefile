@@ -57,6 +57,9 @@ queue.out: $(SRC_DIR)/queue.c $(SRC_DIR)/sll.c $(TEST_DIR)/queue_test.c
 	
 sortedl.out: $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/sortedl_test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
+	
+pq.out: $(SRC_DIR)/pq.c $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/pq_test.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
 # Build only object files (rarely needed)
 objects: $(OBJS)
