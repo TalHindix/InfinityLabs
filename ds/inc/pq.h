@@ -35,7 +35,7 @@ void PQDestroy(pq_t* pq); /* O(n) */
  * Return: 0 on success, non-zero on allocation failure.
  * Complexity: O(n) for search + insert.
  *-------------------------------------------------------------------------*/
-int PQEnqueue(pq_t* pq, const void* data); /* O(n) */
+int PQEnqueue(pq_t* pq, void* data); /* O(n) */
 
 /*---------------------------------------------------------------------------
  * PQDequeue

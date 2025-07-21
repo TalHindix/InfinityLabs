@@ -50,7 +50,7 @@ void PQDestroy(pq_t* pq)
     free(pq);
 }
 
-int PQEnqueue(pq_t* pq, const void* data)
+int PQEnqueue(pq_t* pq, void* data)
 {
     sorted_iter_t inserted = {0};
     sorted_iter_t end_iter = {0};
@@ -75,7 +75,7 @@ void* PQPeek(const pq_t* pq)
 {
     assert(pq);
    
-    return SortedLGetData(SortedLPrev(SortedLEnd(pq->list)));
+    return SortedLGetData(SortedLPrev(SortedLEnd(pq->slist)));
 }
 
 int PQIsEmpty(const pq_t* pq)
