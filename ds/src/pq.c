@@ -18,29 +18,24 @@ struct pq
 
 pq_t* PQCreate(int (*comp)(const void* data1, const void* data2))
 {
-    pq_t *pq = NULL;
-    sortedl_t *inner = NULL;
+    pq_t* pq = NULL;
 
-    if (NULL == comp)
-    {
-        return NULL;
-    }
-
+	assert(comp);
+	
     pq = (pq_t*)malloc(sizeof(pq_t));
     if (NULL == pq)
     {
         return NULL;
     }
 
-    inner = SortedLCreate(comp);
-    if (NULL == inner)
+    pq->slist = SortedLCreate(comp);
+    if (NULL == pq->slist)
     {
         free(pq);
         pq = NULL;
         return NULL;
     }
 
-    pq->slist = inner;
     return pq;
 }
 
@@ -82,15 +77,9 @@ void* PQDequeue(pq_t* pq)
 
 void* PQPeek(const pq_t* pq)
 {
-    sorted_iter_t end = {0};
-    sorted_iter_t last = {0};
-
     assert(pq);
    
-    end = SortedLEnd(pq->slist);
-    last = SortedLPrev(end);
-
-    return SortedLGetData(last);
+    return SortedLGetData(SortedLPrev(SortedLEnd(pq->list)));
 }
 
 int PQIsEmpty(const pq_t* pq)
@@ -121,15 +110,18 @@ void PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param)
 {
     sorted_iter_t begin_iter = {0};
     sorted_iter_t end_iter = {0};
-    sorted_iter_t found_iter = {0};
-
+    sorted_iter_t to_remove = {0};
+	
+	assert(pq);
+	assert(is_match_func);
+	
     begin_iter = SortedLBegin(pq->slist);
     end_iter = SortedLEnd(pq->slist);
-    found_iter = SortedLFindIf(begin_iter, end_iter, is_match_func, param);
+    to_remove = SortedLFindIf(begin_iter, end_iter, is_match_func, param);
 
-    if (!SortedLIsEqual(found_iter, end_iter))
+    if (!SortedLIsEqual(to_remove, end_iter))
     {
-        SortedLRemove(found_iter);
+        SortedLRemove(to_remove);
     }
 }
 
