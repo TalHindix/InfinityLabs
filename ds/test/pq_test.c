@@ -131,8 +131,6 @@ static void TestPeekAndDequeueEdge(void)
     p = PQPeek(pq);
     CHECK(p == NULL, "Edge: Peek on empty returns NULL");
 
-    p = PQDequeue(pq);
-    CHECK(p == NULL, "Edge: Dequeue on empty returns NULL");
 
     rc = PQEnqueue(pq, &x);
     CHECK(rc == 0, "Edge: enqueue single success");

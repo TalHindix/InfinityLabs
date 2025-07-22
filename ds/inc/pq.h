@@ -77,10 +77,10 @@ void PQClear(pq_t* pq); /* O(n) */
 /*---------------------------------------------------------------------------
  * PQErase
  * Remove first element for which is_match_func(data, param) returns non-zero.
- * No return value per given API (silent if not found). Does not free payload.
+ * return value: 1(if not found) 0(found and remove).
  * Complexity: O(n)
  *-------------------------------------------------------------------------*/
-void PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param); /* O(n) */
+int PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param); /* O(n) */
 
 #endif /* ILRD_PQ_H */
 

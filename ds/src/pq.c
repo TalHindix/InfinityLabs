@@ -102,7 +102,7 @@ void PQClear(pq_t* pq)
     }
 }
 
-void PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param)
+int PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param)
 {
     sorted_iter_t begin_iter = {0};
     sorted_iter_t end_iter = {0};
@@ -114,11 +114,14 @@ void PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param)
     begin_iter = SortedLBegin(pq->slist);
     end_iter = SortedLEnd(pq->slist);
     to_remove = SortedLFindIf(begin_iter, end_iter, is_match_func, param);
-
+    
     if (!SortedLIsEqual(to_remove, end_iter))
     {
         SortedLRemove(to_remove);
+        return 0;
     }
+    
+    return 1;
 }
 
 

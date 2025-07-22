@@ -31,9 +31,11 @@ static void JoinNode(node_t *left, node_t *right);
 static void InsertBetween(node_t *left, node_t *right, node_t *new_node);
 static dll_iter_t RemoveNode(node_t* node);
 static int CountAction(void *data, void *param);
+
+#ifndef NDEBUG
 static int IsHead(dll_iter_t iter);
 static int IsTail(dll_iter_t iter);
-
+#endif
 
 
 dll_t* DLLCreate(void)
@@ -109,8 +111,8 @@ int DLLIsEqual(dll_iter_t iter1, dll_iter_t iter2)
 void* DLLGetData(dll_iter_t iter)
 {
     assert(IterToNode(iter));
-    assert(!IsHead(IterToNode(iter)));
-    assert(!IsTail(IterToNode(iter)));
+    assert(!IsHead(iter));
+    assert(!IsTail(iter));
     
     return IterToNode(iter)->data;
 }
@@ -349,15 +351,18 @@ static int CountAction(void *data, void *param)
     return 0;                 
 }
 
+
+#ifndef NDEBUG
 static int IsHead(dll_iter_t iter)
 {
 	return (NULL == IterToNode(iter)->prev);
-} 
+}
+ 
 
 static int IsTail(dll_iter_t iter)
 {
 	return (NULL == IterToNode(iter)->next);
 }
-
+#endif
 
 

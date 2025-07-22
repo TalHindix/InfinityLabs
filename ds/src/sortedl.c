@@ -17,11 +17,11 @@ struct sortedl
     int (*cmp)(const void *data1, const void *data2);
 };
 
-struct cmp_wrapper
+typedef struct cmp_wrapper
 {
     int (*cmp)(const void *, const void *);
     const void *data;
-};
+} cmp_wrapper_t;
 
 static sorted_iter_t DLLIterToSortedIter(dll_iter_t iter, sortedl_t* list);
 static dll_iter_t SortedIterToDLLIter(sorted_iter_t s_iter);
@@ -81,8 +81,7 @@ sorted_iter_t SortedLInsert(sortedl_t* list, void *data)
 }
 
 sorted_iter_t SortedLRemove(sorted_iter_t to_remove)
-{
-	
+{	
     sorted_iter_t after_iter = {0};
 	
 	assert(to_remove.iter);
@@ -95,7 +94,6 @@ sorted_iter_t SortedLRemove(sorted_iter_t to_remove)
 	return after_iter;
 
 }
-
 
 size_t SortedLSize(const sortedl_t* list)
 {
@@ -144,7 +142,7 @@ sorted_iter_t SortedLFindIf(sorted_iter_t from, sorted_iter_t to, int (*is_match
 	
 	from.iter = DLLFind(from.iter, to.iter, is_match_func, param);
 	
-	return DLLIterToSortedIter(from.iter, from.list);	
+	return from;
 }
 
 
@@ -154,13 +152,17 @@ int SortedLIsEqual(sorted_iter_t iter1, sorted_iter_t iter2)
 }
 
 sorted_iter_t SortedLNext(sorted_iter_t curr)
-{
-    return DLLIterToSortedIter(DLLNext(SortedIterToDLLIter(curr)), curr.list);
+{	
+	curr.iter = DLLNext(curr.iter);
+	
+	return curr;
 }
 
 sorted_iter_t SortedLPrev(sorted_iter_t curr)
-{
-    return DLLIterToSortedIter(DLLPrev(SortedIterToDLLIter(curr)), curr.list);
+{	
+	curr.iter = DLLPrev(curr.iter);
+	
+	return curr;
 }
 
 void* SortedLGetData(sorted_iter_t iter)
@@ -171,34 +173,29 @@ void* SortedLGetData(sorted_iter_t iter)
 sorted_iter_t SortedLBegin(const sortedl_t *list)
 {
     assert(list);
+    
     return DLLIterToSortedIter(DLLBegin(list->list), (sortedl_t *)list);
 }
 
 sorted_iter_t SortedLEnd(const sortedl_t *list)
 {
     assert(list);
+    
     return DLLIterToSortedIter(DLLEnd(list->list), (sortedl_t *)list);
 }
 
-void* SortedLPopFront(sortedl_t *list)
+void* SortedLPopFront(sortedl_t* list)
 {
-	sorted_iter_t front = SortedLBegin(list);
+	assert(list);
 	
-	void* data = SortedLGetData(front);
-	
-    SortedLRemove(front);    
-    return data;
+	return DLLPopFront(list->list);
 }
 
-void* SortedLPopBack(sortedl_t *list)
+void* SortedLPopBack(sortedl_t* list)
 {
-    sorted_iter_t back = SortedLPrev(SortedLEnd(list));
-    
-    void* data = SortedLGetData(back);
-    
-    SortedLRemove(back);
-    
-    return data;
+	assert(list);
+	
+	return DLLPopBack(list->list);	
 }
 
 void SortedLMerge(sortedl_t* dest, sortedl_t *src)
@@ -231,8 +228,6 @@ void SortedLMerge(sortedl_t* dest, sortedl_t *src)
     }
 }
 
-
-
 int SortedLForEach(sorted_iter_t from, sorted_iter_t to, int (*action_func)(void* data, void* param), void* param)
 {
 	assert(from.list == to.list);
@@ -244,7 +239,6 @@ int SortedLForEach(sorted_iter_t from, sorted_iter_t to, int (*action_func)(void
 /***************** HELPER **************************/
 static dll_iter_t SortedIterToDLLIter(sorted_iter_t s_iter)
 {
-	(void)s_iter;
 	return s_iter.iter;
 }
 
@@ -253,24 +247,24 @@ static sorted_iter_t DLLIterToSortedIter(dll_iter_t iter, sortedl_t* list)
 	sorted_iter_t s_iter;
 	s_iter.iter = iter;
 #ifndef NDEBUG
-	s_iter.list = list;
+    s_iter.list = list;
+#else
+    (void)list;
 #endif
 	return s_iter;
 }
 
-
 static int IsNotLessThanInsertValue(const void *data_in_list, const void *param)
 {
-    const struct cmp_wrapper *wrapper = (const struct cmp_wrapper *)param;
+    const cmp_wrapper_t* wrapper = (const cmp_wrapper_t*)param;
 
     return wrapper->cmp(data_in_list, wrapper->data) >= 0;
 }
 
-
 static sorted_iter_t GetSortedPosition(sortedl_t* list, sorted_iter_t from, sorted_iter_t to, const void* data)
 {
-    struct cmp_wrapper param;
-    dll_iter_t where;
+    cmp_wrapper_t param = {0};
+    dll_iter_t where = {0};
 
     param.cmp = list->cmp;
     param.data = data;
