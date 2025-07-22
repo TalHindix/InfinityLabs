@@ -10,6 +10,7 @@ Status:
 #define ILRD_TASK_H
 
 #include <stddef.h> /* size_t */
+#include <sys/types.h> /* ssize_t */
 
 #include "uid.h"
 
@@ -84,7 +85,7 @@ size_t TaskGetTimeToRun(const task_t* task);
  * @param task2 
  * @return int 
  */
-int TaskIsMatch(const task_t* task1, const task_t* task2);
+int TaskIsMatch(const task_t* task, ilrd_uid_t uid);
 
 /**
  * @brief 
