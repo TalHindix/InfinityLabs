@@ -60,6 +60,9 @@ sortedl.out: $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/sortedl_test.c
 	
 pq.out: $(SRC_DIR)/pq.c $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/pq_test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
+	
+task.out: $(SRC_DIR)/task.c $(SRC_DIR)/pq.c $(SRC_DIR)/uid.c $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/task_test.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
 # Build only object files (rarely needed)
 objects: $(OBJS)

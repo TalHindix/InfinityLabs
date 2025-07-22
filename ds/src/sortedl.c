@@ -14,12 +14,12 @@ Status:    Approved
 struct sortedl
 {
     dll_t* list;
-    int (*cmp)(const void *data1, const void *data2);
+    int (*cmp)(const void* data1, const void* data2);
 };
 
 typedef struct cmp_wrapper
 {
-    int (*cmp)(const void *, const void *);
+    int (*cmp)(const void* data1, const void* data2);
     const void *data;
 } cmp_wrapper_t;
 
@@ -236,7 +236,7 @@ int SortedLForEach(sorted_iter_t from, sorted_iter_t to, int (*action_func)(void
 	return DLLForEach(from.iter, to.iter, action_func, param);
 }
 
-/***************** HELPER **************************/
+/***************** HELPERS **************************/
 static dll_iter_t SortedIterToDLLIter(sorted_iter_t s_iter)
 {
 	return s_iter.iter;

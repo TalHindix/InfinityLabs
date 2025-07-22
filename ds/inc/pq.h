@@ -3,7 +3,7 @@ Exercise: 	DS - PQ
 Date:		20/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Avi Tobar
-Status:		
+Status:		Approved
 **************************************/
 
 #ifndef ILRD_PQ_H
@@ -77,10 +77,10 @@ void PQClear(pq_t* pq); /* O(n) */
 /*---------------------------------------------------------------------------
  * PQErase
  * Remove first element for which is_match_func(data, param) returns non-zero.
- * return value: 1(if not found) 0(found and remove).
+ * return pointer to param if success and null if not found.
  * Complexity: O(n)
  *-------------------------------------------------------------------------*/
-int PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param); /* O(n) */
+void* PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param); /* O(n) */
 
 #endif /* ILRD_PQ_H */
 

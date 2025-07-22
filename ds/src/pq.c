@@ -3,7 +3,7 @@ Exercise: 	DS - PQ
 Date:		20/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Avi Tobar
-Status:		
+Status:		Approved
 **************************************/
 
 #include <assert.h>   /* assert 		*/
@@ -102,7 +102,7 @@ void PQClear(pq_t* pq)
     }
 }
 
-int PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param)
+void* PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param)
 {
     sorted_iter_t begin_iter = {0};
     sorted_iter_t end_iter = {0};
@@ -118,10 +118,10 @@ int PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param),
     if (!SortedLIsEqual(to_remove, end_iter))
     {
         SortedLRemove(to_remove);
-        return 0;
+        return (void*)param;
     }
     
-    return 1;
+    return NULL;
 }
 
 
