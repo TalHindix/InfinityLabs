@@ -15,39 +15,43 @@ Status:
 struct task
 {
     ilrd_uid_t uid; 
-	time_t time_to_execute;    
-	ssize_t (*op_func)(void *op_param);   
+	time_t time_to_execute;                        
+    
+	ssize_t (*op_func)(void* op_param);   
 	void *op_param;                                 
-	void (*cleanup_func)(void* clean_up_param);
-	void* clean_up_param;    
+	void (*cleanup_func)(void* cleanup_param);
+	void* cleanup_param;   
 };
 
-task_t* TaskCreate(ssize_t (*op_func)(void *param),void *op_param,
-                   size_t interval_in_sec,
-                   void (*cleanup_func)(void *cleanup_param),void *cleanup_param)
+
+task_t* TaskCreate(ssize_t (*op_func)(void* param), void* op_param, size_t interval_in_sec, void (*cleanup_func)(void* param),void* cleanup_param)
 {
-	task_t* task = {0};
+	task_t* task = NULL;
+	
+	assert(op_func);
+	assert(cleanup_func);
 	
 	task = (task_t*)malloc(sizeof(task_t));
-	if(NULL == task)
+	if (!task)
 	{
 		return NULL;
 	}
 	
 	task->uid = UIDCreate();
-	if(UIDIsSame(task->uid, UIDbadUID))
+	if (UIDIsSame(task->uid, UIDbadUID))
 	{
 		free(task);
 		return NULL;
 	}
-	
+
+	task->time_to_execute = time(NULL) + (time_t)interval_in_sec;
 	task->op_func = op_func;
 	task->op_param = op_param;
-	task->time_to_execute = time(NULL) + interval_in_sec;
 	task->cleanup_func = cleanup_func;
-	task->clean_up_param = cleanup_param;  
+	task->cleanup_param = cleanup_param;
+	
+	return task;
 
-    return task;
 }
 
 void TaskDestroy(task_t* task)
@@ -55,14 +59,7 @@ void TaskDestroy(task_t* task)
 	assert(task);
 	
 	TaskCleanUp(task);
-	
-	task->uid = UIDbadUID;
-    task->op_func = NULL;
-    task->op_param = NULL;
-    task->time_to_execute = 0;
-    task->cleanup_func = NULL;
-    task->clean_up_param = NULL;
-	
+		
 	free(task);
 	task = NULL;
 }
@@ -85,9 +82,8 @@ ssize_t TaskRun(task_t* task)
 void TaskCleanUp(task_t* task)
 {
    assert(task);
-   assert(task->cleanup_func);
-   
-   task->cleanup_func(task->clean_up_param);
+
+   task->cleanup_func(task->cleanup_param);
 }
 
 void TaskSetTimeToRun(task_t* task, size_t interval_in_sec)
@@ -116,5 +112,5 @@ int TaskCmp(const task_t* task1, const task_t* task2)
 	assert(task1);
 	assert(task2);
 
-    return TaskGetTimeToRun(task1) - TaskGetTimeToRun(task2);
+    return (int)(TaskGetTimeToRun(task1) - TaskGetTimeToRun(task2));
 }

@@ -1,6 +1,6 @@
 /**************************************
-Exercise: 	DS - SCHED
-Date:		21/7/2025
+Exercise: 	Prog - Scheduler
+Date:		23/07/2025
 Developer:	Tal Hindi
 Reviewer: 	
 Status:		
@@ -8,8 +8,10 @@ Status:
 
 #include <assert.h> /* assert.h 	*/
 #include <unistd.h> /* sleep 		*/
-#include "sched.h" 	/* SchedCreate 	*/
 
+#include "sched.h" 	/* SchedCreate 	*/
+#include "task.h"	/* TaskCreate	*/
+#include "pq.h"		/* PQCreate		*/
 
 struct sched
 {
@@ -17,32 +19,29 @@ struct sched
     int stop_flag;
 };
 
-static int TaskToCmp(const void* data1, const void* data2)
-{
-	return TaskCmp((const task_t*)data1, (const task_t*)data2);
-}
-
-static int TaskToMatch(const void* data, const void* param)
-{
-	return TaskIsMatch((task_t*)data, *(ilrd_uid_t*)param);
-}
+static run_status_e ComputeExitStatus(const sched_t *sch, int had_fail);
+static void SleepUntil(time_t when);
+static int WrapperTaskCmp(const void* task1, const void* task2);
+static int WrapperTaskIsMatch(const void* data, const void* param);
 
 sched_t* SchedCreate(void)
 {
 	sched_t* sched = NULL;
 	
-	sched = (sched_t*)malloc(sizeof(sched_t*));
+	sched = (sched_t*)malloc(sizeof(sched_t));
 	if(!sched)
 	{
 		return NULL;
 	}
 	
-	sched->pq = PQCreate(TaskToCmp);
+	sched->pq = PQCreate(WrapperTaskCmp);
 	if(!sched->pq)
 	{
 		free(sched);
 		return NULL;
 	}
+	
+	sched->stop_flag = 0;
 	
 	return sched;
 }
@@ -51,84 +50,104 @@ void SchedDestroy(sched_t* sch)
 {
 	assert(sch);
 	
+	SchedClear(sch);
 	PQDestroy(sch->pq);
 	
+	sch->pq = NULL;
+	sch->stop_flag = 0;
+	
 	free(sch);
+	sch = NULL;
 }
 
-int SchedRun(sched_t* sch)
+run_status_e SchedRun(sched_t *sch)
 {
-	ssize_t return_taskrun = 0;
-	sch->stop_flag = 0;
-	assert(sch);
-	
-	while(!SchedIsEmpty(sch) && !sch->stop_flag)
-	{
-		task_t* current_task = (task_t*)PQPeek(sch->pq);
-		time_t task_time = TaskGetTimeToRun(current_task);
-		time_t now = time(NULL);
+    task_t *task = NULL;
+    ssize_t result = 0;
+    int had_fail = 0;
 
-		while (task_time > now)
-		{
-			sleep(task_time - now);
-			now = time(NULL);
-		}
-		
-		PQDequeue(sch->pq);
-	
-		return_taskrun = TaskRun(current_task);
-		
-		if(return_taskrun > 0)
-		{
-			TaskSetTimeToRun(current_task, return_taskrun);
-			PQEnqueue(sch->pq, current_task);
-			continue;
-		}
-		else
-		{
-			TaskDestroy(current_task);
-		}
-		
-	}
-	
-	return 0;
+    assert(sch);
+    sch->stop_flag = 0;
+
+    while (!sch->stop_flag && !PQIsEmpty(sch->pq))
+    {
+        task = (task_t *)PQDequeue(sch->pq);
+
+        SleepUntil((time_t)TaskGetTimeToRun(task));
+
+        result = TaskRun(task);
+
+        if (result < 0)
+        {
+            had_fail = 1;
+            TaskDestroy(task);
+            continue;
+        }
+
+        if (result == 0)
+        {
+            TaskDestroy(task);
+            continue;
+        }
+
+        TaskSetTimeToRun(task, result);
+        if (PQEnqueue(sch->pq, task))
+        {
+            TaskDestroy(task);
+            return FAILED_ALLOC;
+        }
+    }
+
+    return ComputeExitStatus(sch, had_fail);
 }
 
 void SchedStop(sched_t* sch)
 {
 	assert(sch);
 	
-	sch->stop_flag = 0;
+	sch->stop_flag = 1;
 }
-
-
-                
+       
 ilrd_uid_t SchedAdd(sched_t* sch, ssize_t(*op_func)(void* param), void* param, size_t time_exe, void(*cleanup_func)(void* cleanup_param), void* cleanup_param)
 {
-	task_t* new_task = TaskCreate(op_func, param, time_exe, cleanup_func, cleanup_param);
+	task_t* new_task = NULL;
 	
-	if (UIDIsSame(TaskUID(new_task), UIDbadUID))
+	assert(sch);
+	assert(op_func);
+	assert(time_exe);
+	assert(cleanup_func);
+	
+	new_task = TaskCreate(op_func, param, time_exe, cleanup_func, cleanup_param);	
+	
+	if (!new_task)
 	{
 		return UIDbadUID;
 	}
 	
-	PQEnqueue(sch->pq,new_task);
+	if (PQEnqueue(sch->pq,new_task))
+	{
+		TaskDestroy(new_task);
+		return UIDbadUID;
+	}
 	
 	return TaskUID(new_task);
 }
 
-void SchedRemove(sched_t* sch, ilrd_uid_t uid)
+int SchedRemove(sched_t* sch, ilrd_uid_t uid)
 {
 	task_t* task_to_remove = NULL;
 	
 	assert(sch);
 	
-	task_to_remove = (task_t*)PQErase(sch->pq, TaskToMatch, (const ilrd_uid_t*)&uid);
+	task_to_remove = PQErase(sch->pq, WrapperTaskIsMatch, &uid);
 	
-	TaskCleanUp(task_to_remove);
+	if (task_to_remove)
+	{
+		TaskDestroy(task_to_remove);
+		return 0;
+	}
 	
-	free(task_to_remove);
-	
+	return 1;
 }
 
 int SchedIsEmpty(const sched_t* sch)
@@ -140,11 +159,14 @@ int SchedIsEmpty(const sched_t* sch)
 
 void SchedClear(sched_t* sch)
 {
+	task_t* task = NULL;
+	
 	assert(sch);
 	
 	while(!PQIsEmpty(sch->pq))
 	{
-		PQDequeue(sch->pq);
+		task = PQDequeue(sch->pq);
+		TaskDestroy(task);
 	}
 }
 
@@ -153,6 +175,40 @@ size_t SchedSize(const sched_t* sch)
 	assert(sch);
 	
 	return PQSize(sch->pq);
+}
+
+static int WrapperTaskCmp(const void* task1, const void* task2)
+{
+	return TaskCmp((const task_t*)task2, (const task_t*)task1);
+}
+
+static int WrapperTaskIsMatch(const void* data, const void* param)
+{
+	assert(data);
+	assert(param);
+	
+	return TaskIsMatch((const task_t*)data, *(const ilrd_uid_t*)param);
+}
+
+static void SleepUntil(time_t when)
+{
+    time_t now = time(NULL);
+    while (now < when)
+    {
+        sleep(when - now);
+        now = time(NULL);
+    }
+}
+
+static run_status_e ComputeExitStatus(const sched_t *sch, int had_fail)
+{
+    if (had_fail)
+    {
+        return PQIsEmpty(sch->pq) ? FAILED_TASKS_EMPTY_SCHED
+                                  : FAILED_TASKS_NON_EMPTY_SCHED;
+    }
+
+    return PQIsEmpty(sch->pq) ? SUCCESS : PAUSED;
 }
 
 
