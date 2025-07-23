@@ -8,6 +8,12 @@ Status:
 
 #include "sched.h" /* SchedCreate */
 
+struct sched
+{
+    pq_t *pq;
+    int stop_flag;
+};
+
 sched_t* SchedCreate(void)
 {
 	return NULL;
@@ -25,13 +31,13 @@ int SchedRun(sched_t* sch)
 	return 0;
 }
 
-int SchedStop(sched_t* sch)
+void SchedStop(sched_t* sch)
 {
 	(void)sch;
 	return 0;
 }
 
-uid_t* SchedAdd(sched_t* sch, int(op_func*)(void* param), void* param)
+ilrd_uid_t SchedAdd(sched_t* sch, int(op_func*)(void* param), void* param, size_t time_exe, void(cleanup_func*), void* cleanup_param);
 {
 	(void)sch;
 	(void)op_func;
