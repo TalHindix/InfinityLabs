@@ -64,6 +64,9 @@ pq.out: $(SRC_DIR)/pq.c $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/pq_tes
 task.out: $(SRC_DIR)/task.c $(SRC_DIR)/pq.c $(SRC_DIR)/uid.c $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(TEST_DIR)/task_test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
+sched.out: $(SRC_DIR)/task.c $(SRC_DIR)/pq.c $(SRC_DIR)/uid.c $(SRC_DIR)/sortedl.c $(SRC_DIR)/dll.c $(SRC_DIR)/sched.c $(TEST_DIR)/sched_test.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
+
 # Build only object files (rarely needed)
 objects: $(OBJS)
 

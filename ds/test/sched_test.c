@@ -14,6 +14,8 @@ Status:
 
 int main(void)
 {
-
+	sched_t* sched = SchedCreate();
+	SchedDestroy(sched);
+	
 	return 0;
 }

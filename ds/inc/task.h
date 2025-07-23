@@ -53,7 +53,8 @@ ilrd_uid_t TaskUID(const task_t* task);
  * @param task 
  * @return int 
  */
-int TaskRun(task_t* task);
+/* -1 - failed , 0 - finished , positive - rescheduled */
+ssize_t TaskRun(task_t* task);
 
 /**
  * @brief 

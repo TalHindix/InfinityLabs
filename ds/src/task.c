@@ -7,7 +7,8 @@ Status:
 **************************************/
 
 #include <stdlib.h>  	/* malloc 		*/
-#include <assert.h>		/* assert 		*/		
+#include <assert.h>		/* assert 		*/
+#include <sys/types.h> 	/* ssize_t 		*/
 
 #include "task.h"		/* TaskCreate 	*/
 
@@ -73,7 +74,7 @@ ilrd_uid_t TaskUID(const task_t* task)
     return task->uid;
 }
 
-int TaskRun(task_t* task)
+ssize_t TaskRun(task_t* task)
 {
 	assert(task);
 	assert(task->op_func);
