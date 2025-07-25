@@ -8,19 +8,17 @@ Status:
 
 #include <stdlib.h>  	/* malloc 		*/
 #include <assert.h>		/* assert 		*/
-#include <sys/types.h> 	/* ssize_t 		*/
 
 #include "task.h"		/* TaskCreate 	*/
 
 struct task
 {
-    ilrd_uid_t uid; 
-	time_t time_to_execute;                        
-    
+    ilrd_uid_t uid;
+	time_t time_to_execute;
 	ssize_t (*op_func)(void* op_param);   
-	void *op_param;                                 
+	void *op_param;
 	void (*cleanup_func)(void* cleanup_param);
-	void* cleanup_param;   
+	void* cleanup_param;
 };
 
 
@@ -61,7 +59,6 @@ void TaskDestroy(task_t* task)
 	TaskCleanUp(task);
 		
 	free(task);
-	task = NULL;
 }
 
 ilrd_uid_t TaskUID(const task_t* task)
@@ -74,8 +71,7 @@ ilrd_uid_t TaskUID(const task_t* task)
 ssize_t TaskRun(task_t* task)
 {
 	assert(task);
-	assert(task->op_func);
-	
+		
     return task->op_func(task->op_param);
 }
 
@@ -90,14 +86,14 @@ void TaskSetTimeToRun(task_t* task, size_t interval_in_sec)
 {
     assert(task);
     
-    task->time_to_execute = time(NULL) + interval_in_sec;
+    task->time_to_execute = time(NULL) + (time_t)interval_in_sec;
 }
 
 size_t TaskGetTimeToRun(const task_t* task)
 {
     assert(task);
     
-    return task->time_to_execute;
+    return 0 < (task->time_to_execute - time(NULL)) ? (size_t)(task->time_to_execute - time(NULL)) : 0;
 }
 
 int TaskIsMatch(const task_t* task, ilrd_uid_t uid)
