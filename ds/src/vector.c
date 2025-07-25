@@ -7,7 +7,8 @@ status: Approved
 #include <assert.h> 
 #include <stdlib.h>
 #include <string.h>
-#include "../include/vector.h"
+
+#include "vector.h"
 
 #define GROWTH_FACTOR (2)
 #define SHRINK_THRESHOLD_DIVISOR (4)

@@ -5,7 +5,7 @@ status: Approved
 **********************/
 
 
-#include "../include/bit_arr.h"
+#include "bit_arr.h"
 
 #define BITS_IN_BYTE 8
 

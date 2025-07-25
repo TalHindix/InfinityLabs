@@ -3,15 +3,15 @@ Exercise: 	Prog - Scheduler
 Date:		23/07/2025
 Developer:	Tal Hindi
 Reviewer: 	Avi Tobar
-Status:		
+Status:		Approved
 **************************************/
 
 #ifndef ILRD_SCHED_H
 #define ILRD_SCHED_H
 
-#include <stdlib.h>
+#include <stddef.h> /* size_t 		*/
 
-#include "uid.h"
+#include "uid.h"	/* UIDCreate 	*/
 
 typedef enum
 {

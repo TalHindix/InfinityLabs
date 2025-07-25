@@ -6,7 +6,7 @@ status: Approved
 *******************/
 
 
-#include "../include/stack.h"
+#include "stack.h"
 
 #include <assert.h>
 #include <stddef.h> /* for size_t */

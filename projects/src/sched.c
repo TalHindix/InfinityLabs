@@ -2,12 +2,13 @@
 Exercise: 	Prog - Scheduler
 Date:		23/07/2025
 Developer:	Tal Hindi
-Reviewer: 	
-Status:		
+Reviewer: 	Avi Tobar
+Status:		Approved
 **************************************/
 
 #include <assert.h> /* assert.h 	*/
 #include <unistd.h> /* sleep 		*/
+#include <stdlib.h> /* malloc		*/
 
 #include "sched.h" 	/* SchedCreate 	*/
 #include "task.h"	/* TaskCreate	*/
@@ -51,10 +52,8 @@ void SchedDestroy(sched_t* sch)
 	assert(sch);
 	
 	SchedClear(sch);
-	PQDestroy(sch->pq);
 	
-	sch->pq = NULL;
-	sch->stop_flag = 0;
+	PQDestroy(sch->pq);
 	
 	free(sch);
 	sch = NULL;
@@ -114,7 +113,6 @@ ilrd_uid_t SchedAdd(sched_t* sch, ssize_t(*op_func)(void* param), void* param, s
 	
 	assert(sch);
 	assert(op_func);
-	assert(time_exe);
 	assert(cleanup_func);
 	
 	new_task = TaskCreate(op_func, param, time_exe, cleanup_func, cleanup_param);	
@@ -183,10 +181,7 @@ static int WrapperTaskCmp(const void* task1, const void* task2)
 }
 
 static int WrapperTaskIsMatch(const void* data, const void* param)
-{
-	assert(data);
-	assert(param);
-	
+{	
 	return TaskIsMatch((const task_t*)data, *(const ilrd_uid_t*)param);
 }
 
