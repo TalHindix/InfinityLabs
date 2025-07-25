@@ -10,7 +10,7 @@
 !.myfuncs
 !**/*.jpeg
 !**/*.jpg
-
+!.my_aliases
 
 
 !*mak

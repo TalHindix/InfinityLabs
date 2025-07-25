@@ -1,0 +1,75 @@
+alias h='history'
+alias please='sudo $(history -p !!)' #open the last command with sudo.
+alias makear='ar rcs' # make archive
+alias ..='cd ..'
+alias c='clear'
+## get rid of command not found ##
+alias cd..='cd ..'
+
+## a quick way to get out of current directory ##
+alias ..='cd ..'
+alias ...='cd ../../../'
+alias ....='cd ../../../../'
+alias .....='cd ../../../../'
+alias search='grep -rnI --color=auto'
+alias ffind='find / -type f -name'
+
+
+## Colorize the ls output ##
+alias ls='ls --color=auto'
+## Use a long listing format ##
+alias ll='ls -la'
+## Show hidden files ##
+alias l.='ls -d .* --color=auto'
+
+alias rm='rm -i'              
+alias cp='cp -i'
+alias mv='mv -i'
+
+#Git aliases
+alias gs='git status'
+alias gb='git branch'
+alias gr='git remote -v'
+
+alias gaa='git add -A'                     # הוסף הכל
+alias gcm='git commit -m'                  # קומיט עם הודעה
+
+alias gpull='git pull'                     # משיכה מ-remote
+alias gpush='git push'                     # דחיפה ל-master
+
+alias gundo='git reset --soft HEAD~1'     # מבטל קומיט, משאיר את השינויים ב-stage
+
+alias gunstage='git restore --staged'     # הסרת קובץ מה-stage (לא מוחק תוכן)
+alias greset='git reset HEAD'             # שקול ל־gunstage
+
+
+#Compiler aliases 
+# gcc compilation aliases: c89, c99, debug mode, release mode 
+alias gc='gcc -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3' 
+alias gd='gcc -ansi -pedantic-errors -Wall -Wextra -g' 
+alias gd9='gcc -std=c99 -pedantic-errors -Wall -Wextra -g' 
+alias gc9='gcc -std=c99 -pedantic-errors -Wall -Wextra -DNDEBUG -O3'
+
+             
+alias gebit='gedit "$HOME/git/ds/src/sortedl.c" \
+                   "$HOME/git/ds/test/sortedl_test.c" \
+                   "$HOME/git/ds/src/dll.c" \
+                   "$HOME/git/ds/inc/dll.h" \
+                   "$HOME/git/ds/test/dll_test.c" \
+                   "$HOME/git/ds/inc/sortedl.h" &'
+
+alias co='gcc -c -ansi -pedantic-errors -Wall -Wextra -g'
+alias link='gcc *.o -o myprog'
+ 
+# vagrind alias 
+alias vlg='valgrind --leak-check=yes --track-origins=yes'  
+
+cgit() {
+    if [ -z "$1" ]; then
+        cd ~/git/c
+    else
+        cd ~/git/c/"$1"
+    fi
+}
+
+
