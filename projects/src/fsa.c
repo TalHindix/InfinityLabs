@@ -2,7 +2,7 @@
 Exercise:   Prog - FSA
 Date:       24/07/2025
 Developer:  Tal Hindi
-Reviewer:   Baruch Haimson
+Reviewer:   Daniel Gamliel
 Status:     
 **************************************/
 
@@ -34,12 +34,7 @@ size_t FSASuggestSize(size_t block_amount, size_t block_size)
         return 0;
     }
 
-    aligned_block = ALIGN_UP(block_size);
-    if (aligned_block < WORD_SIZE)
-    {
-        aligned_block = WORD_SIZE;
-    }
-
+    aligned_block = ALIGN_UP(block_size);   
     meta_byte = ALIGN_UP(sizeof(fsa_t));
 
     return meta_byte + block_amount * aligned_block;
