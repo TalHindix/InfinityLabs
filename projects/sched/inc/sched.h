@@ -85,7 +85,7 @@ int SchedIsEmpty(const sched_t* sch);
 *                            if cleanup_func is NULL.
 *            cleanup_param - Parameter passed to cleanup_func.
 *
-*  Return:   UID of the inserted task; UIDbadUID on failure.
+*  Return:   UID of the inserted task, UIDbadUID on failure.
 *
 *  Complexity: O(n).
 *********************************************************/
@@ -128,7 +128,7 @@ void SchedClear(sched_t* sch);
 *
 *  Return:   One of the values of enum run_status_e.
 *
-*  Complexity: O(n) (relative to the number of tasks processed).
+*  Complexity: O(n) 
 *********************************************************/
 run_status_e SchedRun(sched_t* sch);
 

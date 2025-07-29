@@ -1,50 +1,35 @@
-# Directories *******************************************************************
-
-SRC_DIR := src
-TEST_DIR := test
-INCLUDE_DIR := inc
-
-DS_INC_DIR := ../ds/inc
-DS_SRC_FILES := \
-    ../ds/src/pq.c \
-    ../ds/src/task.c \
-    ../ds/src/uid.c \
-    ../ds/src/sortedl.c \
-    ../ds/src/dll.c
-
-# Compiler Setup ****************************************************************
-
 CC := gcc
 DEBUG := -ansi -pedantic-errors -Wall -Wextra -g
 RELEASE := -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3
 CFLAGS := $(DEBUG)
-INCLUDES := -I$(INCLUDE_DIR) -I$(DS_INC_DIR)
 
-# Source Files ******************************************************************
+DS_INC := ../ds/inc
+DS_SRC := \
+	../ds/src/pq.c \
+	../ds/src/uid.c \
+	../ds/src/sortedl.c \
+	../ds/src/dll.c
 
-SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
-TEST_FILES := $(wildcard $(TEST_DIR)/*_test.c)
+# Build sched.out from sched/src and sched/test/sched_test.c
+sched.out: sched/src/sched.c sched/src/task.c sched/test/sched_test.c $(DS_SRC)
+	@echo "Building sched.out..."
+	$(CC) $(CFLAGS) -Isched/inc -I$(DS_INC) $^ -o $@
 
-PROJECTS := $(notdir $(basename $(TEST_FILES)))
-EXECUTABLES := $(PROJECTS:%=%)
+# Optional: fsa.out
+fsa.out: fsa/src/fsa.c fsa/test/fsa_test.c $(DS_SRC)
+	@echo "Building fsa.out..."
+	$(CC) $(CFLAGS) -Ifsa/inc -I$(DS_INC) $^ -o $@
 
-SRC_OBJS := $(SRC_FILES:.c=.o)
-TEST_OBJS := $(TEST_FILES:.c=.o)
-OBJS := $(SRC_OBJS) $(TEST_OBJS)
+# Optional: vsa.out
+vsa.out: vsa/src/vsa.c vsa/test/vsa_test.c $(DS_SRC)
+	@echo "Building vsa.out..."
+	$(CC) $(CFLAGS) -Ivsa/inc -I$(DS_INC) $^ -o $@
 
-# Targets ***********************************************************************
+task.out: sched/src/sched.c sched/src/task.c sched/test/task_test.c $(DS_SRC)
+	@echo "Building task.out..."
+	$(CC) $(CFLAGS) -Isched/inc -I$(DS_INC) $^ -o $@
 
-all: $(EXECUTABLES)
-
-%.out: $(SRC_DIR)/%.c $(TEST_DIR)/%_test.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(DS_SRC_FILES)
-
-objects: $(OBJS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# Phony Targets *****************************************************************
+all: sched.out fsa.out vsa.out
 
 debug: CFLAGS := $(DEBUG)
 debug: clean all
@@ -53,9 +38,7 @@ release: CFLAGS := $(RELEASE)
 release: clean all
 
 clean:
-	rm -f $(SRC_DIR)/*.o $(TEST_DIR)/*.o *.out
+	find . -name "*.out" -o -name "*.o" | xargs rm -f
 
-.PHONY: all clean debug release objects \
-        $(PROJECTS) \
-        $(PROJECTS:%=release-%) $(PROJECTS:%=debug-%)
+.PHONY: all clean debug release
 

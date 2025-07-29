@@ -32,7 +32,6 @@ pq_t* PQCreate(int (*comp)(const void* data1, const void* data2))
     if (NULL == pq->slist)
     {
         free(pq);
-        pq = NULL;
         return NULL;
     }
 
@@ -67,6 +66,7 @@ int PQEnqueue(pq_t* pq, void* data)
 void* PQDequeue(pq_t* pq)
 {
     assert(pq);
+    assert(!PQIsEmpty(pq));
 
     return SortedLPopBack(pq->slist);
 }
@@ -74,7 +74,8 @@ void* PQDequeue(pq_t* pq)
 void* PQPeek(const pq_t* pq)
 {
     assert(pq);
-   
+   	assert(!PQIsEmpty(pq));
+   	
     return SortedLGetData(SortedLPrev(SortedLEnd(pq->slist)));
 }
 

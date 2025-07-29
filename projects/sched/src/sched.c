@@ -56,7 +56,6 @@ void SchedDestroy(sched_t* sch)
 	PQDestroy(sch->pq);
 	
 	free(sch);
-	sch = NULL;
 }
 
 run_status_e SchedRun(sched_t *sch)

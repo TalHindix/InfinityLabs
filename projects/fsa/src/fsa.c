@@ -131,7 +131,6 @@ size_t FSACountFree(const fsa_t *fsa)
     return count;
 }
 
-
 static char *PoolBase(const fsa_t *fsa)
 {
     return (char *)fsa;
