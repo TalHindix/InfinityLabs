@@ -32,7 +32,7 @@ struct header
 static int InBounds(vsa_t* vsa, const void* p);
 static header_t* FirstHdr(vsa_t* vsa);
 static header_t* NextHdr(header_t* h);
-static header_t* FindAndAllocBlock(vsa_t* vsa, size_t need);
+static header_t* FindFitAndCommit(vsa_t* vsa, size_t need);
 static header_t* CommitAlloc(header_t* block, size_t run_size, size_t request_size);
 static void Defrag(vsa_t* vsa);
 
@@ -81,7 +81,7 @@ void* VSAAlloc(vsa_t* vsa, size_t block_size)
         return NULL;
     }
 
-    block_allocated = FindAndAllocBlock(vsa, block_size);
+    block_allocated = FindFitAndCommit(vsa, block_size);
 
     return block_allocated ? (char*)block_allocated + sizeof(header_t) : NULL;
 }
@@ -149,63 +149,69 @@ static int InBounds(vsa_t* vsa, const void* p)
     return (p >= start) && (p < vsa->end_pool);
 }
 
-static header_t* FindAndAllocBlock(vsa_t* vsa, size_t need)
+static header_t* FindFitAndCommit(vsa_t* vsa, size_t request_size)
 {
-    header_t* cur_header = NULL;
-    header_t* run_header = NULL;
-    size_t run_bytes = 0;
-    size_t header_and_payload_size = 0;
+    header_t* cur = NULL;
+    header_t* run_start = NULL;
+    size_t run_total_bytes = 0;
+    size_t part_total_bytes = 0;
 
-    for (cur_header = FirstHdr(vsa); InBounds(vsa, cur_header); cur_header = NextHdr(cur_header))
+    assert(vsa);
+
+    for (cur = FirstHdr(vsa); InBounds(vsa, cur); cur = NextHdr(cur))
     {
-        if (cur_header->block_size > 0)
+        if (cur->block_size > 0) /* free block */
         {
-            header_and_payload_size = sizeof(header_t) + (size_t)cur_header->block_size;
+            part_total_bytes = sizeof(header_t) + (size_t)cur->block_size;
 
-            if (run_bytes == 0)
+            if (0 == run_total_bytes)
             {
-                run_header = cur_header;
+                run_start = cur;
             }
 
-            run_bytes += header_and_payload_size;
+            run_total_bytes += part_total_bytes;
 
-            if (run_bytes >= need + sizeof(header_t))
+            if (run_total_bytes >= request_size + MIN_SPLIT_BYTES)
             {
-                return CommitAlloc(run_header, run_bytes, need);
+                return CommitAlloc(run_start, run_total_bytes, request_size);
             }
         }
         else
         {
-            run_header = NULL;
-            run_bytes = 0;
+            /* reset run if block is allocated */
+            run_start = NULL;
+            run_total_bytes = 0;
         }
     }
 
     return NULL;
 }
 
-static header_t* CommitAlloc(header_t* block, size_t run_size, size_t request_size)
+static header_t* CommitAlloc(header_t* block, size_t run_total_bytes, size_t request_size)
 {
-    size_t payload_size = run_size - sizeof(header_t);
-    long remain = (long)payload_size - (long)request_size;
+    size_t full_payload = run_total_bytes - sizeof(header_t);
+    long remaining = (long)full_payload - (long)request_size;
 
-    if (remain >= (long)MIN_SPLIT_BYTES) {
-        header_t* new_block = (header_t*)((char*)block + sizeof(header_t) + request_size);
-        new_block->block_size = remain - (long)sizeof(header_t);
+    if (remaining >= (long)MIN_SPLIT_BYTES)
+    {
+        /* Create new free block after allocation */
+        header_t* new_free = (header_t*)((char*)block + sizeof(header_t) + request_size);
+        new_free->block_size = remaining - (long)sizeof(header_t);
         #ifndef NDEBUG
-          new_block->magic_number = VSA_MAGIC_NUMBER;
+        new_free->magic_number = VSA_MAGIC_NUMBER;
         #endif
 
-        block->block_size = -(long)request_size;
-        #ifndef NDEBUG
-          block->magic_number = VSA_MAGIC_NUMBER;
-        #endif
-    } else {
-        block->block_size = -(long)payload_size;
-        #ifndef NDEBUG
-          block->magic_number = VSA_MAGIC_NUMBER;
-        #endif
+        block->block_size = -(long)request_size; /* mark allocated */
     }
+    else
+    {
+        /* Not enough room to split - take entire run */
+        block->block_size = -(long)full_payload;
+    }
+
+    #ifndef NDEBUG
+    block->magic_number = VSA_MAGIC_NUMBER;
+    #endif
 
     return block;
 }
