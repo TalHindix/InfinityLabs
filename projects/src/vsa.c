@@ -3,7 +3,7 @@ Exercise:   Prog - VSA
 Date:       27/07/2025
 Developer:  Tal Hindi
 Reviewer:   Yael
-Status:     
+Status:     Approved
 **************************************/
 
 #include <assert.h> /* assert 	*/
@@ -34,7 +34,7 @@ static header_t* FirstHdr(vsa_t* vsa);
 static header_t* NextHdr(header_t* h);
 static header_t* FindAndAllocBlock(vsa_t* vsa, size_t need);
 static header_t* CommitAlloc(header_t* block, size_t run_size, size_t request_size);
-static void Coalesce(vsa_t* vsa);
+static void Defrag(vsa_t* vsa);
 
 vsa_t* VSAInit(void* memory_pool, size_t total_size)
 {
@@ -76,7 +76,7 @@ void* VSAAlloc(vsa_t* vsa, size_t block_size)
     assert(vsa);
 
     block_size = ALIGN_UP(block_size);
-    if (block_size == 0)
+    if (0 == block_size)
     {
         return NULL;
     }
@@ -90,7 +90,7 @@ void VSAFree(void* block)
 {
 	header_t* header = NULL;
 
-    if (block == NULL)
+    if (NULL == block)
     {
         return;
     }
@@ -99,7 +99,7 @@ void VSAFree(void* block)
 
     assert(header->block_size < 0);
 	#ifndef NDEBUG
-		assert(header->magic_number == 0xDEADBEEF);
+		assert(header->magic_number == VSA_MAGIC_NUMBER);
 	#endif
 
     header->block_size = -header->block_size;
@@ -116,7 +116,7 @@ size_t VSALargestChunkAvailable(vsa_t* vsa)
 
     assert(vsa);
 
-    Coalesce(vsa);
+    Defrag(vsa);
 
     curr = FirstHdr(vsa);
 
@@ -210,7 +210,7 @@ static header_t* CommitAlloc(header_t* block, size_t run_size, size_t request_si
     return block;
 }
 
-static void Coalesce(vsa_t* vsa)
+static void Defrag(vsa_t* vsa)
 {
     header_t* curr = NULL;
 

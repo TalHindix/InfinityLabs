@@ -3,7 +3,7 @@ Exercise:   Prog - VSA
 Date:       27/07/2025
 Developer:  Tal Hindi
 Reviewer:   Yael
-Status:
+Status:		Approved
 **************************************/
 
 #include <stdio.h>   /* printf  */

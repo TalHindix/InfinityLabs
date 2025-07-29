@@ -3,11 +3,11 @@ Exercise:   Prog - VSA
 Date:       27/07/2025
 Developer:  Tal Hindi
 Reviewer:   Yael
-Status:     
+Status:     Approved
 **************************************/
 
-#ifndef __VSA_H__
-#define __VSA_H__
+#ifndef ILRD__VSA_H__
+#define ILRD__VSA_H__
 
 #include <stddef.h> /* size_t */
 
@@ -75,5 +75,5 @@ void VSAFree(void* block);
  */
 size_t VSALargestChunkAvailable(vsa_t* vsa);
 
-#endif /* __VSA_H__ */
+#endif /* ILRD__VSA_H__ */
 
