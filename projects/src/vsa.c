@@ -198,12 +198,12 @@ static header_t* CommitAlloc(header_t* block, size_t run_size, size_t request_si
 
         block->block_size = -(long)request_size;
         #ifndef NDEBUG
-          block->magic_number = 0xDEADBEEF;
+          block->magic_number = VSA_MAGIC_NUMBER;
         #endif
     } else {
         block->block_size = -(long)payload_size;
         #ifndef NDEBUG
-          block->magic_number = 0xDEADBEEF;
+          block->magic_number = VSA_MAGIC_NUMBER;
         #endif
     }
 
