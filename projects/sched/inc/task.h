@@ -3,27 +3,17 @@ Exercise:   Project - Task
 Date:       22/07/2025
 Developer:  Tal Hindi
 Reviewer:   Avi Tobar
-Status:     
+Status:     Approved
 **************************************/
 
 #ifndef ILRD_TASK_H
 #define ILRD_TASK_H
 
-#include <stddef.h>     /* size_t  */
-#include <sys/types.h>  /* ssize_t */
-#include "uid.h"        /* ilrd_uid_t */
+#include <stddef.h>     /* size_t  		*/
+#include <sys/types.h>  /* ssize_t 		*/
+#include "uid.h"        /* UIDCreate 	*/
 
 typedef struct task task_t;
-
-/*----------------------------------------------------------
-  General Notes:
-  - Passing NULL pointers to the functions below (unless stated otherwise)
-    results in undefined behavior.
-  - op_func return convention:
-        -1 : task failed (do not reschedule)
-         0 : completed successfully (do not reschedule)
-        >0 : number of seconds until the task should run again
------------------------------------------------------------*/
 
 /**
  * @brief Allocate and initialize a task that will run after a given interval.

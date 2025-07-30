@@ -2,8 +2,8 @@
 Exercise:  Project - Task
 Date:      22/7/2025
 Developer: Tal Hindi
-Reviewer:  
-Status:    
+Reviewer:  Avi Tobar
+Status:    Approved
 **************************************/
 
 #include <stdlib.h>  	/* malloc 		*/
