@@ -54,7 +54,6 @@ void SchedDestroy(sched_t* sch)
 	SchedClear(sch);
 	
 	PQDestroy(sch->pq);
-	
 	free(sch);
 }
 
@@ -82,7 +81,7 @@ run_status_e SchedRun(sched_t *sch)
             continue;
         }
 
-        if (result == 0)
+        if (0 == result)
         {
             TaskDestroy(task);
             continue;
