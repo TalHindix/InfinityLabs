@@ -1,35 +1,46 @@
-CC = gcc
+# make/fsa.mak
 
-NAME = fsa
+# Compiler
+CC := gcc
 
-DEBUG_CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I../$(NAME)/inc
-RELEASE_CFLAGS = -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3 -I../$(NAME)/inc
-CFLAGS = $(DEBUG_CFLAGS)
+# Source paths
+FSA_SRC_DIR := fsa/src
+FSA_INC_DIR := fsa/inc
+FSA_TEST_DIR := fsa/test
 
-TARGET = a.out
+# Include flags
+INC_DIRS := -I$(FSA_INC_DIR)
 
-SRC_DIR = ../$(NAME)/src
-TEST_DIR = ../$(NAME)/test
+# Build type from CFLAGS
+ifeq ($(findstring -g,$(CFLAGS)),-g)
+    BUILD_DIR := bin/debug
+else
+    BUILD_DIR := bin/release
+endif
 
-SRC = $(SRC_DIR)/$(NAME).c $(TEST_DIR)/$(NAME)_test.c
-OBJS = $(SRC:.c=.o)
+# Output binary
+.DEFAULT_GOAL := $(BUILD_DIR)/fsa_test.out
+TARGET := $(BUILD_DIR)/fsa_test.out
 
-.PHONY: all clean debug release
+# Sources and objects
+SRC := $(FSA_SRC_DIR)/fsa.c $(FSA_TEST_DIR)/fsa_test.c
+OBJS := $(SRC:.c=.o)
 
-all: $(TARGET)
+# Rules
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+# Create build dir
+$(BUILD_DIR):
+	mkdir -p $@
 
+# Build object files
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INC_DIRS) -c -o $@ $<
 
-debug:
-	$(MAKE) -f $(NAME).mak CFLAGS='$(DEBUG_CFLAGS)' all
+# Build final executable
+$(TARGET): $(OBJS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INC_DIRS) -o $@ $^
 
-release:
-	$(MAKE) -f $(NAME).mak CFLAGS='$(RELEASE_CFLAGS)' all
-
-clean:
-	rm -f $(OBJS) $(TARGET)
+# Dependency includes
+-include $(OBJS:.o=.d)
 

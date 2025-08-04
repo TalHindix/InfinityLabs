@@ -1,35 +1,49 @@
-CC = gcc
+# make/vsa.mak
 
-NAME = vsa
+# Compiler
+CC := gcc
 
-DEBUG_CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I../$(NAME)/inc
-RELEASE_CFLAGS = -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3 -I../$(NAME)/inc
-CFLAGS = $(DEBUG_CFLAGS)
+# Paths
+VSA_SRC_DIR := vsa/src
+VSA_INC_DIR := vsa/inc
+VSA_TEST_DIR := vsa/test
 
-TARGET = a.out
+# Include flags
+INC_DIRS := -I$(VSA_INC_DIR)
 
-SRC_DIR = ../$(NAME)/src
-TEST_DIR = ../$(NAME)/test
+# Determine build dir based on CFLAGS
+ifeq ($(findstring -g,$(CFLAGS)),-g)
+    BUILD_DIR := bin/debug
+else
+    BUILD_DIR := bin/release
+endif
 
-SRC = $(SRC_DIR)/$(NAME).c $(TEST_DIR)/$(NAME)_test.c
-OBJS = $(SRC:.c=.o)
+# Output file
+.DEFAULT_GOAL := $(BUILD_DIR)/vsa_test.out
+TARGET := $(BUILD_DIR)/vsa_test.out
 
-.PHONY: all clean debug release
+# Sources and object files
+SRC := $(VSA_SRC_DIR)/vsa.c $(VSA_TEST_DIR)/vsa_test.c
+OBJS := $(SRC:.c=.o)
 
-all: $(TARGET)
+# Ensure build dir exists
+$(BUILD_DIR):
+	mkdir -p $@
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
-
+# Compile objects
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INC_DIRS) -c $< -o $@
 
-debug:
-	$(MAKE) -f $(NAME).mak CFLAGS='$(DEBUG_CFLAGS)' all
+# Link final binary
+$(TARGET): $(OBJS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INC_DIRS) -o $@ $^
 
-release:
-	$(MAKE) -f $(NAME).mak CFLAGS='$(RELEASE_CFLAGS)' all
+# Auto-dependencies
+-include $(OBJS:.o=.d)
 
+# Optional clean
+.PHONY: clean
 clean:
 	rm -f $(OBJS) $(TARGET)
 
