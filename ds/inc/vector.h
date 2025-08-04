@@ -4,6 +4,8 @@
 
 typedef struct Vector vector_t;
 
+#include <stddef.h>
+
 #define DEFAULT_CAPACITY (8)
 
 /* Create the dynamic vector O(1)*/

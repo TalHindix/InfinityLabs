@@ -6,12 +6,12 @@ Reviewer: 	Lotem Kitaroo
 Status:		Approved
 **************************************/
 
-#include "sll.h"
+#include <stdlib.h> /* malloc free */
+#include <assert.h> /* assert */
+ 
+#include "sll.h" /* SLLCreate */
 
-#include <stdlib.h>   /* malloc, free */
-#include <stddef.h>   /* size_t 	*/
-#include <assert.h>   /* assert     */
-
+typedef struct node node_t;
 
 struct node
 {
@@ -118,12 +118,12 @@ void SLLSetData(sll_iter_t iter, void* data)
 
 sll_iter_t SLLInsert(sll_iter_t where, void* data)
 {
-	sll_iter_t node = NULL;
+	node_t* node = NULL;
 	
-	assert(NULL != where);
+	assert(where);
 	
-	node = (sll_iter_t)malloc(sizeof(sll_iter_t));
-	if (NULL == node)
+	node = (node_t*)malloc(sizeof(node_t));
+	if (!node)
 	{
 		while (SLLNext(where))
 		{

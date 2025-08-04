@@ -9,11 +9,10 @@ Status:		Approved
 #ifndef _ILRD_SLL_
 #define _ILRD_SLL_
 
-#include <stddef.h>
+#include <stddef.h> /* size_t */
 
 typedef struct sll sll_t;
-typedef struct node node_t;
-typedef node_t* sll_iter_t;
+typedef struct node* sll_iter_t;
 
 typedef int (*is_match_func_t)(const void* data, void* param);
 typedef int (*action_func_t)(void* data, void* param);

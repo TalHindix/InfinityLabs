@@ -9,7 +9,7 @@ status:
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>  
-#include "../include/vector.h"
+#include "vector.h"
 
 
 static void TestCreate();

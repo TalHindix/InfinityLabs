@@ -11,6 +11,8 @@ Status:    Approved
 
 #include "task.h"		/* TaskCreate 	*/
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 struct task
 {
     ilrd_uid_t uid;
@@ -91,9 +93,13 @@ void TaskSetTimeToRun(task_t* task, size_t interval_in_sec)
 
 size_t TaskGetTimeToRun(const task_t* task)
 {
+	time_t interval = 0;
+	
     assert(task);
     
-    return 0 < (task->time_to_execute - time(NULL)) ? (size_t)(task->time_to_execute - time(NULL)) : 0;
+    interval = task->time_to_execute - time(NULL);
+    
+    return MAX(interval,0);
 }
 
 int TaskIsMatch(const task_t* task, ilrd_uid_t uid)

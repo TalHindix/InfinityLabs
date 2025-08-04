@@ -6,7 +6,7 @@ status: Approved
 
 #include <stdio.h> /* printf */
 #include <string.h> /* strcmp */
-#include "../include/bit_arr.h" 
+#include "bit_arr.h" 
 
 /*-------------------------------------------------------------*/
 void TestBitArrSetAllOn()

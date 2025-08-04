@@ -14,13 +14,10 @@ Status:		Approved
 
 #include "queue.h"
 
-typedef struct queue queue_t;
-
 struct queue
 {
     sll_t* list;
 };
-
 
 /*helper func*/
 static int IsQueueInvalid(const queue_t *queue)

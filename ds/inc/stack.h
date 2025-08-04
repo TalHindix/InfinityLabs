@@ -8,6 +8,7 @@ status: Approved
 #ifndef _ILRD_STACK_
 #define _ILRD_STACK_
 
+#include <stddef.h>
 
 
 typedef struct Stack stack_t;
