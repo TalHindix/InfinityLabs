@@ -3,7 +3,7 @@ Exercise: 	Prog - FSA
 Date:		24/07/2025
 Developer:	Tal Hindi
 Reviewer: 	Daniel Gamliel
-Status:		
+Status:		Approved
 **************************************/
 
 #ifndef __ILRD_FSA_H__

@@ -3,7 +3,7 @@ Exercise:   Prog - FSA
 Date:       24/07/2025
 Developer:  Tal Hindi
 Reviewer:   Daniel Gamliel
-Status:     
+Status:     Approved
 **************************************/
 
 #include <assert.h> /* assert */
@@ -29,7 +29,7 @@ size_t FSASuggestSize(size_t block_amount, size_t block_size)
     size_t aligned_block = 0;
     size_t meta_byte = 0;
 
-    if (block_amount == 0 || block_size == 0)
+    if (0 == block_amount || 0 == block_size)
     {
         return 0;
     }
