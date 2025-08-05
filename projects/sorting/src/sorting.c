@@ -2,7 +2,7 @@
 Exercise: 	SA - Comparing Sorting
 Date:		5/8/2025
 Developer:	Tal Hindi
-Reviewer: 	
+Reviewer: 	Dana Chesner
 Status:		
 **************************************/
  
@@ -20,19 +20,22 @@ void BubbleSort(int* arr, size_t size)
 {
 	size_t i = 0;
 	size_t j = 0;
+	int is_swap = 1;
 	
 	if (size < 2 || !arr)
 	{
 		return;
 	}
 	
-	for (i = 0; i < size - 1; ++i)
+	for (i = 0; i < size - 1 && is_swap ; ++i)
 	{
+		is_swap = 0;
 		for(j = 0; j < size - i - 1; ++j)
 		{
 			if(arr[j] > arr[j + 1])
 			{
 				Swap(&arr[j], &arr[j + 1]);
+				is_swap = 1;
 			}
 		}		
 	}
@@ -71,7 +74,12 @@ void InsertionSort(int* arr, size_t size)
 	size_t i = 0;
 	size_t j = 0;
 	
-	for (i = 1; i < size - 1; ++i)
+	if (!arr || size < 2)
+	{
+		return;
+	}
+	
+	for (i = 1; i < size; ++i)
 	{
 		j = i;
 		
