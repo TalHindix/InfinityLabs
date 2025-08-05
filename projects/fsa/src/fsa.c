@@ -77,8 +77,8 @@ fsa_t* FSAInit(void* pool, size_t pool_size, size_t block_size)
 
 void* FSAAlloc(fsa_t *fsa)
 {
-    char *base = NULL;
-    void *block = NULL;
+    char* base = NULL;
+    void* block = NULL;
 
     assert(fsa);
 
