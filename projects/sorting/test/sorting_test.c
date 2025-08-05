@@ -2,7 +2,7 @@
 Exercise: 	SA - Comparing Sorting
 Date:		5/8/2025
 Developer:	Tal Hindi
-Reviewer: 	Dana Chesner
+Reviewer: 	Avi Tobar
 Status:		
 **************************************/
 
@@ -27,11 +27,11 @@ int main(void)
 {
 
 	srand((unsigned)time(NULL));	
-	/*
+	
     TestBubbleSort();
        
     TestSelectionSort();
-    */
+    
     TestInsertionSort();
     
     
