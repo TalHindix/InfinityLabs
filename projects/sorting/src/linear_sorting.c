@@ -18,10 +18,10 @@ static void CountingSortDigit(int* arr, size_t size, int exp);
 
 void CountingSort(int* arr, size_t size)
 {
-	int max = 0;
-	int min = 0;
+	long max = 0;
+	long min = 0;
 	size_t range = 0;
-	int index = 0;
+	size_t index = 0;
 	size_t i = 0;
 	int* count_arr = NULL;
 	int* out_put = NULL;
@@ -41,7 +41,7 @@ void CountingSort(int* arr, size_t size)
 		}
 	}
 	
-	range = max - min + 1;
+	range = (size_t)(max - min + 1);
 	count_arr = (int*)calloc(range, sizeof(int));
 	out_put = (int*)malloc(size * sizeof(int));
 	
@@ -53,7 +53,7 @@ void CountingSort(int* arr, size_t size)
 		return;
 	}
 	
-	for (i = 0; i < range; ++i)
+	for (i = 0; i < size; ++i)
 	{
 		++count_arr[arr[i]-min];
 	}
@@ -65,7 +65,7 @@ void CountingSort(int* arr, size_t size)
 	
 	for (i = size; i > 0; --i)
 	{
-		index = arr[i] - min;
+		index = (size_t)(arr[i] - min);
 		out_put[--count_arr[index]] = arr[i];
 	}
 	
