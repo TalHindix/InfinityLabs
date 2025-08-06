@@ -1,9 +1,9 @@
 /**************************************
-Exercise: 	SA - Comparing Sorting
+Exercise: 	SA - Cmp Sorting
 Date:		5/8/2025
 Developer:	Tal Hindi
 Reviewer: 	Avi Tobar
-Status:		
+Status:		Approved
 **************************************/
 
 #include <stddef.h> /* size_t */

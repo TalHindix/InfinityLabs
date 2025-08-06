@@ -1,4 +1,4 @@
-# make/sorting.mak
+# make/cmp_sorting.mak
 
 # Compiler
 CC := gcc
@@ -19,11 +19,11 @@ else
 endif
 
 # Output binary
-.DEFAULT_GOAL := $(BUILD_DIR)/sorting_test.out
-TARGET := $(BUILD_DIR)/sorting_test.out
+.DEFAULT_GOAL := $(BUILD_DIR)/cmp_sorting_test.out
+TARGET := $(BUILD_DIR)/cmp_sorting_test.out
 
 # Sources and objects
-SRC := $(SORTING_SRC_DIR)/sorting.c $(SORTING_TEST_DIR)/sorting_test.c
+SRC := $(SORTING_SRC_DIR)/cmp_sorting.c $(SORTING_TEST_DIR)/cmp_sorting_test.c
 OBJS := $(SRC:.c=.o)
 
 # Rules
