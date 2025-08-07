@@ -8,6 +8,8 @@ CFLAGS_RELEASE := -ansi -pedantic-errors -Wall -Wextra -fPIC -DNDEBUG -O3 -MMD
 BIN_DEBUG_DIR = bin/debug
 BIN_RELEASE_DIR = bin/release
 
+PROJECTS := $(notdir $(basename $(wildcard make/*)))
+
 .PHONY: clean debug release test all
 
 ifeq ($(ACTION),all)
@@ -38,6 +40,11 @@ $(TARGET):
 endif
 
 clean:
-	@echo "Cleaning bin directory..."
 	@rm -rf bin
+	@for dir in $(PROJECTS); do \
+		rm -f $$dir/src/*.o $$dir/src/*.so $$dir/src/*.d || true; \
+		rm -f $$dir/test/*.o $$dir/test/*.d || true; \
+	done
+	rm -f *.out
+
 
