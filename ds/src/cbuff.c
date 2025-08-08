@@ -67,7 +67,7 @@ ssize_t CBuffWrite(cbuff_t* cbuff, const void* src, size_t bytes)
 	{
 		return -1;	
 	}
-		
+	
 	bytes_to_write = MIN(bytes, CBuffFreeSpace(cbuff));
 	
 	if (0 == bytes_to_write)
