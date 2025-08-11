@@ -48,6 +48,7 @@ static bst_node_t* Leftmost(bst_node_t* node);
 static bst_node_t* Rightmost(bst_node_t* node);
 static int IsLeaf(bst_node_t* node);
 static int IsBegin(bst_iter_t iter);
+static int AddOne(void* data, void* param);
 
 bst_t* BSTCreate(cmp_func_t cmp)
 {
@@ -78,39 +79,39 @@ void BSTDestroy(bst_t* tree)
 
     assert(tree);
 
-    node = tree->root_stub.children[LEFT];
+    node = Root(tree);
 
     /* walk down to leaves, free them, and climb up*/
     while (!BSTIsEmpty(tree))
     {
-        if (IsLeaf(node))
+        if (LEFT_CHILD(node))
         {
-            child_node_pos_t side = LEFT;
-
-            parent = node->parent;
-
-            /* decide if this node is the LEFT or RIGHT child of its parent */
-            if ((NULL != RIGHT_CHILD(parent)) && (RIGHT_CHILD(parent) == node))
-            {
-                side = RIGHT;
-            }
-
-            /* detach from parent, free, and climb */
-            parent->children[side] = NULL;
-            free(node);
-            node = parent;
+            node = LEFT_CHILD(node);
+        }
+        else if (RIGHT_CHILD(node))
+        {
+            node = RIGHT_CHILD(node);
         }
         else
         {
-            if (NULL != RIGHT_CHILD(node))
+            parent = node->parent;
+
+            if(parent)
             {
-                node = RIGHT_CHILD(node);
+                if(LEFT_CHILD(parent) == node)
+                {
+                    LEFT_CHILD(parent) = NULL;
+                }
+                else
+                {
+                    RIGHT_CHILD(parent) = NULL;
+                }
             }
-            else
-            {
-                node = LEFT_CHILD(node);
-            }
+
+            free(node);
+            node = parent;
         }
+        
     }
 
     free(tree);
@@ -129,10 +130,25 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
     current = Root(tree);
     parent = &tree->root_stub;
 
+    new_node = CreateNode(data);
+    if (!new_node)
+    {
+        return BSTEnd(tree);
+    }
+
+    if (BSTIsEmpty(tree))
+    {
+        LEFT_CHILD(parent) = new_node;
+        new_node->parent = parent; /* parent is &tree->root_stub */
+        return NodeToIter(new_node);
+    }
+
     while (current)
     {
         parent = current;
         cmp_result = tree->cmp(data, current->data);
+
+        assert(cmp_result);
 
         if (cmp_result > 0)
         {
@@ -142,17 +158,11 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
         {
             current = LEFT_CHILD(current);
         }
-    } 
-
-    new_node = CreateNode(data);
-    if (!new_node)
-    {
-        return BSTEnd(tree);
     }
 
     new_node->parent = parent;
 
-    if (parent == &tree->root_stub || cmp_result < 0)
+    if (cmp_result < 0)
     {
         LEFT_CHILD(parent) = new_node;
     }
@@ -164,10 +174,11 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
     return NodeToIter(new_node);
 }
 
+
 void BSTRemove(bst_iter_t to_remove)
 {
     bst_node_t* node_to_remove = NULL;
-    bst_node_t* succ = NULL;
+    bst_node_t* next = NULL;
 
     assert(to_remove.node);
     assert(to_remove.node->parent != NULL);
@@ -188,17 +199,17 @@ void BSTRemove(bst_iter_t to_remove)
         return;
     }
 
-    succ = IterToNode(BSTNext(NodeToIter(node_to_remove)));
+    next = IterToNode(BSTNext(NodeToIter(node_to_remove)));
 
-    if (succ->parent != node_to_remove)
+    if (next->parent != node_to_remove)
     {
-        ReplaceSubtree(succ, RIGHT_CHILD(succ));
-        AttachChild(succ, RIGHT, RIGHT_CHILD(node_to_remove));
+        ReplaceSubtree(next, RIGHT_CHILD(next));
+        AttachChild(next, RIGHT, RIGHT_CHILD(node_to_remove));
     }
 
-    ReplaceSubtree(node_to_remove, succ);
+    ReplaceSubtree(node_to_remove, next);
 
-    AttachChild(succ, LEFT, LEFT_CHILD(node_to_remove));
+    AttachChild(next, LEFT, LEFT_CHILD(node_to_remove));
     
     free(node_to_remove);
 }
@@ -206,17 +217,10 @@ void BSTRemove(bst_iter_t to_remove)
 size_t BSTSize(const bst_t* tree)
 {
     size_t count = 0;
-    bst_iter_t curr = {0};
 
     assert(tree);
 
-   curr = BSTBegin(tree);
-
-    while(!BSTIterIsSame(BSTEnd(tree),curr))
-    {
-        ++count;
-        curr = BSTNext(curr);
-    }
+    BSTForEach(BSTBegin(tree), BSTEnd(tree), AddOne, &count);
 
     return count;
 }
@@ -224,7 +228,7 @@ size_t BSTSize(const bst_t* tree)
 int BSTIsEmpty(const bst_t* tree)
 {
     assert(tree);
-    return (Root(tree) == NULL);
+    return (NULL == Root(tree));
 }
 
 bst_iter_t BSTBegin(const bst_t* tree)
@@ -242,7 +246,7 @@ bst_iter_t BSTEnd(const bst_t* tree)
 {
     assert(tree);
 
-    return NodeToIter((bst_node_t*)&tree->root_stub);
+    return NodeToIter(tree->root_stub.children[RIGHT]);
 }
 
 bst_iter_t BSTPrev(bst_iter_t iter)
@@ -352,7 +356,6 @@ static bst_iter_t NodeToIter(bst_node_t* node)
 
 	return iter;
 }
-
 
 static bst_node_t* CreateNode(void* data)
 {
@@ -474,3 +477,12 @@ static int IsBegin(bst_iter_t iter)
 
     return 1;
 }
+
+static int AddOne(void* data, void* param)
+{
+    (void)data;
+    *(size_t*)param += 1;
+    
+    return 0;
+}
+
