@@ -42,8 +42,8 @@ static bst_node_t* CreateNode(void* data);
 static bst_node_t* FindNode(const bst_t* tree, void* key);
 static bst_node_t* Root(const bst_t* tree);
 static int IsLeftChild(bst_node_t* node);
-static void Link(bst_node_t* parent, child_node_pos_t side, bst_node_t* child);
-static void Transplant(bst_node_t* u, bst_node_t* v);
+static void AttachChild(bst_node_t* parent, child_node_pos_t side, bst_node_t* child);
+static void ReplaceSubtree(bst_node_t* u, bst_node_t* v);
 static bst_node_t* Leftmost(bst_node_t* node);
 static bst_node_t* Rightmost(bst_node_t* node);
 static int IsLeaf(bst_node_t* node);
@@ -176,14 +176,14 @@ void BSTRemove(bst_iter_t to_remove)
 
     if (!LEFT_CHILD(node_to_remove))
     {
-        Transplant(node_to_remove, RIGHT_CHILD(node_to_remove));    
+        ReplaceSubtree(node_to_remove, RIGHT_CHILD(node_to_remove));    
         free(node_to_remove);
         return;
     }
 
     if (!RIGHT_CHILD(node_to_remove))
     {
-        Transplant(node_to_remove, LEFT_CHILD(node_to_remove));
+        ReplaceSubtree(node_to_remove, LEFT_CHILD(node_to_remove));
         free(node_to_remove);
         return;
     }
@@ -192,13 +192,13 @@ void BSTRemove(bst_iter_t to_remove)
 
     if (succ->parent != node_to_remove)
     {
-        Transplant(succ, RIGHT_CHILD(succ));
-        Link(succ, RIGHT, RIGHT_CHILD(node_to_remove));
+        ReplaceSubtree(succ, RIGHT_CHILD(succ));
+        AttachChild(succ, RIGHT, RIGHT_CHILD(node_to_remove));
     }
 
-    Transplant(node_to_remove, succ);
+    ReplaceSubtree(node_to_remove, succ);
 
-    Link(succ, LEFT, LEFT_CHILD(node_to_remove));
+    AttachChild(succ, LEFT, LEFT_CHILD(node_to_remove));
     
     free(node_to_remove);
 }
@@ -408,7 +408,7 @@ static int IsLeftChild(bst_node_t* node)
     return node->parent && (node->parent->children[LEFT] == node);
 }
 
-static void Link(bst_node_t* parent, child_node_pos_t side, bst_node_t* child)
+static void AttachChild(bst_node_t* parent, child_node_pos_t side, bst_node_t* child)
 {
     parent->children[side] = child;
     if (child)
@@ -417,17 +417,17 @@ static void Link(bst_node_t* parent, child_node_pos_t side, bst_node_t* child)
     }
 }
 
-static void Transplant(bst_node_t* u, bst_node_t* v)
+static void ReplaceSubtree(bst_node_t* u, bst_node_t* v)
 {
     bst_node_t* p = u->parent;
 
     if (p->parent == NULL)
     {
-        Link(p, LEFT, v);
+        AttachChild(p, LEFT, v);
         return;
     }
 
-    Link(p, IsLeftChild(u) ? LEFT : RIGHT, v);
+    AttachChild(p, IsLeftChild(u) ? LEFT : RIGHT, v);
 }
 
 static bst_node_t* Leftmost(bst_node_t* node)
