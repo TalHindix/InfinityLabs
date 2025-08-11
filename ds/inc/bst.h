@@ -44,7 +44,7 @@ void BSTDestroy(bst_t* tree);
     Insert a new item (pointer) into the tree.
     On success returns an iterator to the new node.
     On allocation failure returns BSTEnd(tree).
-    Note: equal keys are allowed; ties go to the LEFT side.
+    Note: equal keys are not allowed;
     O(logn) 
 */
 bst_iter_t BSTInsert(bst_t* tree, void* data);
