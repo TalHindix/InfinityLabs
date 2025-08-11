@@ -23,7 +23,7 @@ typedef struct bst_node bst_node_t;
 
 typedef struct bst_iter
 {
-    bst_node_t *node;
+    bst_node_t* node;
 } bst_iter_t;
 
 /*

@@ -12,6 +12,9 @@ Status:
 
 #include "bst.h"    /* BSTCreate    */
 
+#define LEFT_CHILD(node) (node->children[LEFT])
+#define RIGHT_CHILD(node) (node->children[RIGHT])
+
 typedef enum child_node_pos
 {
     LEFT,
@@ -33,17 +36,18 @@ struct bst
 };
 
 static bst_iter_t StepInOrder(bst_iter_t iter, child_node_pos_t first_dir, child_node_pos_t second_dir);
-static bst_iter_t NodeToIter(bst_node_t* ptr);
+static bst_node_t* IterToNode(bst_iter_t iter);
+static bst_iter_t NodeToIter(bst_node_t* node);
 static bst_node_t* CreateNode(void* data);
 static bst_node_t* FindNode(const bst_t* tree, void* key);
 static bst_node_t* Root(const bst_t* tree);
 static int IsLeftChild(bst_node_t* node);
 static void Link(bst_node_t* parent, child_node_pos_t side, bst_node_t* child);
 static void Transplant(bst_node_t* u, bst_node_t* v);
-static bst_node_t* MinNode(bst_node_t* node);
-static bst_node_t* Leftmost(bst_node_t* n);
-static bst_node_t* Rightmost(bst_node_t* n);
+static bst_node_t* Leftmost(bst_node_t* node);
+static bst_node_t* Rightmost(bst_node_t* node);
 static int IsLeaf(bst_node_t* node);
+static int IsBegin(bst_iter_t iter);
 
 bst_t* BSTCreate(cmp_func_t cmp)
 {
@@ -77,7 +81,7 @@ void BSTDestroy(bst_t* tree)
     node = tree->root_stub.children[LEFT];
 
     /* walk down to leaves, free them, and climb up*/
-    while ((NULL != node) && (NULL != node->parent))
+    while (!BSTIsEmpty(tree))
     {
         if (IsLeaf(node))
         {
@@ -86,7 +90,7 @@ void BSTDestroy(bst_t* tree)
             parent = node->parent;
 
             /* decide if this node is the LEFT or RIGHT child of its parent */
-            if ((NULL != parent->children[RIGHT]) && (parent->children[RIGHT] == node))
+            if ((NULL != RIGHT_CHILD(parent)) && (RIGHT_CHILD(parent) == node))
             {
                 side = RIGHT;
             }
@@ -98,13 +102,13 @@ void BSTDestroy(bst_t* tree)
         }
         else
         {
-            if (NULL != node->children[RIGHT])
+            if (NULL != RIGHT_CHILD(node))
             {
-                node = node->children[RIGHT];
+                node = RIGHT_CHILD(node);
             }
             else
             {
-                node = node->children[LEFT];
+                node = LEFT_CHILD(node);
             }
         }
     }
@@ -125,7 +129,6 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
     current = Root(tree);
     parent = &tree->root_stub;
 
-    /* find the insertion point */
     while (current)
     {
         parent = current;
@@ -133,13 +136,13 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
 
         if (cmp_result > 0)
         {
-            current = current->children[RIGHT];
+            current = RIGHT_CHILD(current);
         }
         else
         {
-            current = current->children[LEFT];
+            current = LEFT_CHILD(current);
         }
-    }
+    } 
 
     new_node = CreateNode(data);
     if (!new_node)
@@ -151,11 +154,11 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
 
     if (parent == &tree->root_stub || cmp_result < 0)
     {
-        parent->children[LEFT] = new_node;
+        LEFT_CHILD(parent) = new_node;
     }
     else
     {
-        parent->children[RIGHT] = new_node;
+        RIGHT_CHILD(parent) = new_node;
     }
 
     return NodeToIter(new_node);
@@ -169,45 +172,50 @@ void BSTRemove(bst_iter_t to_remove)
     assert(to_remove.node);
     assert(to_remove.node->parent != NULL);
 
-    node_to_remove = to_remove.node;
+    node_to_remove = IterToNode(to_remove);
 
-    if (!node_to_remove->children[LEFT])
+    if (!LEFT_CHILD(node_to_remove))
     {
-        Transplant(node_to_remove, node_to_remove->children[RIGHT]);    
+        Transplant(node_to_remove, RIGHT_CHILD(node_to_remove));    
         free(node_to_remove);
         return;
     }
 
-    if (!node_to_remove->children[RIGHT])
+    if (!RIGHT_CHILD(node_to_remove))
     {
-        Transplant(node_to_remove, node_to_remove->children[LEFT]);
+        Transplant(node_to_remove, LEFT_CHILD(node_to_remove));
         free(node_to_remove);
         return;
     }
 
-    succ = MinNode(node_to_remove->children[RIGHT]);
+    succ = IterToNode(BSTNext(NodeToIter(node_to_remove)));
 
     if (succ->parent != node_to_remove)
     {
-        Transplant(succ, succ->children[RIGHT]);
-        Link(succ, RIGHT, node_to_remove->children[RIGHT]);
+        Transplant(succ, RIGHT_CHILD(succ));
+        Link(succ, RIGHT, RIGHT_CHILD(node_to_remove));
     }
 
     Transplant(node_to_remove, succ);
-    Link(succ, LEFT, node_to_remove->children[LEFT]);
+
+    Link(succ, LEFT, LEFT_CHILD(node_to_remove));
+    
     free(node_to_remove);
 }
 
-size_t BSTSize(const bst_t *tree)
+size_t BSTSize(const bst_t* tree)
 {
     size_t count = 0;
-    bst_iter_t it;
+    bst_iter_t curr = {0};
 
     assert(tree);
 
-    for (it = BSTBegin(tree); !BSTIterIsSame(it, BSTEnd(tree)); it = BSTNext(it))
+   curr = BSTBegin(tree);
+
+    while(!BSTIterIsSame(BSTEnd(tree),curr))
     {
         ++count;
+        curr = BSTNext(curr);
     }
 
     return count;
@@ -221,26 +229,33 @@ int BSTIsEmpty(const bst_t* tree)
 
 bst_iter_t BSTBegin(const bst_t* tree)
 {
-    bst_node_t* n = NULL;
+    bst_node_t* node = NULL;
 
     assert(tree);
-    n = Root(tree);
-    return n ? NodeToIter(Leftmost(n)) : BSTEnd(tree);
+
+    node = Root(tree);
+
+    return node ? NodeToIter(Leftmost(node)) : BSTEnd(tree);
 }
 
 bst_iter_t BSTEnd(const bst_t* tree)
 {
     assert(tree);
+
     return NodeToIter((bst_node_t*)&tree->root_stub);
 }
 
 bst_iter_t BSTPrev(bst_iter_t iter)
 {
+    assert(!IsBegin(iter));
+
     return StepInOrder(iter, LEFT, RIGHT);
 }
 
 bst_iter_t BSTNext(bst_iter_t iter)
 {
+    assert(IterToNode(iter)->parent != NULL);
+
     return StepInOrder(iter, RIGHT, LEFT);
 }
 
@@ -267,7 +282,7 @@ bst_iter_t BSTFind(const bst_t* bst, void* to_find)
     {
         return NodeToIter(node);
     }
-    
+
     return BSTEnd((bst_t*)bst);
 }
 
@@ -295,14 +310,17 @@ int BSTForEach(bst_iter_t from, bst_iter_t to,
     return 0;
 }
 
+/**************************************HELPER FUNCTIONS  ********************************************************/
+
 static bst_iter_t StepInOrder(bst_iter_t iter,
                               child_node_pos_t first_dir,
                               child_node_pos_t second_dir)
 {
     bst_node_t* node = NULL;
 
-    assert(iter.node);
-    node = iter.node;
+    assert(IterToNode(iter));
+
+    node = IterToNode(iter);
 
     if (node->children[first_dir])
     {
@@ -319,12 +337,22 @@ static bst_iter_t StepInOrder(bst_iter_t iter,
     return node->parent ? NodeToIter(node->parent) : NodeToIter(node);
 }
 
-static bst_iter_t NodeToIter(bst_node_t* ptr)
+static bst_node_t* IterToNode(bst_iter_t iter)
 {
-    bst_iter_t it;
-    it.node = ptr;
-    return it;
+	return (iter.node);
 }
+
+static bst_iter_t NodeToIter(bst_node_t* node)
+{
+    bst_iter_t iter = {0};
+
+    assert(node);
+
+    iter.node = node;
+
+	return iter;
+}
+
 
 static bst_node_t* CreateNode(void* data)
 {
@@ -402,30 +430,47 @@ static void Transplant(bst_node_t* u, bst_node_t* v)
     Link(p, IsLeftChild(u) ? LEFT : RIGHT, v);
 }
 
-static bst_node_t* MinNode(bst_node_t* node)
+static bst_node_t* Leftmost(bst_node_t* node)
 {
-    return Leftmost(node);
+    while (node && node->children[LEFT] && node->children[LEFT] != node)
+    {
+        node = node->children[LEFT];
+    }
+    return node;
 }
 
-static bst_node_t* Leftmost(bst_node_t* n)
+static bst_node_t* Rightmost(bst_node_t* node)
 {
-    while (n && n->children[LEFT] && n->children[LEFT] != n)
+    while (node && node->children[RIGHT] && node->children[RIGHT] != node)
     {
-        n = n->children[LEFT];
+        node = node->children[RIGHT];
     }
-    return n;
-}
-
-static bst_node_t* Rightmost(bst_node_t* n)
-{
-    while (n && n->children[RIGHT] && n->children[RIGHT] != n)
-    {
-        n = n->children[RIGHT];
-    }
-    return n;
+    return node;
 }
 
 static int IsLeaf(bst_node_t* node)
 {
     return !node->children[LEFT] && !node->children[RIGHT];
+}
+
+static int IsBegin(bst_iter_t iter)
+{
+    bst_node_t* node = IterToNode(iter);
+
+    if (LEFT_CHILD(node))
+    {
+        return 0;
+    }
+
+    while (node->parent)
+    {
+        if (node == node->parent->children[RIGHT])
+        {
+            return 0;
+        }
+
+        node = node->parent;
+    }
+
+    return 1;
 }
