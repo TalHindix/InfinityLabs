@@ -42,11 +42,10 @@ static bst_node_t* CreateNode(void* data);
 static bst_node_t* FindNode(const bst_t* tree, void* key);
 static bst_node_t* Root(const bst_t* tree);
 static int IsLeftChild(bst_node_t* node);
-static void AttachChild(bst_node_t* parent, child_node_pos_t side, bst_node_t* child);
-static void ReplaceSubtree(bst_node_t* u, bst_node_t* v);
+static void SetChildLink(bst_node_t* parent, child_node_pos_t side, bst_node_t* child);
+static void ReplaceInParent(bst_node_t* u, bst_node_t* v);
 static bst_node_t* Leftmost(bst_node_t* node);
 static bst_node_t* Rightmost(bst_node_t* node);
-static int IsLeaf(bst_node_t* node);
 static int IsBegin(bst_iter_t iter);
 static int AddOne(void* data, void* param);
 
@@ -187,14 +186,14 @@ void BSTRemove(bst_iter_t to_remove)
 
     if (!LEFT_CHILD(node_to_remove))
     {
-        ReplaceSubtree(node_to_remove, RIGHT_CHILD(node_to_remove));    
+        ReplaceInParent(node_to_remove, RIGHT_CHILD(node_to_remove));    
         free(node_to_remove);
         return;
     }
 
     if (!RIGHT_CHILD(node_to_remove))
     {
-        ReplaceSubtree(node_to_remove, LEFT_CHILD(node_to_remove));
+        ReplaceInParent(node_to_remove, LEFT_CHILD(node_to_remove));
         free(node_to_remove);
         return;
     }
@@ -203,13 +202,13 @@ void BSTRemove(bst_iter_t to_remove)
 
     if (next->parent != node_to_remove)
     {
-        ReplaceSubtree(next, RIGHT_CHILD(next));
-        AttachChild(next, RIGHT, RIGHT_CHILD(node_to_remove));
+        ReplaceInParent(next, RIGHT_CHILD(next));
+        SetChildLink(next, RIGHT, RIGHT_CHILD(node_to_remove));
     }
 
-    ReplaceSubtree(node_to_remove, next);
+    ReplaceInParent(node_to_remove, next);
 
-    AttachChild(next, LEFT, LEFT_CHILD(node_to_remove));
+    SetChildLink(next, LEFT, LEFT_CHILD(node_to_remove));
     
     free(node_to_remove);
 }
@@ -411,7 +410,7 @@ static int IsLeftChild(bst_node_t* node)
     return node->parent && (node->parent->children[LEFT] == node);
 }
 
-static void AttachChild(bst_node_t* parent, child_node_pos_t side, bst_node_t* child)
+static void SetChildLink(bst_node_t* parent, child_node_pos_t side, bst_node_t* child)
 {
     parent->children[side] = child;
     if (child)
@@ -420,17 +419,19 @@ static void AttachChild(bst_node_t* parent, child_node_pos_t side, bst_node_t* c
     }
 }
 
-static void ReplaceSubtree(bst_node_t* u, bst_node_t* v)
+static void ReplaceInParent(bst_node_t* u, bst_node_t* v)
 {
-    bst_node_t* p = u->parent;
+    bst_node_t* parent = NULL;
+    
+    parent = u->parent;
 
-    if (p->parent == NULL)
+    if (parent->parent == NULL)
     {
-        AttachChild(p, LEFT, v);
+        SetChildLink(parent, LEFT, v);
         return;
     }
 
-    AttachChild(p, IsLeftChild(u) ? LEFT : RIGHT, v);
+    SetChildLink(parent, IsLeftChild(u) ? LEFT : RIGHT, v);
 }
 
 static bst_node_t* Leftmost(bst_node_t* node)
@@ -449,11 +450,6 @@ static bst_node_t* Rightmost(bst_node_t* node)
         node = node->children[RIGHT];
     }
     return node;
-}
-
-static int IsLeaf(bst_node_t* node)
-{
-    return !node->children[LEFT] && !node->children[RIGHT];
 }
 
 static int IsBegin(bst_iter_t iter)
