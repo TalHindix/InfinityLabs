@@ -1,9 +1,9 @@
 /**************************************
-Exercise:  DS - BST 
-Date:      7/8/2025
-Developer: Tal Hindi
-Reviewer:
-Status:
+Exercise:   DS - BST
+Date:       7/8/2025
+Developer:  Tal Hindi
+Reviewer:   Avi Tobar
+Status:     Approved
 **************************************/
 
 #include <stdio.h>
