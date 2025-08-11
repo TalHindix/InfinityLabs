@@ -21,7 +21,6 @@ int main(void)
     return 0;
 }
 
-
 void PrintBinary(int c)
 {
     int i = 0;
