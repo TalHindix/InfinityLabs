@@ -5,17 +5,21 @@ Developer:  Tal Hindi
 Reviewer:   Avi Tobar
 Status:     
 **************************************/
-
+#include <stdio.h>
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* strtod */
 #include <string.h> /* strlen */
 #include <assert.h> /* assert */
+#include <math.h>   /* pow    */
 
 #include "stack.h"      /* stack_t */
 #include "calculator.h" /* Calculate */
 
 #define STATE_ROWS 3
 #define CHAR_SIZE 255
+
+#define LEFT_ASSOCIATIVE 0
+#define RIGHT_ASSOCIATIVE 1
 
 typedef enum event
 {
@@ -30,6 +34,7 @@ typedef enum event
     EV_RBRACKET,
     EV_LBRACE,
     EV_RBRACE,
+    EV_POW,
     EV_SPACE,
     EV_END,
     EV_OTHER,
@@ -40,7 +45,7 @@ typedef enum state
 {
     WAITING_FOR_NUM = 0,
     WAITING_FOR_OP  = 1,
-    AFTER_UNARY = 2
+    NUM_STATES
 } state_e;
 
 typedef struct calc_data
@@ -66,6 +71,7 @@ typedef struct cell
 /* ---------- Globals variables ---------- */
 static unsigned char g_char_LUT[CHAR_SIZE] = {0};
 static unsigned char g_op_prec_LUT[CHAR_SIZE] = {0};
+static unsigned char g_associative_LUT[CHAR_SIZE] = {0};
 static binary_op_t g_binop_LUT[CHAR_SIZE] = { NULL };
 
 static int g_inited = 0;
@@ -99,6 +105,7 @@ static calculator_status_t ActLBrace(calc_data_t* ctx);
 static calculator_status_t ActRParen(calc_data_t* ctx);
 static calculator_status_t ActRBracket(calc_data_t* ctx);
 static calculator_status_t ActRBrace(calc_data_t* ctx);
+static calculator_status_t ActPow(calc_data_t* ctx);
 
 static calculator_status_t FsmStep(calc_data_t* ctx, state_e* state);
 static calculator_status_t InitStacks(calc_data_t* ctx, size_t input_length);
@@ -106,62 +113,52 @@ static calculator_status_t InitStacks(calc_data_t* ctx, size_t input_length);
 static double OpAdd(double lhs, double rhs) { return lhs + rhs; }
 static double OpSub(double lhs, double rhs) { return lhs - rhs; }
 static double OpMul(double lhs, double rhs) { return lhs * rhs; }
-static double OpDiv(double lhs, double rhs) { return lhs / rhs; }
+static double OpDiv(double lhs, double rhs)
+{
+
+    return lhs / rhs; 
+}
+static double OpPow(double lhs, double rhs) { return pow(lhs,rhs); }
 
 /* ---------- Transition table ---------- */
 static const cell_t g_trans_LUT[STATE_ROWS][EV_COUNT] =
 {
-/* WAITING_FOR_NUM */
-{
-/* EV_PLUS   */ { AFTER_UNARY, ActUnaryPlus },
-/* EV_MINUS  */ { AFTER_UNARY, ActUnaryMinus },
-/* EV_NUM    */ { WAITING_FOR_OP,  ActPushNumber },
-/* EV_MUL    */ { WAITING_FOR_NUM, ActError },
-/* EV_DIV    */ { WAITING_FOR_NUM, ActError },
-/* EV_LPAREN    */ { WAITING_FOR_NUM, ActLParen},
-/* EV_RPAREN    */ { WAITING_FOR_NUM, ActError},
-/* EV_LBRACKET  */ { WAITING_FOR_NUM, ActLBracket},
-/* EV_RBRACKET  */ { WAITING_FOR_NUM, ActError},
-/* EV_LBRACE    */ { WAITING_FOR_NUM, ActLBrace},
-/* EV_RBRACE    */ { WAITING_FOR_NUM, ActError},
-/* EV_SPACE  */ { WAITING_FOR_NUM, ActSpace },
-/* EV_END    */ { WAITING_FOR_NUM, ActError },
-/* EV_OTHER  */ { WAITING_FOR_NUM, ActError }
-},
-/* WAITING_FOR_OP */
-{
-/* EV_PLUS   */ { WAITING_FOR_NUM, ActPlus },
-/* EV_MINUS  */ { WAITING_FOR_NUM, ActMinus },
-/* EV_NUM    */ { WAITING_FOR_OP,  ActError },
-/* EV_MUL    */ { WAITING_FOR_NUM, ActMul },
-/* EV_DIV    */ { WAITING_FOR_NUM, ActDiv },
-/* EV_LPAREN    */ { WAITING_FOR_NUM, ActError},
-/* EV_RPAREN    */ { WAITING_FOR_OP, ActRParen},
-/* EV_LBRACKET  */ { WAITING_FOR_NUM, ActError},
-/* EV_RBRACKET  */ { WAITING_FOR_OP, ActRBracket},
-/* EV_LBRACE    */ { WAITING_FOR_NUM, ActError},
-/* EV_RBRACE    */ { WAITING_FOR_OP, ActRBrace},
-/* EV_SPACE  */ { WAITING_FOR_OP,  ActSpace },
-/* EV_END    */ { WAITING_FOR_OP,  ActEnd },
-/* EV_OTHER  */ { WAITING_FOR_OP,  ActError }
-},
-/* AFTER_UNARY */
-{
-/* EV_PLUS   */ { AFTER_UNARY,     ActUnaryPlus  },  
-/* EV_MINUS  */ { AFTER_UNARY,     ActUnaryMinus },  
-/* EV_NUM    */ { WAITING_FOR_OP,  ActPushNumber },
-/* EV_MUL    */ { AFTER_UNARY,     ActError      },
-/* EV_DIV    */ { AFTER_UNARY,     ActError      },
-/* EV_LPAREN    */ { WAITING_FOR_NUM, ActLParen},
-/* EV_RPAREN    */ { WAITING_FOR_NUM, ActError},
-/* EV_LBRACKET  */ { WAITING_FOR_NUM, ActLBracket},
-/* EV_RBRACKET  */ { WAITING_FOR_NUM, ActError},
-/* EV_LBRACE    */ { WAITING_FOR_NUM, ActLBrace},
-/* EV_RBRACE    */ { WAITING_FOR_NUM, ActError},
-/* EV_SPACE  */ { AFTER_UNARY, ActSpace},
-/* EV_END    */ { AFTER_UNARY, ActError},
-/* EV_OTHER  */ { AFTER_UNARY, ActError}
-}
+            /* WAITING_FOR_NUM */
+    {
+    /* EV_PLUS   */ { WAITING_FOR_NUM, ActUnaryPlus },
+    /* EV_MINUS  */ { WAITING_FOR_NUM, ActUnaryMinus },
+    /* EV_NUM    */ { WAITING_FOR_OP,  ActPushNumber },
+    /* EV_MUL    */ { WAITING_FOR_NUM, ActError },
+    /* EV_DIV    */ { WAITING_FOR_NUM, ActError },
+    /* EV_LPAREN    */ { WAITING_FOR_NUM, ActLParen},
+    /* EV_RPAREN    */ { WAITING_FOR_NUM, ActError},
+    /* EV_LBRACKET  */ { WAITING_FOR_NUM, ActLBracket},
+    /* EV_RBRACKET  */ { WAITING_FOR_NUM, ActError},
+    /* EV_LBRACE    */ { WAITING_FOR_NUM, ActLBrace},
+    /* EV_RBRACE    */ { WAITING_FOR_NUM, ActError},
+    /* EV_POW    */ { WAITING_FOR_NUM, ActError},
+    /* EV_SPACE  */ { WAITING_FOR_NUM, ActSpace },
+    /* EV_END    */ { WAITING_FOR_NUM, ActError },
+    /* EV_OTHER  */ { WAITING_FOR_NUM, ActError }
+    },
+            /* WAITING_FOR_OP */
+    {
+    /* EV_PLUS   */ { WAITING_FOR_NUM, ActPlus },
+    /* EV_MINUS  */ { WAITING_FOR_NUM, ActMinus },
+    /* EV_NUM    */ { WAITING_FOR_OP,  ActError },
+    /* EV_MUL    */ { WAITING_FOR_NUM, ActMul },
+    /* EV_DIV    */ { WAITING_FOR_NUM, ActDiv },
+    /* EV_LPAREN    */ { WAITING_FOR_NUM, ActError},
+    /* EV_RPAREN    */ { WAITING_FOR_OP, ActRParen},
+    /* EV_LBRACKET  */ { WAITING_FOR_NUM, ActError},
+    /* EV_RBRACKET  */ { WAITING_FOR_OP, ActRBracket},
+    /* EV_LBRACE    */ { WAITING_FOR_NUM, ActError},
+    /* EV_RBRACE    */ { WAITING_FOR_OP, ActRBrace},
+    /* EV_POW    */ { WAITING_FOR_NUM, ActPow},
+    /* EV_SPACE  */ { WAITING_FOR_OP,  ActSpace },
+    /* EV_END    */ { WAITING_FOR_OP,  ActEnd },
+    /* EV_OTHER  */ { WAITING_FOR_OP,  ActError }
+    }
 };
 
 calculator_status_t Calculate(const char* expression, double* res)
@@ -219,23 +216,33 @@ static void InitTablesOnce(void)
         g_char_LUT[i] = EV_OTHER;
         g_op_prec_LUT[i] = 0;
         g_binop_LUT[i] = 0;
+        g_associative_LUT[i] = 0;
     }
 
     g_op_prec_LUT['+'] = 1; 
     g_op_prec_LUT['-'] = 1;
     g_op_prec_LUT['*'] = 2;
     g_op_prec_LUT['/'] = 2;
+    g_op_prec_LUT['^'] = 3;
+
+    g_associative_LUT['+'] = LEFT_ASSOCIATIVE; 
+    g_associative_LUT['-'] = LEFT_ASSOCIATIVE;
+    g_associative_LUT['*'] = LEFT_ASSOCIATIVE; 
+    g_associative_LUT['/'] = LEFT_ASSOCIATIVE;
+    g_associative_LUT['^'] = RIGHT_ASSOCIATIVE; 
     
     g_binop_LUT['+'] = OpAdd;
     g_binop_LUT['-'] = OpSub;
     g_binop_LUT['*'] = OpMul;
     g_binop_LUT['/'] = OpDiv;
+    g_binop_LUT['^'] = OpPow;
 
     g_char_LUT['\0'] = EV_END;
     g_char_LUT['+'] = EV_PLUS;
     g_char_LUT['-'] = EV_MINUS;
     g_char_LUT['*'] = EV_MUL;
     g_char_LUT['/'] = EV_DIV;
+    g_char_LUT['^'] = EV_POW;
     g_char_LUT['(']  = EV_LPAREN;
     g_char_LUT[')']  = EV_RPAREN;
     g_char_LUT['[']  = EV_LBRACKET;
@@ -300,14 +307,26 @@ static char OpStackPop(calc_data_t* ctx)
 static calculator_status_t ApplyTopOperator(calc_data_t* ctx)
 {
     char op = 0;
-    double rhs_value = 0.0; /* right-hand operand: popped first */
-    double lhs_value = 0.0; /* left-hand operand: popped second */
+    double rhs_value = 0.0; 
+    double lhs_value = 0.0; 
     double result_value  = 0.0;
     binary_op_t func = {0};
 
     op = OpStackPop(ctx);
     lhs_value = ValueStackPop(ctx);
     rhs_value = ValueStackPop(ctx);
+
+    if (op == '/' && lhs_value == 0.0)
+    {
+        return MATH_ERROR;
+    }
+
+    if ((op == '^') && ((lhs_value == 0.0 && rhs_value == 0.0) ||
+        (rhs_value < 0.0 && floor(lhs_value) != lhs_value)))
+    {
+        return MATH_ERROR;
+    }
+    
 
     func = g_binop_LUT[(unsigned char)op];
 
@@ -323,31 +342,37 @@ static calculator_status_t ApplyTopOperator(calc_data_t* ctx)
     return SUCCESS;
 }
 
-static calculator_status_t ReduceOperators(calc_data_t* ctx, char op)
+static calculator_status_t ReduceOperators(calc_data_t* ctx, char op_input)
 {
+
+    calculator_status_t status = SUCCESS;
 
     while (!StackIsEmpty(ctx->ops_stack))
     {
         char top_op = *(char *)StackPeek(ctx->ops_stack);
         unsigned char top_prec = g_op_prec_LUT[(unsigned char)top_op];
-        unsigned char in_prec  = g_op_prec_LUT[(unsigned char)op];
+        unsigned char input_prec  = g_op_prec_LUT[(unsigned char)op_input];
+        unsigned char in_is_right = g_associative_LUT[(unsigned char)op_input];
 
-        
         if (top_prec == 0) { break; }
 
-        if (top_prec < in_prec) { break; }
-        
-
-        if (ApplyTopOperator(ctx) != SUCCESS)
+        if (top_prec < input_prec || (top_prec == input_prec && in_is_right))
         {
-            return SYNTAX_ERROR;
+            break;
+        }
+        status = ApplyTopOperator(ctx);
+
+        if (SUCCESS != status)
+        {
+            return status;
         }
     }
 
-    if (op == '\0' && !StackIsEmpty(ctx->ops_stack))
+    if(op_input == '\0' && !StackIsEmpty(ctx->ops_stack))
     {
         return SYNTAX_ERROR;
     }
+
 
     return SUCCESS;
 }
@@ -523,6 +548,11 @@ static calculator_status_t ActRBrace(calc_data_t* ctx)
 
     ctx->cursor += 1;
     return SUCCESS;
+}
+
+static calculator_status_t ActPow(calc_data_t* ctx)
+{
+    return ActPushBinaryOp(ctx, '^');
 }
 
 static calculator_status_t ActEnd(calc_data_t* ctx)

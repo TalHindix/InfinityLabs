@@ -1,3 +1,4 @@
+
 /**************************************
 Exercise:   Calculator - FSM
 Date:       12/8/2025
@@ -33,8 +34,8 @@ static unsigned g_fail = 0;
 
 typedef struct test_case_t
 {
-    const char*        expr;
-    double             expected;
+    const char* expr;
+    double expected;
     calculator_status_t exp_stat;
 } test_case_t;
 
@@ -63,10 +64,10 @@ static void TestBasicMath(void)
 {
     static test_case_t cases[] =
     {
-        { "2+3", 5.0, SUCCESS },
-        { "7-4", 3.0, SUCCESS },
+        { "(2^3^1)+2*5", 18.0, SUCCESS },
+        { "[(7-4)+2]", 5.0, SUCCESS },
         { "6*5", 30.0, SUCCESS },
-        { "8/2", 4.0, SUCCESS }
+        { "8/0", 0.0, MATH_ERROR }
     };
 
     size_t i = 0;
@@ -100,7 +101,9 @@ static void TestUnarySigns(void)
         { "-5", -5.0, SUCCESS },
         { "+7", 7.0, SUCCESS },
         { "--5", 5.0, SUCCESS },
-        { "1+-2+3", 2.0, SUCCESS }
+        { "1+-2+3", 2.0, SUCCESS },
+        { "-3*+5", -15.0, SUCCESS }
+
     };
 
     size_t i = 0;
@@ -118,7 +121,10 @@ static void TestSyntaxErrors(void)
         { "   ", 0.0, SYNTAX_ERROR },
         { "1+", 0.0, SYNTAX_ERROR },
         { "abc", 0.0, SYNTAX_ERROR },
-        { "5*(2", 0.0, SYNTAX_ERROR }
+        { "5*(2", 0.0, SYNTAX_ERROR },
+        { "^2", 0.0, SYNTAX_ERROR },
+        {"-5^0.5",0.0,MATH_ERROR},
+        {"0^0",0.0, MATH_ERROR}
     };
 
     size_t i = 0;
@@ -131,7 +137,7 @@ static void TestSyntaxErrors(void)
 static void RunOneTest(const test_case_t* tc)
 {
     calculator_status_t status = SUCCESS;
-    double              result = 0.0;
+    double result = 0.0;
 
     assert(tc);
 
