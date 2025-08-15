@@ -3,7 +3,7 @@
 Exercise:   Calculator - FSM
 Date:       12/8/2025
 Developer:  Tal Hindi
-Reviewer:   Avi Tobar
+Reviewer:   Ben Dabush
 Status:     
 **************************************/
 
@@ -66,7 +66,7 @@ static void TestBasicMath(void)
     {
         { "(2^3^1)+2*5", 18.0, SUCCESS },
         { "[(7-4)+2]", 5.0, SUCCESS },
-        { "6*5", 30.0, SUCCESS },
+        { "2*(3+4*(5-2))", 30.0, SUCCESS },
         { "8/0", 0.0, MATH_ERROR }
     };
 

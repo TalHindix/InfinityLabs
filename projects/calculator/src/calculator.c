@@ -2,7 +2,7 @@
 Exercise:   Calculator - FSM
 Date:       12/8/2025
 Developer:  Tal Hindi
-Reviewer:   Avi Tobar
+Reviewer:   Ben Dabush
 Status:     
 **************************************/
 
@@ -50,9 +50,9 @@ typedef struct calc_data
     const char* cursor;
     stack_t* values_stack;
     stack_t* ops_stack;
-    int sign;
-    int finish;
     double* out;
+    int unary_sign;
+    int finish;
     calculator_status_t status;
 } calc_data_t;
 
@@ -66,10 +66,10 @@ typedef struct cell
 } cell_t;
 
 /* ---------- Globals variables ---------- */
-static unsigned char g_char_LUT[UCHAR_MAX] = {0};
-static unsigned char g_op_prec_LUT[UCHAR_MAX] = {0};
-static unsigned char g_associative_LUT[UCHAR_MAX] = {0};
-static binary_op_t g_binop_LUT[UCHAR_MAX] = { NULL };
+static unsigned char g_char_to_event_LUT[UCHAR_MAX + 1] = {0};
+static unsigned char g_op_precedence_LUT[UCHAR_MAX + 1] = {0};
+static unsigned char g_op_assoc_LUT[UCHAR_MAX + 1] = {0};
+static binary_op_t   g_binop_func_LUT[UCHAR_MAX + 1] = { NULL };
 
 static int g_inited = 0;
 
@@ -110,11 +110,7 @@ static calculator_status_t InitStacks(calc_data_t* ctx, size_t input_length);
 static double OpAdd(double lhs, double rhs) { return lhs + rhs; }
 static double OpSub(double lhs, double rhs) { return lhs - rhs; }
 static double OpMul(double lhs, double rhs) { return lhs * rhs; }
-static double OpDiv(double lhs, double rhs)
-{
-
-    return lhs / rhs; 
-}
+static double OpDiv(double lhs, double rhs) {  return lhs / rhs;}
 static double OpPow(double lhs, double rhs) { return pow(lhs,rhs); }
 
 /* ---------- Transition table ---------- */
@@ -171,10 +167,6 @@ calculator_status_t Calculate(const char* expression, double* res)
     InitTablesOnce();
 
     input_length = strlen(expression);
-    if (input_length == 0)
-    {
-        return SYNTAX_ERROR;
-    }
 
     init_stack_status = InitStacks(&ctx, input_length);
     if (init_stack_status != SUCCESS)
@@ -183,7 +175,7 @@ calculator_status_t Calculate(const char* expression, double* res)
     }
 
     ctx.cursor = expression;
-    ctx.sign = +1;
+    ctx.unary_sign = +1;
     ctx.finish = 0;
     ctx.out = res;
     ctx.status = SUCCESS;
@@ -208,59 +200,55 @@ static void InitTablesOnce(void)
         return;
     }
 
-    for (i = 0; i < UCHAR_MAX; ++i)
+    for (i = 0; i <= UCHAR_MAX; ++i)
     {
-        g_char_LUT[i] = EV_OTHER;
-        g_op_prec_LUT[i] = 0;
-        g_binop_LUT[i] = 0;
-        g_associative_LUT[i] = 0;
+        g_char_to_event_LUT[i] = EV_OTHER;
+        g_op_precedence_LUT[i] = 0;
+        g_binop_func_LUT[i] = NULL;
+        g_op_assoc_LUT[i] = LEFT_ASSOCIATIVE;
     }
 
-    g_op_prec_LUT['+'] = 1; 
-    g_op_prec_LUT['-'] = 1;
-    g_op_prec_LUT['*'] = 2;
-    g_op_prec_LUT['/'] = 2;
-    g_op_prec_LUT['^'] = 3;
+    g_op_precedence_LUT['+'] = 1; 
+    g_op_precedence_LUT['-'] = 1;
+    g_op_precedence_LUT['*'] = 2;
+    g_op_precedence_LUT['/'] = 2;
+    g_op_precedence_LUT['^'] = 3;
 
-    g_associative_LUT['+'] = LEFT_ASSOCIATIVE; 
-    g_associative_LUT['-'] = LEFT_ASSOCIATIVE;
-    g_associative_LUT['*'] = LEFT_ASSOCIATIVE; 
-    g_associative_LUT['/'] = LEFT_ASSOCIATIVE;
-    g_associative_LUT['^'] = RIGHT_ASSOCIATIVE; 
+    g_op_assoc_LUT['^'] = RIGHT_ASSOCIATIVE; 
     
-    g_binop_LUT['+'] = OpAdd;
-    g_binop_LUT['-'] = OpSub;
-    g_binop_LUT['*'] = OpMul;
-    g_binop_LUT['/'] = OpDiv;
-    g_binop_LUT['^'] = OpPow;
+    g_binop_func_LUT['+'] = OpAdd;
+    g_binop_func_LUT['-'] = OpSub;
+    g_binop_func_LUT['*'] = OpMul;
+    g_binop_func_LUT['/'] = OpDiv;
+    g_binop_func_LUT['^'] = OpPow;
 
-    g_char_LUT['\0'] = EV_END;
-    g_char_LUT['+'] = EV_PLUS;
-    g_char_LUT['-'] = EV_MINUS;
-    g_char_LUT['*'] = EV_MUL;
-    g_char_LUT['/'] = EV_DIV;
-    g_char_LUT['^'] = EV_POW;
-    g_char_LUT['(']  = EV_LPAREN;
-    g_char_LUT[')']  = EV_RPAREN;
-    g_char_LUT['[']  = EV_LBRACKET;
-    g_char_LUT[']']  = EV_RBRACKET;
-    g_char_LUT['{']  = EV_LBRACE;
-    g_char_LUT['}']  = EV_RBRACE;
+    g_char_to_event_LUT['\0'] = EV_END;
+    g_char_to_event_LUT['+'] = EV_PLUS;
+    g_char_to_event_LUT['-'] = EV_MINUS;
+    g_char_to_event_LUT['*'] = EV_MUL;
+    g_char_to_event_LUT['/'] = EV_DIV;
+    g_char_to_event_LUT['^'] = EV_POW;
+    g_char_to_event_LUT['(']  = EV_LPAREN;
+    g_char_to_event_LUT[')']  = EV_RPAREN;
+    g_char_to_event_LUT['[']  = EV_LBRACKET;
+    g_char_to_event_LUT[']']  = EV_RBRACKET;
+    g_char_to_event_LUT['{']  = EV_LBRACE;
+    g_char_to_event_LUT['}']  = EV_RBRACE;
 
    
     
-    g_char_LUT[' ']  = EV_SPACE;
-    g_char_LUT['\t'] = EV_SPACE;
-    g_char_LUT['\n'] = EV_SPACE;
-    g_char_LUT['\r'] = EV_SPACE;
-    g_char_LUT['\v'] = EV_SPACE;
-    g_char_LUT['\f'] = EV_SPACE;
+    g_char_to_event_LUT[' ']  = EV_SPACE;
+    g_char_to_event_LUT['\t'] = EV_SPACE;
+    g_char_to_event_LUT['\n'] = EV_SPACE;
+    g_char_to_event_LUT['\r'] = EV_SPACE;
+    g_char_to_event_LUT['\v'] = EV_SPACE;
+    g_char_to_event_LUT['\f'] = EV_SPACE;
 
     for (i = '0'; i <= '9'; ++i)
     {
-        g_char_LUT[i] = EV_NUM;
+        g_char_to_event_LUT[i] = EV_NUM;
     }
-    g_char_LUT['.'] = EV_NUM;
+    g_char_to_event_LUT['.'] = EV_NUM;
 
     g_inited = 1;
 }
@@ -325,7 +313,7 @@ static calculator_status_t ApplyTopOperator(calc_data_t* ctx)
     }
     
 
-    func = g_binop_LUT[(unsigned char)op];
+    func = g_binop_func_LUT[(unsigned char)op];
 
     if(!func)
     {
@@ -347,9 +335,9 @@ static calculator_status_t ReduceOperators(calc_data_t* ctx, char op_input)
     while (!StackIsEmpty(ctx->ops_stack))
     {
         char top_op = *(char *)StackPeek(ctx->ops_stack);
-        unsigned char top_prec = g_op_prec_LUT[(unsigned char)top_op];
-        unsigned char input_prec  = g_op_prec_LUT[(unsigned char)op_input];
-        unsigned char in_is_right = g_associative_LUT[(unsigned char)op_input];
+        unsigned char top_prec = g_op_precedence_LUT[(unsigned char)top_op];
+        unsigned char input_prec  = g_op_precedence_LUT[(unsigned char)op_input];
+        unsigned char in_is_right = g_op_assoc_LUT[(unsigned char)op_input];
 
         if (top_prec == 0) { break; }
 
@@ -414,14 +402,14 @@ static calculator_status_t ActSpace(calc_data_t* ctx)
 
 static calculator_status_t ActUnaryPlus(calc_data_t* ctx)
 {
-    ctx->sign *= +1;
+    ctx->unary_sign *= +1;
     ctx->cursor += 1;
     return SUCCESS;
 }
 
 static calculator_status_t ActUnaryMinus(calc_data_t* ctx)
 {
-    ctx->sign *= -1;
+    ctx->unary_sign *= -1;
     ctx->cursor += 1;
     return SUCCESS;
 }
@@ -437,11 +425,11 @@ static calculator_status_t ActPushNumber(calc_data_t* ctx)
         return SYNTAX_ERROR;
     }
 
-    value *= (double)ctx->sign;
+    value *= (double)ctx->unary_sign;
 
     ValueStackPush(ctx, value);
     
-    ctx->sign = +1;
+    ctx->unary_sign = +1;
 
     ctx->cursor = endp;
 
@@ -555,6 +543,7 @@ static calculator_status_t ActPow(calc_data_t* ctx)
 static calculator_status_t ActEnd(calc_data_t* ctx)
 {
     calculator_status_t status = SUCCESS;
+    const double *top_val = NULL;
 
     status = ReduceOperators(ctx, '\0');
     if (status != SUCCESS)
@@ -562,7 +551,19 @@ static calculator_status_t ActEnd(calc_data_t* ctx)
         return status;
     }
 
-    *(ctx->out) = *(double*)StackPeek(ctx->values_stack);
+    if (StackSize(ctx->values_stack) != 1 || !StackIsEmpty(ctx->ops_stack))
+    {
+        return SYNTAX_ERROR;
+    }
+
+    top_val = (const double *)StackPeek(ctx->values_stack);
+    if (top_val == NULL)
+    {
+        return SYNTAX_ERROR;
+    }
+
+
+    *(ctx->out) = *top_val;
     ctx->finish = 1;
 
     return SUCCESS;
@@ -581,7 +582,7 @@ static calculator_status_t FsmStep(calc_data_t* ctx, state_e* state)
     const cell_t* transition = {0};
 
     current_char = (unsigned char)(*ctx->cursor);
-    current_event = g_char_LUT[current_char];
+    current_event = g_char_to_event_LUT[current_char];
     transition = &g_trans_LUT[*state][current_event];
 
     *state = transition->next_state;
