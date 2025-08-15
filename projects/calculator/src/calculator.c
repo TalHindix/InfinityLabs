@@ -5,18 +5,15 @@ Developer:  Tal Hindi
 Reviewer:   Avi Tobar
 Status:     
 **************************************/
-#include <stdio.h>
-#include <stddef.h> /* size_t */
+
 #include <stdlib.h> /* strtod */
 #include <string.h> /* strlen */
 #include <assert.h> /* assert */
 #include <math.h>   /* pow    */
+#include <limits.h> /* UCHAR_MAX*/
 
 #include "stack.h"      /* stack_t */
 #include "calculator.h" /* Calculate */
-
-#define STATE_ROWS 3
-#define CHAR_SIZE 255
 
 #define LEFT_ASSOCIATIVE 0
 #define RIGHT_ASSOCIATIVE 1
@@ -69,10 +66,10 @@ typedef struct cell
 } cell_t;
 
 /* ---------- Globals variables ---------- */
-static unsigned char g_char_LUT[CHAR_SIZE] = {0};
-static unsigned char g_op_prec_LUT[CHAR_SIZE] = {0};
-static unsigned char g_associative_LUT[CHAR_SIZE] = {0};
-static binary_op_t g_binop_LUT[CHAR_SIZE] = { NULL };
+static unsigned char g_char_LUT[UCHAR_MAX] = {0};
+static unsigned char g_op_prec_LUT[UCHAR_MAX] = {0};
+static unsigned char g_associative_LUT[UCHAR_MAX] = {0};
+static binary_op_t g_binop_LUT[UCHAR_MAX] = { NULL };
 
 static int g_inited = 0;
 
@@ -121,7 +118,7 @@ static double OpDiv(double lhs, double rhs)
 static double OpPow(double lhs, double rhs) { return pow(lhs,rhs); }
 
 /* ---------- Transition table ---------- */
-static const cell_t g_trans_LUT[STATE_ROWS][EV_COUNT] =
+static const cell_t g_trans_LUT[NUM_STATES][EV_COUNT] =
 {
             /* WAITING_FOR_NUM */
     {
@@ -211,7 +208,7 @@ static void InitTablesOnce(void)
         return;
     }
 
-    for (i = 0; i < CHAR_SIZE; ++i)
+    for (i = 0; i < UCHAR_MAX; ++i)
     {
         g_char_LUT[i] = EV_OTHER;
         g_op_prec_LUT[i] = 0;
