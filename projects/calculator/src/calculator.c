@@ -15,9 +15,6 @@ Status:
 #include "stack.h"      /* stack_t */
 #include "calculator.h" /* Calculate */
 
-#define LEFT_ASSOCIATIVE 0
-#define RIGHT_ASSOCIATIVE 1
-
 typedef enum event
 {
     EV_PLUS,
@@ -37,6 +34,12 @@ typedef enum event
     EV_OTHER,
     EV_COUNT
 } event_e;
+
+typedef enum
+{
+    LEFT_ASSOCIATIVE,
+    RIGHT_ASSOCIATIVE
+} assoc_e;
 
 typedef enum state
 {
