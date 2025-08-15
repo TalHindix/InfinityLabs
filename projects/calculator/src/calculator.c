@@ -62,17 +62,17 @@ typedef struct calc_data
 typedef calculator_status_t (*action_func_t)(calc_data_t* ctx);
 typedef double (*binary_op_t)(double lhs, double rhs);
 
-typedef struct cell
+typedef struct fsm_transition
 {
     state_e next_state;
     action_func_t action_func;
-} cell_t;
+} fsm_transition_t;
 
 /* ---------- Globals variables ---------- */
 static unsigned char g_char_to_event_LUT[UCHAR_MAX + 1] = {0};
 static unsigned char g_op_precedence_LUT[UCHAR_MAX + 1] = {0};
 static unsigned char g_op_assoc_LUT[UCHAR_MAX + 1] = {0};
-static binary_op_t   g_binop_func_LUT[UCHAR_MAX + 1] = { NULL };
+static binary_op_t   g_op_func_LUT[UCHAR_MAX + 1] = { NULL };
 
 static int g_inited = 0;
 
@@ -117,7 +117,7 @@ static double OpDiv(double lhs, double rhs) {  return lhs / rhs;}
 static double OpPow(double lhs, double rhs) { return pow(lhs,rhs); }
 
 /* ---------- Transition table ---------- */
-static const cell_t g_trans_LUT[NUM_STATES][EV_COUNT] =
+static const fsm_transition_t g_trans_LUT[NUM_STATES][EV_COUNT] =
 {
             /* WAITING_FOR_NUM */
     {
@@ -207,7 +207,7 @@ static void InitTablesOnce(void)
     {
         g_char_to_event_LUT[i] = EV_OTHER;
         g_op_precedence_LUT[i] = 0;
-        g_binop_func_LUT[i] = NULL;
+        g_op_func_LUT[i] = NULL;
         g_op_assoc_LUT[i] = LEFT_ASSOCIATIVE;
     }
 
@@ -219,11 +219,11 @@ static void InitTablesOnce(void)
 
     g_op_assoc_LUT['^'] = RIGHT_ASSOCIATIVE; 
     
-    g_binop_func_LUT['+'] = OpAdd;
-    g_binop_func_LUT['-'] = OpSub;
-    g_binop_func_LUT['*'] = OpMul;
-    g_binop_func_LUT['/'] = OpDiv;
-    g_binop_func_LUT['^'] = OpPow;
+    g_op_func_LUT['+'] = OpAdd;
+    g_op_func_LUT['-'] = OpSub;
+    g_op_func_LUT['*'] = OpMul;
+    g_op_func_LUT['/'] = OpDiv;
+    g_op_func_LUT['^'] = OpPow;
 
     g_char_to_event_LUT['\0'] = EV_END;
     g_char_to_event_LUT['+'] = EV_PLUS;
@@ -316,7 +316,7 @@ static calculator_status_t ApplyTopOperator(calc_data_t* ctx)
     }
     
 
-    func = g_binop_func_LUT[(unsigned char)op];
+    func = g_op_func_LUT[(unsigned char)op];
 
     if(!func)
     {
@@ -582,7 +582,7 @@ static calculator_status_t FsmStep(calc_data_t* ctx, state_e* state)
 {
     unsigned char current_char = 0;
     event_e current_event = {0};
-    const cell_t* transition = {0};
+    const fsm_transition_t* transition = {0};
 
     current_char = (unsigned char)(*ctx->cursor);
     current_event = g_char_to_event_LUT[current_char];
