@@ -19,7 +19,7 @@ struct Stack
     size_t top;
     size_t element_size;
     size_t capacity;
-    char *elements;
+    char* elements;
 };
 
 stack_t* StackCreate(size_t capacity, size_t element_size)

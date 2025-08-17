@@ -11,7 +11,7 @@ Status:     Approved
 
 #include <stddef.h> /* size_t */
 
-#define VSA_MAGIC_NUMBER 0xDEADBEEF
+#define VSA_MAGIC_NUMBER (0xDEADBEEF)
 
 typedef struct header header_t;
 typedef struct vsa vsa_t;
