@@ -10,6 +10,7 @@ Status:     Approved
 #include <stdlib.h>
 #include "bst.h"
 
+
 /* prototypes */
 static int IntCmp(const void *lhs, const void *rhs);
 static void PrintInOrder(const bst_t *tree);
