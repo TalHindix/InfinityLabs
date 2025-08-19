@@ -13,7 +13,6 @@ Status:
 
 /*
     Comparator contract:
-    ------------------------------------------------------------
     cmp_func(a, b) must return <0 if *a < *b, 0 if equal, >0 if *a > *b.
     Ordering must be strict and consistent with transitivity.
 
@@ -26,21 +25,18 @@ typedef int (*cmp_func_t)(const void* a, const void* b);
 
 /*
     Action function contract (used by AVLForEach):
-    ------------------------------------------------------------
     Should return 0 on success; any non-zero value aborts the traversal
     early and is propagated back to the caller.
 */
 typedef int (*action_func_t)(void* data, void* param);
 
-/* O(1) */
-typedef struct avl avl_t;
+typedef struct avl avl_t
 
 /*
     Traversal order for AVLForEach:
-    ------------------------------------------------------------
-    AVL_PRE_ORDER  : visit node, then left, then right
-    AVL_IN_ORDER   : visit left, node, right  (sorted order for BST/AVL)
-    AVL_POST_ORDER : visit left, right, node
+    AVL_PRE_ORDER : visit node, then left, then right
+    AVL_IN_ORDER  : visit left, node, right  (sorted order for BST/AVL)
+    AVL_POST_ORDER: visit left, right, node
 */
 typedef enum avl_traversal_order
 {
