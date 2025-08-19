@@ -12,7 +12,7 @@ Status:
 #include <assert.h> /* assert */
 #include <stdio.h>  /* printf */
 
-#include "rec.h" /* Fibonacci */
+#include "recursion.h" /* Fibonacci */
 #include "stack.h" /* stack_t */
 
 typedef struct fib_case_s
@@ -27,6 +27,14 @@ typedef struct strstr_case_s
     const char* pat;
     int expect_found;
 } strstr_case_t;
+
+typedef struct strcat_case_s
+{
+    char* text;
+    const char* to_con;
+    const char* expected_str;
+    int expect_found;
+} strcat_case_t;
 
 #define CHECK(COND, MSG)                                               \
     do                                                                 \
@@ -48,6 +56,7 @@ typedef struct strstr_case_s
 static void TestFibonacci(void);
 static void TestStrLenCmp(void);
 static void TestStrStr(void);
+static void TestStrCat(void);
 static void TestFlipNode(void);
 static void TestSortStack(void);
 static int  IsStackSortedAsc(stack_t* s);
@@ -66,6 +75,7 @@ int main(void)
     TestStrStr();
     TestFlipNode();
     TestSortStack();
+    TestStrCat();
 
     printf("\nTotal: PASS=%u, FAIL=%u\n", g_pass, g_fail);
 
@@ -246,5 +256,33 @@ static int IsStackSortedAsc(stack_t* s)
     StackDestroy(tmp);
 
     return sorted;
+}
+
+static void TestStrCat(void)
+{
+    static strcat_case_t cases[] =
+    {
+        { "tal", "hin","talhin" , 1 },
+        { "blabla", "zzz","blablazzz",    1 },
+        { "aaaa", "aa","aaaaaaa", 0 }
+    };
+
+    size_t i = 0;
+    char* res = NULL;
+
+    printf("\n>> StrCatRec\n");
+
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i)
+    {
+        char buffer[256];
+
+        strcpy(buffer, cases[i].text);
+
+        res = StrCatRec(buffer, cases[i].to_con);
+
+        CHECK((strcmp(res, cases[i].expected_str) == 0) == cases[i].expect_found,
+            "StrCat Success");
+    }
+
 }
 

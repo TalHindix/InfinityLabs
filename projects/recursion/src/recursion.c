@@ -6,11 +6,11 @@ Reviewer:   Avi Tobar
 Status:     
 **************************************/
 
-#include <stdlib.h> /* malloc */
-#include <string.h> /* strlen */
+#include <stdlib.h>     /* malloc */
+#include <string.h>     /* strlen */
 
-#include "rec.h" /* Fibonacci */
-#include "stack.h" /* StackCreate */
+#include "recursion.h"  /* Fibonacci */
+#include "stack.h"      /* StackCreate */
 
 #define MAX_FIB 93
 
@@ -68,11 +68,6 @@ int RecFibonacciMemo(size_t n)
     {
         FibMemoInit();
         memo_ready = 1;
-    }
-
-    if (n >= MAX_FIB)
-    {
-        return RecFibonacci(n);
     }
 
     if (-1 != g_fib_memo[n])
@@ -145,6 +140,20 @@ char* StrCpyRec(char* dst, const char* src)
     StrCpyRec(dst+1,src+1);
 
     return dst;
+}
+
+char* StrCatRec(char* dst, const char* src)
+{
+    if ('\0' == *dst)
+    {
+        StrCpyRec(dst,src);
+        return dst;
+    }
+
+    StrCatRec(dst + 1, src);
+    
+    return dst;
+
 }
 
 char* StrStrRec(const char* haystack, const char* needle)

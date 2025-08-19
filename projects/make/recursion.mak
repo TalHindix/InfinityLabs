@@ -1,4 +1,4 @@
-# make/calculator.mak
+# make/recursion.mak
 
 
 PROFILE ?= debug
@@ -14,20 +14,20 @@ BUILD_DIR := bin/$(PROFILE)
 # -------- Project layout --------
 DS_INC_DIR    = ../ds/inc
 DS_SRC_DIR    = ../ds/src
-CALC_SRC_DIR  = calculator/src
-CALC_INC_DIR  = calculator/inc
-TEST_DIR      = calculator/test
+CALC_SRC_DIR  = recursion/src
+CALC_INC_DIR  = recursion/inc
+TEST_DIR      = recursion/test
 
 INC_DIRS = -I$(CALC_INC_DIR) -I$(DS_INC_DIR)
 
 DS_LIB_NAMES   = stack
-CALC_LIB_NAMES = calculator
+CALC_LIB_NAMES = recursion
 
 DS_SO_FILES   = $(addprefix $(DS_SRC_DIR)/lib,$(addsuffix .so,$(DS_LIB_NAMES)))
 CALC_SO_FILES = $(addprefix $(CALC_SRC_DIR)/lib,$(addsuffix .so,$(CALC_LIB_NAMES)))
 
-TARGET = $(BUILD_DIR)/calculator_test.out
-OBJS   = $(TEST_DIR)/calculator_test.o
+TARGET = $(BUILD_DIR)/recursion_test.out
+OBJS   = $(TEST_DIR)/recursion_test.o
 
 # -------- Default goal --------
 .DEFAULT_GOAL := all
@@ -40,7 +40,7 @@ $(BUILD_DIR):
 $(DS_SRC_DIR)/lib%.so: $(DS_SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INC_DIRS) -fPIC -shared -o $@ $<
 
-# Build calc shared lib (calculator/src/libcalculator.so), link vs libstack + embed rpath to ds/src
+# Build calc shared lib (recursion/src/libcalculator.so), link vs libstack + embed rpath to ds/src
 $(CALC_SRC_DIR)/lib%.so: $(CALC_SRC_DIR)/%.c $(DS_SO_FILES)
 	$(CC) $(CFLAGS) $(INC_DIRS) -fPIC -shared -o $@ $< \
 	    -L$(DS_SRC_DIR) -lstack \
@@ -60,7 +60,7 @@ $(TARGET): $(OBJS) $(DS_SO_FILES) $(CALC_SO_FILES)
 	      $(addprefix -l,$(CALC_LIB_NAMES)) \
 	      $(addprefix -l,$(DS_LIB_NAMES)) \
 	      -lm \
-	      -Wl,-rpath,'$$ORIGIN/../../calculator/src:$$ORIGIN/../../../ds/src'
+	      -Wl,-rpath,'$$ORIGIN/../../recursion/src:$$ORIGIN/../../../ds/src'
 
 # -------- Convenience targets --------
 .PHONY: all debug release run clean

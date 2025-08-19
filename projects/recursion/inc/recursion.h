@@ -29,6 +29,10 @@ size_t StrLenRec(const char* str);
 
 int StrCmpRec(const char* str1, const char* str2);
 
+char* StrCpyRec(char* dst, const char* src);
+
+char* StrCatRec(char* dst, const char* src);
+
 char* StrStrRec(const char* haystack, const char* needle);
 
 stack_t* SortedStack(stack_t* s);
