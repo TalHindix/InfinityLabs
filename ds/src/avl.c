@@ -8,13 +8,13 @@ Status:
 
 #include <stdlib.h> /* malloc */
 #include <assert.h> /* assert */
-#include <stdio.h>  /* printf */
 
 #include "avl.h"    /* AVLCreate */
 
 /************** MACROS **************/
 #define LEFT_CHILD(node)  ((node)->children[LEFT])
 #define RIGHT_CHILD(node) ((node)->children[RIGHT])
+#define MAX2(a,b) ((a) > (b) ? (a) : (b))
 
 /************** ENUMS **************/
 typedef enum
@@ -25,14 +25,12 @@ typedef enum
 } children;
 
 /************ STRUCTURES ***********/
-struct avl_node
+typedef struct avl_node
 {
     size_t height;
     void* data;
     struct avl_node* children[NUM_OF_CHILDREN];
-};
-
-typedef struct avl_node avl_node_t;
+} avl_node_t;
 
 typedef int (*TraversalFunc)(avl_node_t* node, action_func_t action_func, void* param);
 
@@ -47,13 +45,12 @@ static void*       FindRec(const avl_node_t* node, const void* data, cmp_func_t 
 static void        DestroyRec(avl_node_t* node);
 static avl_node_t* CreateNode(void* data);
 static avl_node_t* InsertRec(avl_node_t* sub_root, void* data, cmp_func_t cmp, int* status);
-static avl_node_t* RemoveRec(avl_node_t* sub_root, void* data, cmp_func_t cmp);
+static avl_node_t* RemoveRec(avl_node_t* sub_root, const void* data, cmp_func_t cmp);
 static avl_node_t* PopMin(avl_node_t* sub_root, avl_node_t** min_out);
 static int         PreTraversalOrder (avl_node_t* node, action_func_t action_func, void* param);
 static int         InTraversalOrder  (avl_node_t* node, action_func_t action_func, void* param);
 static int         PostTraversalOrder(avl_node_t* node, action_func_t action_func, void* param);
 static int         AddOne(void* data, void* param);
-static size_t      Max2(size_t a, size_t b);
 static size_t      NodeHeight(const avl_node_t* n);
 static void        FixHeight(avl_node_t* n);
 static int         BalanceFactor(avl_node_t* node);
@@ -113,7 +110,7 @@ void AVLRemove(avl_t* tree, const void* data)
     assert(tree);
     assert(data);
 
-    tree->root = RemoveRec(tree->root, (void*)data, tree->cmp);
+    tree->root = RemoveRec(tree->root, data, tree->cmp);
 }
 
 size_t AVLHeight(const avl_t* tree)
@@ -137,7 +134,7 @@ size_t AVLCount(const avl_t* tree)
 int AVLIsEmpty(const avl_t* tree)
 {
     assert(tree);
-    
+
     return (tree->root == NULL);
 }
 
@@ -149,13 +146,12 @@ void* AVLFind(const avl_t* tree, const void* data)
     return FindRec(tree->root, data, tree->cmp);
 }
 
-int AVLForEach(avl_t* tree, avl_traversal_order_t traversal_type, action_func_t action_func, void* param)
+int AVLForEach(avl_t* tree, int traversal_type, action_func_t action_func, void* param)
 {
     int status = 0;
 
     assert(tree);
     assert(action_func);
-    assert(traversal_type >= 0 && traversal_type < TRAVERSAL_NUM);
 
     status = traversal_lut[traversal_type](tree->root, action_func, param);
 
@@ -204,15 +200,15 @@ static void DestroyRec(avl_node_t* node)
 static avl_node_t* CreateNode(void* data)
 {
     avl_node_t* node = (avl_node_t*)malloc(sizeof(avl_node_t));
-    if (!node)
+    if (NULL == node)
     {
         return NULL;
     }
 
-    node->data            = data;
-    node->children[LEFT]  = NULL;
+    node->data = data;
+    node->children[LEFT] = NULL;
     node->children[RIGHT] = NULL;
-    node->height          = 1;
+    node->height = 1;
 
     return node;
 }
@@ -245,7 +241,7 @@ static avl_node_t* InsertRec(avl_node_t* sub_root, void* data, cmp_func_t cmp, i
     return Rebalance(sub_root);
 }
 
-static avl_node_t* RemoveRec(avl_node_t* sub_root, void* data, cmp_func_t cmp)
+static avl_node_t* RemoveRec(avl_node_t* sub_root, const void* data, cmp_func_t cmp)
 {
     int cmp_res = 0;
     avl_node_t* successor = NULL;
@@ -392,11 +388,6 @@ static int AddOne(void* data, void* param)
     return 0;
 }
 
-static size_t Max2(size_t a, size_t b)
-{
-    return (a > b) ? a : b;
-}
-
 static size_t NodeHeight(const avl_node_t* n)
 {
     return (n) ? n->height : 0;
@@ -404,7 +395,7 @@ static size_t NodeHeight(const avl_node_t* n)
 
 static void FixHeight(avl_node_t* n)
 {
-    n->height = 1 + Max2(NodeHeight(LEFT_CHILD(n)), NodeHeight(RIGHT_CHILD(n)));
+    n->height = 1 + MAX2(NodeHeight(LEFT_CHILD(n)), NodeHeight(RIGHT_CHILD(n)));
 }
 
 static int BalanceFactor(avl_node_t* node)
@@ -412,32 +403,32 @@ static int BalanceFactor(avl_node_t* node)
     return (int)NodeHeight(LEFT_CHILD(node)) - (int)NodeHeight(RIGHT_CHILD(node));
 }
 
-static avl_node_t* RotateLeft(avl_node_t* node)
+static avl_node_t* RotateLeft(avl_node_t* unbalanced_node)
 {
-    avl_node_t* y  = RIGHT_CHILD(node);
-    avl_node_t* T2 = LEFT_CHILD(y);
+    avl_node_t* right_child = RIGHT_CHILD(unbalanced_node);
+    avl_node_t* right_left_subtree = LEFT_CHILD(right_child);
 
-    LEFT_CHILD(y)   = node;
-    RIGHT_CHILD(node) = T2;
+    LEFT_CHILD(right_child) = unbalanced_node;
+    RIGHT_CHILD(unbalanced_node) = right_left_subtree;
 
-    FixHeight(node);
-    FixHeight(y);
+    FixHeight(unbalanced_node);
+    FixHeight(right_child);
 
-    return y;
+    return right_child; /* new root of this subtree */
 }
 
-static avl_node_t* RotateRight(avl_node_t* node)
+static avl_node_t* RotateRight(avl_node_t* unbalanced_node)
 {
-    avl_node_t* y  = LEFT_CHILD(node);
-    avl_node_t* T2 = RIGHT_CHILD(y);
+    avl_node_t* left_child = LEFT_CHILD(unbalanced_node);
+    avl_node_t* left_right_subtree = RIGHT_CHILD(left_child);
 
-    RIGHT_CHILD(y)  = node;
-    LEFT_CHILD(node) = T2;
+    RIGHT_CHILD(left_child) = unbalanced_node;
+    LEFT_CHILD(unbalanced_node) = left_right_subtree;
 
-    FixHeight(node);
-    FixHeight(y);
+    FixHeight(unbalanced_node);
+    FixHeight(left_child);
 
-    return y;
+    return left_child; /* new root of this subtree */
 }
 
 static avl_node_t* Rebalance(avl_node_t* node)

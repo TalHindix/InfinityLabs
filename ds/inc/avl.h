@@ -30,7 +30,7 @@ typedef int (*cmp_func_t)(const void* a, const void* b);
 */
 typedef int (*action_func_t)(void* data, void* param);
 
-typedef struct avl avl_t
+typedef struct avl avl_t;
 
 /*
     Traversal order for AVLForEach:
@@ -110,6 +110,6 @@ void* AVLFind(const avl_t* tree, const void* data);
     returned to the caller. Returns 0 if all applications succeed.
     Complexity: O(n)
 */
-int AVLForEach(avl_t* tree, avl_traversal_order_t traversal_type, action_func_t action_func, void* param);
+int AVLForEach(avl_t* tree, int traversal_type, action_func_t action_func, void* param);
 
 #endif /* __ILRD_AVL_H__ */
