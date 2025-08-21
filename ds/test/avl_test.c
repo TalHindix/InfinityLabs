@@ -1,9 +1,9 @@
 /**************************************
-Exercise:   DS - AVL  
+Exercise:   DS - AVL
 Date:       18/8/2025
 Developer:  Tal Hindi
-Reviewer:   
-Status:     
+Reviewer:   Dana Chesner
+Status:     Approved
 **************************************/
 
 #include <stdio.h>   /* printf */

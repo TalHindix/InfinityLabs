@@ -14,7 +14,7 @@ Status:		Approved
 typedef struct sll sll_t;
 typedef struct node* sll_iter_t;
 
-typedef int (*is_match_func_t)(const void* data, void* param);
+typedef int (*is_match_func_t)(const void* data,const void* param);
 typedef int (*action_func_t)(void* data, void* param);
 
 /******************************************************************************
