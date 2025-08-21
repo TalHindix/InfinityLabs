@@ -3,7 +3,7 @@ Exercise:   DS - Hash Table
 Date:       20/8/2025
 Developer:  Tal Hindi
 Reviewer:   Baruchi Haimson
-Status:     
+Status:     Approved
 **************************************/
 
 #include <stdlib.h>     /* malloc */
@@ -11,8 +11,6 @@ Status:
 #include <stdio.h>      /* For some testings */
 
 #include "hash_table.h" /* HashTableCreate */
-
-#define CAPACITY(x) ((x)->capacity)
 
 struct hash_table
 {
@@ -193,7 +191,7 @@ int HashTableIsEmpty(const hash_table_t* table)
 
     for (i = 0; i < table->capacity; ++i)
     {
-        if ((NULL != table->buckets[i]) && (0 == SLLIsEmpty(table->buckets[i])))
+        if ((!SLLIsEmpty(table->buckets[i])))
         {
             return 0;
         }

@@ -3,7 +3,7 @@ Exercise:   DS - Hash Table
 Date:       20/8/2025
 Developer:  Tal Hindi
 Reviewer:   Baruchi Haimson
-Status:     
+Status:     Approved
 **************************************/
 
 #ifndef ILRD_HASH_TABLE_H
