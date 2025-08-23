@@ -187,7 +187,7 @@ static void TestLinuxDictionary(void)
     found = HashTableFind(dict, probe);
     printf("[Dict] find(\"%s\"): %s\n", probe, (NULL != found) ? "YES" : "NO");
 
-    (void)HashTableForEach(dict, FreeString, NULL);
+    HashTableForEach(dict, FreeString, NULL);
     HashTableDestroy(dict);
 }
 
@@ -352,7 +352,7 @@ static void TestRunSpellChecker(void)
     while (keep_running)
     {
         printf("> ");
-        fflush(stdout);
+        fflush(stdout); /* Force to writing */
 
         if (NULL == fgets(buf, sizeof(buf), stdin))
         {
