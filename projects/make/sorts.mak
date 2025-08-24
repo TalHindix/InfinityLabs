@@ -19,11 +19,11 @@ else
 endif
 
 # Output binary
-.DEFAULT_GOAL := $(BUILD_DIR)/rec_sorting_test.out
-TARGET := $(BUILD_DIR)/rec_sorting_test.out
+.DEFAULT_GOAL := $(BUILD_DIR)/sorts_test.out
+TARGET := $(BUILD_DIR)/sorts_test.out
 
 # Sources and objects
-SRC := $(SORTING_SRC_DIR)/rec_sorting.c $(SORTING_TEST_DIR)/rec_sorting_test.c
+SRC := $(SORTING_SRC_DIR)/sorts.c $(SORTING_TEST_DIR)/sorts_test.c
 OBJS := $(SRC:.c=.o)
 
 # Rules

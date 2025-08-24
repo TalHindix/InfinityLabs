@@ -8,13 +8,21 @@ Status:
 
 #include <string.h> /* memcpy */
 #include <stdlib.h> /* malloc */
-#include "rec_sorting.h"
+#include <assert.h> /* assert */
 
+#include "sorts.h" /* QuickSort */
+
+/* Enums */
+enum { MS_OK = 0, MS_ERR = -1 };
+
+/* Prototypes */
 static size_t RecBinarySearchHelper(const int arr[], size_t low, size_t high, int target);
 static int RecMergeSortHelper(int* arr, size_t low, size_t high);
 static int Merge(int* arr, size_t l, size_t mid, size_t high);
 
-enum { MS_OK = 0, MS_ERR = -1 };
+static void SwapBytes(char* a, char* b, size_t ele_size);
+static size_t Partition(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp);
+static void QuickSortRec(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp);
 
 size_t IterBinarySearch(const int arr[],size_t size, int target)
 {
@@ -62,21 +70,17 @@ void IMergeSort(int* arr_to_sort, size_t num_elements)
     size_t high = 0;
     size_t i = 0;
 
-    for(p = 2; p <= num_elements; p*=2 )
+    for(p = 1; p < num_elements; p *=2 )
     {
-        for(i = 0; i + p - 1 < num_elements; i+=p)
+        for(i = 0; i + p < num_elements; i += 2 * p)
         {
-            low = i;
-            high = i + p - 1;
-            mid = (low + high) / 2;
-            
-            Merge(arr_to_sort,low,mid,high);
-        }
-    }
+            low  = i;
+            mid  = i + p - 1;
 
-    if(p/2 < num_elements)
-    {
-        Merge(arr_to_sort,0,(p/2)-1,num_elements-1);
+            high = (i + 2 * p - 1 < num_elements) ? (i + 2 * p - 1) : (num_elements - 1);
+            
+            Merge(arr_to_sort, low, mid, high);
+        }
     }
 }
 
@@ -89,6 +93,18 @@ int RecMergeSort(int* arr_to_sort, size_t num_elements)
 
     return RecMergeSortHelper(arr_to_sort,0,num_elements - 1);
 }
+
+void QuickSort(void *base, size_t n_items, size_t elem_size, cmp_func_t cmp)
+{
+    if (NULL == base || n_items <= 2 || elem_size == 0 || NULL == cmp)
+    {
+        return;
+    }
+
+    QuickSortRec(base, 0, n_items - 1, elem_size, cmp);
+}
+
+/* HELPER FUNCTIONS*/
 
 static int RecMergeSortHelper(int* arr, size_t low, size_t high)
 {
@@ -180,4 +196,73 @@ static size_t RecBinarySearchHelper(const int arr[], size_t low, size_t high, in
 
     return RecBinarySearchHelper(arr,mid + 1 , high, target);
     
+}
+
+static void SwapBytes(char* a, char* b, size_t ele_size)
+{
+    char* temp = NULL;
+
+    if ((NULL == a) || (NULL == b) || (a == b))
+    {
+        return;
+    }
+
+    temp = (char*)malloc(ele_size);
+    if(NULL == temp)
+    {
+        return;
+    }
+
+    memcpy(temp,a,ele_size);
+    memcpy(a,b,ele_size);
+    memcpy(b,temp,ele_size);
+
+    free(temp);
+}
+
+static size_t Partition(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp)
+{
+    size_t pivot_index = left + (right - left) / 2;
+    char* pivot_slot = base + pivot_index * elem_size;
+    char* last_slot = base + right * elem_size;
+    size_t store_idx = left;
+    size_t i = 0;
+    char* curr_slot = NULL;
+
+    SwapBytes(pivot_slot, last_slot, elem_size);
+
+    for(i = left; i < right; ++i)
+    {
+        curr_slot = (char *)base + i * elem_size;
+
+        if(cmp(curr_slot,last_slot) < 0)
+        {
+            SwapBytes(curr_slot,base + (store_idx * elem_size),elem_size);
+            ++store_idx;
+        }
+    }
+
+    SwapBytes(base + store_idx * elem_size, last_slot, elem_size);
+
+    return store_idx;
+}
+
+static void QuickSortRec(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp)
+{
+    size_t pivot = 0;
+
+    if (left >= right)
+    {
+        return;
+    }
+
+    pivot = Partition(base,left,right,elem_size,cmp);
+
+    if(pivot > 0)
+    {
+        QuickSortRec(base,left, pivot - 1, elem_size,cmp);
+    }
+
+    QuickSortRec(base,pivot+1,right,elem_size,cmp);
+
 }
