@@ -13,6 +13,15 @@ Status:
 
 #include "sorts.h" /* QuickSort */
 
+typedef struct node node_t;
+
+struct node
+{
+    void* data;
+	node_t* next;
+};
+
+
 #define CLR_RST  "\033[0m"
 #define CLR_OK   "\033[1;32m"
 #define CLR_BAD  "\033[1;31m"
@@ -26,10 +35,14 @@ static void TestMergeSort(void);
 static void TestQuickSort(void);
 static void TestBenChmark(void);
 
+static node_t* MergeSortedLists(node_t* h1, node_t* h2);
+static void TestMergeLists(node_t* list1, node_t* list2);
+
 static int CmpInt(const void* a, const void* b);
 static int* GenRandArray(size_t n);
 static int IsSorted(const int* arr, size_t n);
 static void Report(int pass, const char* msg);
+static node_t* CreateNode(int* num_ptr);
 
 int main(void)
 {
@@ -39,6 +52,9 @@ int main(void)
     TestQuickSort();
 
     TestBenChmark();
+
+
+    TestMergeLists(node_t* list1, node_t* list2);
 
     return 0;
 }
@@ -144,9 +160,9 @@ static int CmpInt(const void *a , const void *b)
     return (x > y) - (x < y);
 }
 
-static int *GenRandArray(size_t n)
+static int* GenRandArray(size_t n)
 {
-    int *arr = (int *)malloc(n * sizeof(int));
+    int* arr = (int *)malloc(n * sizeof(int));
     size_t i = 0;
 
     if (!arr) 
@@ -162,7 +178,7 @@ static int *GenRandArray(size_t n)
     return arr;
 }
 
-static int IsSorted(const int *arr , size_t n)
+static int IsSorted(const int* arr , size_t n)
 {
     size_t i = 1;
     for (; i < n ; ++i)
@@ -178,4 +194,34 @@ static int IsSorted(const int *arr , size_t n)
 static void Report(int pass , const char *msg)
 {
     printf("%s%s%s – %s\n", pass ? CLR_OK : CLR_BAD, pass ? "PASS" : "FAIL", CLR_RST, msg);
+}
+
+node_t* CreateNode(int* num_ptr)
+{
+    node_t* node = (node_t*)malloc(sizeof(node_t));
+	if (!node)
+	{
+		return NULL;
+	}
+
+    node->data = num_ptr;
+    node->next = NULL;
+
+    return node;
+}
+
+
+static void TestMergeLists(node_t* list1, node_t* list2)
+{
+    int a = 1;
+    int b = 2;
+    int c = 3;
+
+    node_t* list = CreateNode(&a);
+
+}
+
+static node_t* MergeSortedLists(node_t* h1, node_t* h2)
+{
+
 }

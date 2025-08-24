@@ -6,8 +6,8 @@ Reviewer:
 Status:		
 **************************************/
 
-#ifndef __ILRD_REC_SORTING_H__
-#define __ILRD_REC_SORTING_H__
+#ifndef __ILRD_SORTS_H__
+#define __ILRD_SORTS_H__
 
 #include <stddef.h> /* size_t */
 
@@ -22,4 +22,4 @@ int RecMergeSort(int* arr_to_sort, size_t num_elements);
 void QuickSort(void* base, size_t num_items, size_t ele_size, cmp_func_t cmp_func);
 
 
-#endif /* __ILRD_REC_SORTING_H__ */
+#endif /* __ILRD_SORTS_H__ */

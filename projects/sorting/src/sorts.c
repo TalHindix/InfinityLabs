@@ -12,6 +12,8 @@ Status:
 
 #include "sorts.h" /* QuickSort */
 
+#define SWAP_SBO 256
+
 /* Enums */
 enum { MS_OK = 0, MS_ERR = -1 };
 
@@ -23,6 +25,7 @@ static int Merge(int* arr, size_t l, size_t mid, size_t high);
 static void SwapBytes(char* a, char* b, size_t ele_size);
 static size_t Partition(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp);
 static void QuickSortRec(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp);
+
 
 size_t IterBinarySearch(const int arr[],size_t size, int target)
 {
@@ -200,36 +203,39 @@ static size_t RecBinarySearchHelper(const int arr[], size_t low, size_t high, in
 
 static void SwapBytes(char* a, char* b, size_t ele_size)
 {
-    char* temp = NULL;
+    char stack_buffer[SWAP_SBO];
+    char* temp = stack_buffer;
 
     if ((NULL == a) || (NULL == b) || (a == b))
     {
         return;
     }
 
-    temp = (char*)malloc(ele_size);
-    if(NULL == temp)
+    if (ele_size > sizeof(stack_buffer))
     {
-        return;
+        temp = (char *)malloc(ele_size);
+        if (NULL == temp)
+        {
+            return;
+        }
     }
 
     memcpy(temp,a,ele_size);
     memcpy(a,b,ele_size);
     memcpy(b,temp,ele_size);
 
-    free(temp);
+    if (temp != stack_buffer) 
+    {
+        free(temp);
+    }
 }
 
 static size_t Partition(char *base, size_t left, size_t right, size_t elem_size, cmp_func_t cmp)
 {
-    size_t pivot_index = left + (right - left) / 2;
-    char* pivot_slot = base + pivot_index * elem_size;
     char* last_slot = base + right * elem_size;
     size_t store_idx = left;
-    size_t i = 0;
     char* curr_slot = NULL;
-
-    SwapBytes(pivot_slot, last_slot, elem_size);
+    size_t i = 0;
 
     for(i = left; i < right; ++i)
     {
@@ -266,3 +272,4 @@ static void QuickSortRec(char *base, size_t left, size_t right, size_t elem_size
     QuickSortRec(base,pivot+1,right,elem_size,cmp);
 
 }
+
