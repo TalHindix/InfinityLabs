@@ -1,4 +1,4 @@
-# make/linear_sorting.mak
+# make/sorts.mak
 
 # Compiler
 CC := gcc

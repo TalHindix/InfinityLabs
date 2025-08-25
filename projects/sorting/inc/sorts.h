@@ -1,10 +1,11 @@
 /**************************************
-Exercise: 	SA - Recursive Sorting
+Exercise:	SA - Recursive Sorting
 Date:		23/8/2025
 Developer:	Tal Hindi
-Reviewer: 	
-Status:		
+Reviewer:   Yuval Hochman
+Status:     Approved
 **************************************/
+
 
 #ifndef __ILRD_SORTS_H__
 #define __ILRD_SORTS_H__

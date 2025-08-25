@@ -1,9 +1,9 @@
 /**************************************
-Exercise: 	SA - Recursive Sorting
+Exercise:	SA - Recursive Sorting
 Date:		23/8/2025
 Developer:	Tal Hindi
-Reviewer: 	
-Status:		
+Reviewer:   Yuval Hochman
+Status:     Approved
 **************************************/
 
 #include <stdio.h>    /* printf */
@@ -12,15 +12,6 @@ Status:
 #include <time.h>     /* clock */
 
 #include "sorts.h" /* QuickSort */
-
-typedef struct node node_t;
-
-struct node
-{
-    void* data;
-	node_t* next;
-};
-
 
 #define CLR_RST  "\033[0m"
 #define CLR_OK   "\033[1;32m"
@@ -35,14 +26,10 @@ static void TestMergeSort(void);
 static void TestQuickSort(void);
 static void TestBenChmark(void);
 
-static node_t* MergeSortedLists(node_t* h1, node_t* h2);
-static void TestMergeLists(node_t* list1, node_t* list2);
-
 static int CmpInt(const void* a, const void* b);
 static int* GenRandArray(size_t n);
 static int IsSorted(const int* arr, size_t n);
 static void Report(int pass, const char* msg);
-static node_t* CreateNode(int* num_ptr);
 
 int main(void)
 {
@@ -52,9 +39,6 @@ int main(void)
     TestQuickSort();
 
     TestBenChmark();
-
-
-    TestMergeLists(node_t* list1, node_t* list2);
 
     return 0;
 }
@@ -196,32 +180,6 @@ static void Report(int pass , const char *msg)
     printf("%s%s%s – %s\n", pass ? CLR_OK : CLR_BAD, pass ? "PASS" : "FAIL", CLR_RST, msg);
 }
 
-node_t* CreateNode(int* num_ptr)
-{
-    node_t* node = (node_t*)malloc(sizeof(node_t));
-	if (!node)
-	{
-		return NULL;
-	}
-
-    node->data = num_ptr;
-    node->next = NULL;
-
-    return node;
-}
 
 
-static void TestMergeLists(node_t* list1, node_t* list2)
-{
-    int a = 1;
-    int b = 2;
-    int c = 3;
 
-    node_t* list = CreateNode(&a);
-
-}
-
-static node_t* MergeSortedLists(node_t* h1, node_t* h2)
-{
-
-}
