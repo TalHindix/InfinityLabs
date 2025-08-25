@@ -228,11 +228,27 @@ static void HeapifyDown(heap_t* heap, size_t idx)
 
 static size_t LargerChild(heap_t* heap, size_t parent_idx, size_t size)
 {
-    size_t left_child = LEFT(parent_idx);
-    size_t right_child = RIGHT(parent_idx);
-    size_t right_is_bigger_valid = 0;
+    size_t left_child_idx = LEFT(parent_idx);
+    size_t right_child_idx = RIGHT(parent_idx);
 
-    right_is_bigger_valid = (right_child < size) && (heap->compare(GetElem(heap,right_child),GetElem(heap,left_child)) > 0);
-    
-    return right_is_bigger_valid ? right_child : left_child;
+    /* A node must have at least a left child to be a non-leaf node.
+    If the left child is out of bounds, the parent doesn't have any children. */
+    if (left_child_idx >= size)
+    {
+        return parent_idx; /* or some error indicator, as this shouldn't be called on a leaf */
+    }
+
+    /* If the right child is out of bounds, the left child is the only option. */
+    if (right_child_idx >= size)
+    {
+        return left_child_idx;
+    }
+
+    /* Compare the two children to find the larger one. */
+    if (heap->compare(GetElem(heap, right_child_idx), GetElem(heap, left_child_idx)) > 0)
+    {
+        return right_child_idx;
+    }
+
+    return left_child_idx;
 }
