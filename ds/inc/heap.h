@@ -85,7 +85,7 @@ is_match  – returns 0 when (item, key) are equal (not NULL)
 
 Time  O(n) to find + O(log n) to restore heap
 --------------------------------------------------*/
-void HeapRemove(heap_t* heap, const void* key, is_match_func is_match);
+void* HeapRemove(heap_t* heap, const void* key, is_match_func is_match);
 
 /*--------------------------------------------------
 HeapIsEmpty

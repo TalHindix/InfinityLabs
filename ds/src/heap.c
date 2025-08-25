@@ -112,26 +112,35 @@ void HeapPop(heap_t* heap)
 
 }
 
-void HeapRemove(heap_t* heap, const void* data, is_match_func is_match)
+void* HeapRemove(heap_t* heap, const void* data, is_match_func is_match)
 {
     size_t i = 0;
     size_t last = 0;
+    void* removed = NULL;
 
     assert(heap);
     assert(is_match);
 
     if(HeapIsEmpty(heap))
     {
-        return;
+        return NULL;
     }
 
     for(i = 0; i < VectorSize(heap->vector); ++i)
     {
         
-        if(0 == is_match(GetElem(heap,i),data))
+        if(is_match(GetElem(heap,i),data))
         {
             last = VectorSize(heap->vector) - 1;
 
+            removed = GetElem(heap, i);
+
+            if (i == last)
+            {
+                VectorPopBack(heap->vector);
+                return removed;
+            }
+            
             SwapElem(heap, i, last);
             VectorPopBack(heap->vector);
 
@@ -145,10 +154,11 @@ void HeapRemove(heap_t* heap, const void* data, is_match_func is_match)
                 HeapifyDown(heap, i);
             }
 
-            return;
+            return removed;
         }
     }
 
+    return NULL;
 }
 
 int HeapIsEmpty(const heap_t* heap)
@@ -169,7 +179,7 @@ static void* GetElem(const heap_t* heap, size_t idx)
     return *(void **)VectorGetAccessToElement(heap->vector,idx);
 }
 
-static void SetElem(heap_t* heap, size_t idx,void* data)
+static void SetElem(heap_t* heap, size_t idx, void* data)
 {
     *(void **)VectorGetAccessToElement(heap->vector,idx) = data;
 }

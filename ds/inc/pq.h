@@ -1,86 +1,90 @@
 /**************************************
-Exercise: 	DS - PQ
-Date:		20/7/2025
-Developer:	Tal Hindi
-Reviewer: 	Avi Tobar
-Status:		Approved
+Exercise:   DS – Priority Queue  (heap-based)
+Date:       20/7/2025
+Developer:  Tal Hindi
+Reviewer:   Avi Tobar
+Status:     Approved
 **************************************/
 
-#ifndef ILRD_PQ_H
-#define ILRD_PQ_H
+#ifndef __ILRD_PQ_H__
+#define __ILRD_PQ_H__
 
-#include <stddef.h> 	/* size_t 			*/
-#include "sortedl.h"	/* SortedLCreate 	*/
+#include <stddef.h>   /* size_t */
+
+#include "heap.h"     /* HeapCreate */
 
 typedef struct pq pq_t;
 
 /*---------------------------------------------------------------------------
  * PQCreate
- * Create an empty priority queue ordered by user-supplied compare function.
- * Return: pointer to new PQ or NULL on failure / invalid comparator.
- * Complexity: O(1)
+ * Make an empty priority queue.
+ * The compare function decides the order (higher return value ⇒ higher priority).
+ * Return: pointer to a new queue, or NULL on error.
+ * Time:   O(1)
  *-------------------------------------------------------------------------*/
-pq_t* PQCreate(int (*comp)(const void* data1, const void* data2)); /* O(1) */
+pq_t* PQCreate(int (*cmp)(const void* data1, const void* data2));
 
 /*---------------------------------------------------------------------------
  * PQDestroy
- * Destroys the PQ container. Does NOT free user data.
- * Complexity: O(n) due to internal list destruction.
+ * Free the queue object itself.  Does NOT free user data.
+ * Time:   O(n)   (destroys the entire heap)
  *-------------------------------------------------------------------------*/
-void PQDestroy(pq_t* pq); /* O(n) */
+void PQDestroy(pq_t* pq);
 
 /*---------------------------------------------------------------------------
  * PQEnqueue
- * Insert element keeping internal ordering by comparator.
+ * Add a new item.
  * Return: 0 on success, non-zero on allocation failure.
- * Complexity: O(n) for search + insert.
+ * Time:   O(log n)   (heap insert)
  *-------------------------------------------------------------------------*/
-int PQEnqueue(pq_t* pq, void* data); /* O(n) */
+int PQEnqueue(pq_t* pq, void* data);
 
 /*---------------------------------------------------------------------------
  * PQDequeue
- * PQDequeue highest priority element and return its data.
- * Return: data pointer or NULL if empty.
- * Complexity: O(1)
+ * Remove and return the highest-priority item.
+ * Return: data pointer, or NULL if the queue is empty.
+ * Time:   O(log n)   (heap pop)
  *-------------------------------------------------------------------------*/
-void* PQDequeue(pq_t* pq); /* O(1) */
+void* PQDequeue(pq_t* pq);
 
 /*---------------------------------------------------------------------------
  * PQPeek
- * Return (without removing) data pointer of highest priority element.
- * Return: data pointer or NULL if empty.
- * Complexity: O(1)
+ * Return the highest-priority item without removing it.
+ * Return: data pointer, or NULL if the queue is empty.
+ * Time:   O(1)
  *-------------------------------------------------------------------------*/
-void* PQPeek(const pq_t* pq); /* O(1) */
+void* PQPeek(const pq_t* pq);
 
 /*---------------------------------------------------------------------------
  * PQIsEmpty
- * Return: non-zero if empty; 0 otherwise.
- * Complexity: O(1)
+ * Return: non-zero if empty, 0 otherwise.
+ * Time:   O(1)
  *-------------------------------------------------------------------------*/
-int PQIsEmpty(const pq_t* pq); /* O(1) */
+int PQIsEmpty(const pq_t* pq);
 
 /*---------------------------------------------------------------------------
  * PQSize
- * Return number of elements.
- * Complexity: O(n) (delegates to SortedLSize implementation)
+ * Return the number of items currently in the queue.
+ * Time:   O(1)
  *-------------------------------------------------------------------------*/
-size_t PQSize(const pq_t* pq); /* O(n) */
+size_t PQSize(const pq_t* pq);
 
 /*---------------------------------------------------------------------------
  * PQClear
- * Remove all elements (does not free payloads).
- * Complexity: O(n)
+ * Remove every item (does not free the user data).
+ * Time:   O(n log n)   (repeated heap pops)
  *-------------------------------------------------------------------------*/
-void PQClear(pq_t* pq); /* O(n) */
+void PQClear(pq_t* pq);
 
 /*---------------------------------------------------------------------------
  * PQErase
- * Remove first element for which is_match_func(data, param) returns non-zero.
- * return pointer to param if success and null if not found.
- * Complexity: O(n)
+ * Remove the first item for which
+ *     is_match_func(data, param)  !=  0
+ * Return: pointer to the removed data if found, NULL otherwise.
+ * Time:   O(n)   (linear scan inside the heap)
  *-------------------------------------------------------------------------*/
-void* PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param); /* O(n) */
+void* PQErase(pq_t* pq,
+              int (*is_match_func)(const void* data, const void* param),
+              const void* param);
 
-#endif /* ILRD_PQ_H */
-
+#endif /* __ILRD_PQ_H__ */

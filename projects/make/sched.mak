@@ -10,7 +10,7 @@ endif
 INC_DIRS = -I$(SCHED_INC_DIR) -I$(DS_INC_DIR) 
 
 # APIs to turn into .so files #
-LIB_NAMES = pq uid sortedl dll 
+LIB_NAMES = pq uid heap vector
 SCHED_NAMES = task sched
 
 # Source directories #

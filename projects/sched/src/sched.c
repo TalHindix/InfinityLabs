@@ -12,11 +12,11 @@ Status:		Approved
 
 #include "sched.h" 	/* SchedCreate 	*/
 #include "task.h"	/* TaskCreate	*/
-#include "pq.h"		/* PQCreate		*/
+#include "heap.h"   /* HeapCreate   */
 
 struct sched
 {
-    pq_t* pq;
+    heap_t* heap;
     int stop_flag;
 };
 
@@ -35,8 +35,8 @@ sched_t* SchedCreate(void)
 		return NULL;
 	}
 	
-	sched->pq = PQCreate(WrapperTaskCmp);
-	if(!sched->pq)
+	sched->heap = HeapCreate(WrapperTaskCmp);
+	if(!sched->heap)
 	{
 		free(sched);
 		return NULL;
@@ -53,7 +53,7 @@ void SchedDestroy(sched_t* sch)
 	
 	SchedClear(sch);
 	
-	PQDestroy(sch->pq);
+	HeapDestroy(sch->heap);
 	free(sch);
 }
 
@@ -66,9 +66,10 @@ run_status_e SchedRun(sched_t *sch)
     assert(sch);
     sch->stop_flag = 0;
 
-    while (!sch->stop_flag && !PQIsEmpty(sch->pq))
+    while (!sch->stop_flag && !HeapIsEmpty(sch->heap))
     {
-        task = (task_t *)PQDequeue(sch->pq);
+        task = (task_t *)HeapPeek(sch->heap);
+		HeapPop(sch->heap);
 
         SleepUntil((time_t)TaskGetTimeToRun(task));
 
@@ -88,7 +89,7 @@ run_status_e SchedRun(sched_t *sch)
         }
 
         TaskSetTimeToRun(task, result);
-        if (PQEnqueue(sch->pq, task))
+        if (HeapPush(sch->heap, task))
         {
             TaskDestroy(task);
             return FAILED_ALLOC;
@@ -120,7 +121,7 @@ ilrd_uid_t SchedAdd(sched_t* sch, ssize_t(*op_func)(void* param), void* param, s
 		return UIDbadUID;
 	}
 	
-	if (PQEnqueue(sch->pq,new_task))
+	if (HeapPush(sch->heap,new_task))
 	{
 		TaskDestroy(new_task);
 		return UIDbadUID;
@@ -135,22 +136,22 @@ int SchedRemove(sched_t* sch, ilrd_uid_t uid)
 	
 	assert(sch);
 	
-	task_to_remove = PQErase(sch->pq, WrapperTaskIsMatch, &uid);
+	task_to_remove = HeapRemove(sch->heap, &uid, WrapperTaskIsMatch);
 	
-	if (task_to_remove)
+	if (NULL == task_to_remove)
 	{
-		TaskDestroy(task_to_remove);
-		return 0;
+		return 1;
 	}
 	
-	return 1;
+	TaskDestroy(task_to_remove);
+	return 0;
 }
 
 int SchedIsEmpty(const sched_t* sch)
 {
 	assert(sch);
 	
-	return (PQIsEmpty(sch->pq));
+	return (HeapIsEmpty(sch->heap));
 }
 
 void SchedClear(sched_t* sch)
@@ -159,9 +160,10 @@ void SchedClear(sched_t* sch)
 	
 	assert(sch);
 	
-	while(!PQIsEmpty(sch->pq))
+	while(!HeapIsEmpty(sch->heap))
 	{
-		task = PQDequeue(sch->pq);
+		task = HeapPeek(sch->heap);
+		HeapPop(sch->heap);
 		TaskDestroy(task);
 	}
 }
@@ -170,7 +172,7 @@ size_t SchedSize(const sched_t* sch)
 {
 	assert(sch);
 	
-	return PQSize(sch->pq);
+	return HeapSize(sch->heap);
 }
 
 static int WrapperTaskCmp(const void* task1, const void* task2)
@@ -197,11 +199,11 @@ static run_status_e ComputeExitStatus(const sched_t *sch, int had_fail)
 {
     if (had_fail)
     {
-        return PQIsEmpty(sch->pq) ? FAILED_TASKS_EMPTY_SCHED
+        return HeapIsEmpty(sch->heap) ? FAILED_TASKS_EMPTY_SCHED
                                   : FAILED_TASKS_NON_EMPTY_SCHED;
     }
 
-    return PQIsEmpty(sch->pq) ? SUCCESS : PAUSED;
+    return HeapIsEmpty(sch->heap) ? SUCCESS : PAUSED;
 }
 
 

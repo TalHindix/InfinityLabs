@@ -6,14 +6,14 @@ Reviewer: 	Avi Tobar
 Status:		Approved
 **************************************/
 
-#include <assert.h>   /* assert 		*/
-#include <stdlib.h>   /* malloc, free 	*/
+#include <assert.h> /* assert */
+#include <stdlib.h> /* malloc */
 
-#include "pq.h"       /* PQCreate 		*/
+#include "pq.h" /* PQCreate */
 
 struct pq
 {
-    sortedl_t* slist;
+    heap_t* heap;
 };
 
 pq_t* PQCreate(int (*comp)(const void* data1, const void* data2))
@@ -28,8 +28,8 @@ pq_t* PQCreate(int (*comp)(const void* data1, const void* data2))
         return NULL;
     }
 
-    pq->slist = SortedLCreate(comp);
-    if (NULL == pq->slist)
+    pq->heap = HeapCreate(comp);
+    if (NULL == pq->heap)
     {
         free(pq);
         return NULL;
@@ -42,55 +42,52 @@ void PQDestroy(pq_t* pq)
 {
     assert(pq);
 
-    SortedLDestroy(pq->slist);
+    HeapDestroy(pq->heap);
   
-  	pq->slist = NULL;
+  	pq->heap = NULL;
   	
     free(pq);
 }
 
 int PQEnqueue(pq_t* pq, void* data)
 {
-    sorted_iter_t inserted = {0};
-    sorted_iter_t end_iter = {0};
-
     assert(pq);
 
-    inserted = SortedLInsert(pq->slist, (void*)data);
-    end_iter = SortedLEnd(pq->slist);
-
-    return SortedLIsEqual(inserted, end_iter);
-    
+    return HeapPush(pq->heap,data);
 }
 
 void* PQDequeue(pq_t* pq)
 {
+    void* data = NULL;
+
     assert(pq);
     assert(!PQIsEmpty(pq));
 
-    return SortedLPopBack(pq->slist);
+    data = HeapPeek(pq->heap);
+    HeapPop(pq->heap);
+
+    return data;
 }
 
 void* PQPeek(const pq_t* pq)
 {
     assert(pq);
-   	assert(!PQIsEmpty(pq));
    	
-    return SortedLGetData(SortedLPrev(SortedLEnd(pq->slist)));
+    return HeapPeek(pq->heap);
 }
 
 int PQIsEmpty(const pq_t* pq)
 {
    	assert(pq);
    	
-    return SortedLIsEmpty(pq->slist);
+    return HeapIsEmpty(pq->heap);
 }
 
 size_t PQSize(const pq_t* pq)
 {
     assert(pq);
     
-    return SortedLSize(pq->slist);
+    return HeapSize(pq->heap);
 }
 
 void PQClear(pq_t* pq)
@@ -105,21 +102,10 @@ void PQClear(pq_t* pq)
 
 void* PQErase(pq_t* pq, int (*is_match_func)(const void* data, const void* param), const void* param)
 {
-	sorted_iter_t to_remove = {0};
-	void* data = NULL;
-	
-	assert(pq);
-	assert(is_match_func);
-	
-	to_remove = SortedLFindIf(SortedLBegin(pq->slist), SortedLEnd(pq->slist), is_match_func, param);
-	
-	if (!SortedLIsEqual(SortedLEnd(pq->slist), to_remove))
-	{
-		data = SortedLGetData(to_remove);
-		SortedLRemove(to_remove);
-	}
-	
-	return data;	
+    assert(is_match_func);
+    assert(pq);
+
+	return HeapRemove(pq->heap,param,is_match_func);	
 }
 
 
