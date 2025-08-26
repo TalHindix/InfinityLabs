@@ -2,7 +2,7 @@
 Exercise:   DS - Heap
 Date:       25/8/2025
 Developer:  Tal Hindi
-Reviewer:   
+Reviewer:   Baruchi Haimson
 Status:     
 **************************************/
 
@@ -14,6 +14,8 @@ Status:
 #define LEFT(i) ((size_t)((i) * 2 + 1))
 #define RIGHT(i) ((size_t)((i) * 2 + 2))
 #define PARENT(i) (((i) - 1) / 2)
+
+#define DEF_CAPACITY 128
 
 struct heap
 {
@@ -42,7 +44,7 @@ heap_t* HeapCreate(compare_func func)
     }
 
     heap->compare = func;
-    heap->vector = VectorCreate(DEFAULT_CAPACITY,sizeof(void*));
+    heap->vector = VectorCreate(DEF_CAPACITY,sizeof(void*));
     if(NULL == heap->vector)
     {
         free(heap);
@@ -129,7 +131,7 @@ void* HeapRemove(heap_t* heap, const void* data, is_match_func is_match)
     for(i = 0; i < VectorSize(heap->vector); ++i)
     {
         
-        if(is_match(GetElem(heap,i),data))
+        if(0 == is_match(GetElem(heap,i),data))
         {
             last = VectorSize(heap->vector) - 1;
 

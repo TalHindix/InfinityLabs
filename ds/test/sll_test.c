@@ -12,7 +12,7 @@ static int PrintElement(void *data, void *unused)
     return 0;
 }
 
-static int CompareInt(const void *data, void *target)
+static int CompareInt(const void *data,const void *target)
 {
     return (*(int *)data == *(int *)target);
 }
