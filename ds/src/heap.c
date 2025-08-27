@@ -66,11 +66,7 @@ void HeapDestroy(heap_t* heap)
 void* HeapPeek(const heap_t* heap)
 {
     assert(heap);
-
-    if(HeapIsEmpty(heap))
-    {
-        return NULL;
-    }
+    assert(!HeapIsEmpty(heap));
 
     return *(void **)VectorGetAccessToElement(heap->vector,0);
 }
@@ -97,11 +93,7 @@ void HeapPop(heap_t* heap)
     size_t last_ele = 0;
 
     assert(heap);
-
-    if (HeapIsEmpty(heap))
-    {
-        return;
-    }
+    assert(!HeapIsEmpty(heap));
 
     last_ele = VectorSize(heap->vector) - 1;
     SwapElem(heap,(size_t)0,last_ele);
@@ -219,7 +211,7 @@ static void HeapifyUp(heap_t* heap, size_t idx)
 
 static void HeapifyDown(heap_t* heap, size_t idx)
 {
-    size_t size = VectorSize(heap->vector);
+    size_t size = HeapSize(heap);
     size_t larger_child = 0;
 
     while(LEFT(idx) < size)
