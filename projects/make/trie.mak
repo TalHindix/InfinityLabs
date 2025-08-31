@@ -1,5 +1,4 @@
-# make/recursion.mak
-
+# make/trie.mak
 
 PROFILE ?= debug
 
@@ -12,19 +11,18 @@ endif
 BUILD_DIR := bin/$(PROFILE)
 
 # -------- Project layout --------
-DHCP_SRC_DIR  = dhcp/src
-DHCP_INC_DIR  = dhcp/inc
+TRIE_SRC_DIR  = dhcp/src
+TRIE_INC_DIR  = dhcp/inc
 TEST_DIR      = dhcp/test
 
-INC_DIRS = -I$(DHCP_INC_DIR)
+INC_DIRS = -I$(TRIE_INC_DIR)
 
+TRIE_LIB_NAMES = trie
 
-DHCP_LIB_NAMES = dhcp trie
+TRIE_SO_FILES = $(addprefix $(TRIE_SRC_DIR)/lib,$(addsuffix .so,$(TRIE_LIB_NAMES)))
 
-DHCP_SO_FILES = $(addprefix $(DHCP_SRC_DIR)/lib,$(addsuffix .so,$(DHCP_LIB_NAMES)))
-
-TARGET = $(BUILD_DIR)/dhcp_test.out
-OBJS   = $(TEST_DIR)/dhcp_test.o
+TARGET = $(BUILD_DIR)/trie_test.out
+OBJS   = $(TEST_DIR)/trie_test.o
 
 # -------- Default goal --------
 .DEFAULT_GOAL := all
@@ -33,9 +31,8 @@ OBJS   = $(TEST_DIR)/dhcp_test.o
 $(BUILD_DIR):
 	mkdir -p $@
 
-
-# Build DHCP shared lib
-$(DHCP_SRC_DIR)/lib%.so: $(DHCP_SRC_DIR)/%.c
+# Build trie shared lib
+$(TRIE_SRC_DIR)/lib%.so: $(TRIE_SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INC_DIRS) -fPIC -shared -o $@ $<
 
 # Build test object
@@ -46,10 +43,10 @@ $(TEST_DIR)/%.o: $(TEST_DIR)/%.c
 $(TARGET): | $(BUILD_DIR)
 
 # Link test exe
-$(TARGET): $(OBJS) $(DHCP_SO_FILES)
+$(TARGET): $(OBJS) $(TRIE_SO_FILES)
 	$(CC) -o $@ $(OBJS) \
-	      -L$(DHCP_SRC_DIR) \
-	      $(addprefix -l,$(DHCP_LIB_NAMES)) \
+	      -L$(TRIE_SRC_DIR) \
+	      $(addprefix -l,$(TRIE_LIB_NAMES)) \
 	      -lm \
 	      -Wl,-rpath,'$$ORIGIN/../../dhcp/src'
 
@@ -69,7 +66,7 @@ run:
 
 clean:
 	@rm -rf bin
-	@rm -f $(DHCP_SO_FILES) $(OBJS)
+	@rm -f $(TRIE_SO_FILES) $(OBJS)
 
 # Optional auto-deps (harmless if missing)
--include $(DHCP_SO_FILES:.so=.d) $(OBJS:.o=.d)
+-include $(TRIE_SO_FILES:.so=.d) $(OBJS:.o=.d)
