@@ -65,7 +65,7 @@ trie_node_t* TRIECreate(void);
  *   TRIE_NO_IP_AVAILABLE               - Trie is full, no ips left
  *   TRIE_ALLOC_FAILURE                 - Memory allocation failed 
  * 
- * Time Complexity: O(depth) for insertion + O(2^depth) for alternative search
+ * Time Complexity: O(depth) - single traversal with inline pivot detection
  * Space Complexity: O(depth) for path creation
  * 
  */

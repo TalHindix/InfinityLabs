@@ -10,11 +10,9 @@ Status:
 
 #include "trie.h" /* TRIECreate */
 
-#define BIN 2
 #define RIGHT 1
 #define LEFT 0
 
-#define MAX_DEPTH 32
 #define MAX_PATH_LENGTH 32
 #define BIT_SHIFT_ONE 1
 #define LEAF_NODE 1
@@ -32,7 +30,7 @@ Status:
 
 struct trie_node
 {
-    trie_node_t* children[BIN];
+    trie_node_t* children[2];
     int is_leaf;
     int has_free_in_subtree;
 };
@@ -40,21 +38,21 @@ struct trie_node
 /* ======================================= PROTOTYPES ======================================= */
 static int IsBitSet(unsigned int value, size_t bit_index);
 static trie_node_t* TRIECreateNode(void);
-static trie_status_e TRIECreatePath(trie_node_t* root, unsigned int ip_address, size_t depth);
-static int TRIEFindNextFree(trie_node_t* root, unsigned int start_ip, 
-                           unsigned int* found_ip, size_t depth);
-static void TRIEUpdateMetadata(trie_node_t* root, unsigned int ip_address, size_t depth);
 static trie_node_t* TraversePath(trie_node_t* root, unsigned int ip_address, size_t depth);
-static trie_status_e InsertAndAllocate(trie_node_t* root, unsigned int* allocated_ip, unsigned int ip_address, size_t depth);
+static trie_status_e TRIEInsertHelper(trie_node_t* root, unsigned int* allocated_ip, 
+                                     unsigned int requested_ip, size_t depth);
+static trie_status_e AllocateAtTarget(trie_node_t* current_node, trie_node_t** path_nodes,
+                                     int path_count, unsigned int target_ip, size_t remaining_depth, unsigned int* allocated_ip);
+static trie_status_e FindAndAllocateNextFree(trie_node_t* root, unsigned int base_ip, 
+                                           unsigned int* allocated_ip, size_t depth);
+static void TRIEUpdateMetadata(trie_node_t** path_nodes, int path_count);
 static int HasChildWithFreeSpace(trie_node_t* node);                           
 
 /* ======================================= API IMP ======================================= */
 trie_node_t* TRIECreate()
 {
-    trie_node_t* root = NULL;
-    size_t i = 0;
+    trie_node_t* root = (trie_node_t*)malloc(sizeof(trie_node_t));
     
-    root = (trie_node_t*)malloc(sizeof(trie_node_t));
     if(!root)
     {
         return NULL;
@@ -62,21 +60,14 @@ trie_node_t* TRIECreate()
 
     root->is_leaf = NON_LEAF_NODE;
     root->has_free_in_subtree = HAS_FREE_SPACE;
-
-    for(i = 0; i < BIN; ++i)
-    {
-        root->children[i] = NULL;
-    }
-
+    root->children[RIGHT] = NULL;
+    root->children[LEFT] = NULL;
 
     return root;
 }
 
 trie_status_e TRIEInsert(trie_node_t* root, unsigned int* allocated_ip, unsigned int requested_ip, size_t depth)
 {
-    unsigned int found_ip = 0;
-    trie_status_e status = TRIE_SUCCESS;
-    
     if(!root)
     {
         return TRIE_ALLOC_FAILURE;
@@ -87,18 +78,7 @@ trie_status_e TRIEInsert(trie_node_t* root, unsigned int* allocated_ip, unsigned
         return TRIE_NO_IP_AVAILABLE;
     }
     
-    if(!TRIESearch(root, requested_ip, depth))
-    {
-        return InsertAndAllocate(root, allocated_ip, requested_ip, depth);
-    }
-    
-    if(TRIEFindNextFree(root, requested_ip + 1, &found_ip, depth))
-    {
-        status = InsertAndAllocate(root, allocated_ip, found_ip, depth);
-        return (status == TRIE_SUCCESS) ? TRIE_IP_OCCUPIED_ALLOCATED_ANOTHER : status;
-    }
-    
-    return TRIE_NO_IP_AVAILABLE;
+    return TRIEInsertHelper(root, allocated_ip, requested_ip, depth);
 }
 
 int TRIESearch(trie_node_t* root, unsigned int ip_address, size_t depth)
@@ -115,7 +95,13 @@ int TRIESearch(trie_node_t* root, unsigned int ip_address, size_t depth)
 
 trie_status_e TRIEFree(trie_node_t* root, unsigned int ip_address, size_t depth)
 {
-    trie_node_t* target = TraversePath(root, ip_address, depth);
+    trie_node_t* target = NULL;
+    trie_node_t* path_nodes[MAX_PATH_LENGTH];
+    int path_count = 0;
+    trie_node_t* current_node = root;
+    int bit_position = 0;
+    
+    target = TraversePath(root, ip_address, depth);
     
     if(!target)
     {
@@ -128,7 +114,14 @@ trie_status_e TRIEFree(trie_node_t* root, unsigned int ip_address, size_t depth)
     }
     
     target->is_leaf = NON_LEAF_NODE;
-    TRIEUpdateMetadata(root, ip_address, depth);
+    
+    for(bit_position = (int)depth - 1; bit_position >= 0; --bit_position)
+    {
+        path_nodes[path_count++] = current_node;
+        current_node = IsBitSet(ip_address, bit_position) ? RIGHT_CHILD(current_node) : LEFT_CHILD(current_node);
+    }
+    
+    TRIEUpdateMetadata(path_nodes, path_count);
     
     return TRIE_SUCCESS;
 }
@@ -148,24 +141,19 @@ void TRIEDestroy(trie_node_t* root)
 
 size_t TRIECountFree(trie_node_t* root, size_t depth)
 {
-    size_t free_count = 0;
-    unsigned int max_ip = (BIT_SHIFT_ONE << depth) - BIT_SHIFT_ONE;
-    unsigned int ip_address = 0;
-    
-    for (ip_address = 0; ip_address <= max_ip; ip_address++) 
+    if(!root || depth == 0)
     {
-        if (!TRIESearch(root, ip_address, depth))
-        {
-            free_count++;
-        }
+        return root && !IS_LEAF(root) ? 1 : 0;
     }
     
-    return free_count;
+    return (HAS_LEFT_CHILD(root) ? TRIECountFree(LEFT_CHILD(root), depth - 1) : (size_t)(1 << (depth - 1))) +
+           (HAS_RIGHT_CHILD(root) ? TRIECountFree(RIGHT_CHILD(root), depth - 1) : (size_t)(1 << (depth - 1))) -
+           (IS_LEAF(root) ? 1 : 0);
 }
 
 static int IsBitSet(unsigned int value, size_t bit_index)
 {
-	return (value & (BIT_SHIFT_ONE << bit_index)) ? BIT_SHIFT_ONE : NO_FREE_SPACE;
+	return (value >> bit_index) & 1;
 }
 
 static trie_node_t* TRIECreateNode(void)
@@ -176,184 +164,128 @@ static trie_node_t* TRIECreateNode(void)
         return NULL;
     } 
 
-    RIGHT_CHILD(new_node) = NULL;
-    LEFT_CHILD(new_node) = NULL;
+    new_node->children[LEFT] = NULL;
+    new_node->children[RIGHT] = NULL;
     new_node->is_leaf = NON_LEAF_NODE;
     new_node->has_free_in_subtree = HAS_FREE_SPACE;
 
     return new_node;
 }
 
-static trie_status_e TRIECreatePath(trie_node_t* root, unsigned int ip_address, size_t depth)
+static trie_status_e TRIEInsertHelper(trie_node_t* root, unsigned int* allocated_ip, 
+                                        unsigned int requested_ip, size_t depth)
 {
     trie_node_t* current_node = root;
-    trie_node_t* path[MAX_PATH_LENGTH];
-    int path_length = 0;
+    trie_node_t* path_nodes[MAX_PATH_LENGTH];
+    trie_node_t* pivot_node = NULL;
+    int path_count = 0;
+    int pivot_depth = -1;
     int bit_position = 0;
-    
-    for (bit_position = (int)depth - 1; bit_position >= 0; --bit_position) 
-    {
-        path[path_length++] = current_node;
-        
-        /* Go Right */
-        if(IsBitSet(ip_address,bit_position))
-        {
-            if(!HAS_RIGHT_CHILD(current_node))
-            {
-                RIGHT_CHILD(current_node) = TRIECreateNode();
-                if(!HAS_RIGHT_CHILD(current_node))
-                {
-                    /* Rollback: free any nodes created in this call */
-                    while(--path_length > 0)
-                    {
-                        trie_node_t* parent = path[path_length];
-                        if(IsBitSet(ip_address, (int)depth - 1 - path_length))
-                        {
-                            free(RIGHT_CHILD(parent));
-                            RIGHT_CHILD(parent) = NULL;
-                        }
-                        else
-                        {
-                            free(LEFT_CHILD(parent));
-                            LEFT_CHILD(parent) = NULL;
-                        }
-                    }
-                    return TRIE_ALLOC_FAILURE;
-                }
-
-            }
-            current_node = RIGHT_CHILD(current_node);
-        }
-        else /* Go Left*/
-        {
-            if(!HAS_LEFT_CHILD(current_node))
-            {
-                LEFT_CHILD(current_node) = TRIECreateNode();
-                if(!HAS_LEFT_CHILD(current_node))
-                {
-                    /* Rollback: free any nodes created in this call */
-                    while(--path_length > 0)
-                    {
-                        trie_node_t* parent = path[path_length];
-                        if(IsBitSet(ip_address, (int)depth - 1 - path_length))
-                        {
-                            free(RIGHT_CHILD(parent));
-                            RIGHT_CHILD(parent) = NULL;
-                        }
-                        else
-                        {
-                            free(LEFT_CHILD(parent));
-                            LEFT_CHILD(parent) = NULL;
-                        }
-                    }
-                    return TRIE_ALLOC_FAILURE;
-                }
-            }
-            current_node = LEFT_CHILD(current_node);
-        }
-    }
-
-    current_node->is_leaf = LEAF_NODE;
-
-    return TRIE_SUCCESS;
-}
-
-static int TRIEFindNextFree(trie_node_t* root, unsigned int start_ip, 
-                           unsigned int* found_ip, size_t depth)
-{
-    trie_node_t* current_node = root;
-    unsigned int current_ip = start_ip;
-    unsigned int max_ip = (BIT_SHIFT_ONE << depth) - BIT_SHIFT_ONE;
-    int bit_position = 0;
-    
-    if(NULL == root || !HAS_FREE_IN_SUBTREE(root))
-    {
-        return NO_FREE_SPACE;
-    }
-    
-    while(current_ip <= max_ip)
-    {
-        current_node = root;
-        
-        for(bit_position = (int)depth - 1; bit_position >= 0; --bit_position)
-        {
-            if(IsBitSet(current_ip, bit_position))
-            {
-                if(!HAS_RIGHT_CHILD(current_node))
-                {
-                    break;
-                }
-                current_node = RIGHT_CHILD(current_node);
-            }
-            else
-            {
-                if(!HAS_LEFT_CHILD(current_node))
-                {
-                    break;
-                }
-                current_node = LEFT_CHILD(current_node);
-            }
-        }
-        
-        if(bit_position < 0 && !IS_LEAF(current_node))
-        {
-            *found_ip = current_ip;
-            return BIT_SHIFT_ONE;
-        }
-        
-        if(current_ip == max_ip)
-        {
-            break;
-        }
-        current_ip++;
-    }
-    
-    return NO_FREE_SPACE;
-}
-
-static void TRIEUpdateMetadata(trie_node_t* root, unsigned int ip_address, size_t depth)
-{
-    trie_node_t* current_node = root;
-    trie_node_t* path[MAX_PATH_LENGTH];
-    int path_length = 0;
-    int bit_position = 0;
-    int level = 0;
-    
-    if(NULL == root)
-    {
-        return;
-    }
+    int reached_target = 1;
     
     for(bit_position = (int)depth - 1; bit_position >= 0; --bit_position)
     {
-        path[path_length++] = current_node;
+        path_nodes[path_count++] = current_node;
         
-        if(IsBitSet(ip_address, bit_position))
+        if(IsBitSet(requested_ip, bit_position))
         {
             if(!HAS_RIGHT_CHILD(current_node))
             {
-                return;
+                return AllocateAtTarget(current_node, path_nodes, path_count, requested_ip, bit_position + 1, allocated_ip);
             }
+            
+            if(!HAS_FREE_IN_SUBTREE(RIGHT_CHILD(current_node)))
+            {
+                reached_target = 0;
+                break;
+            }
+            
             current_node = RIGHT_CHILD(current_node);
         }
         else
         {
+            if(HAS_RIGHT_CHILD(current_node) && HAS_FREE_IN_SUBTREE(RIGHT_CHILD(current_node)))
+            {
+                pivot_node = current_node;
+                pivot_depth = bit_position;
+            }
+            
             if(!HAS_LEFT_CHILD(current_node))
             {
-                return;
+                return AllocateAtTarget(current_node, path_nodes, path_count, requested_ip, bit_position + 1, allocated_ip);
             }
+            
+            if(!HAS_FREE_IN_SUBTREE(LEFT_CHILD(current_node)))
+            {
+                reached_target = 0;
+                break;
+            }
+            
             current_node = LEFT_CHILD(current_node);
         }
     }
     
-    for(level = path_length - 1; level >= 0; --level)
+    if(reached_target && bit_position < 0)
     {
-        current_node = path[level];
-        
-        current_node->has_free_in_subtree = !IS_LEAF(current_node) ||
-                                           HAS_AVAILABLE_CHILD_SLOT(current_node) ||
-                                           HasChildWithFreeSpace(current_node);
+        if(IS_LEAF(current_node))
+        {
+            return FindAndAllocateNextFree(pivot_node, requested_ip, allocated_ip, pivot_depth);
+        }
+        else
+        {
+            current_node->is_leaf = LEAF_NODE;
+            *allocated_ip = requested_ip;
+            TRIEUpdateMetadata(path_nodes, path_count);
+            return TRIE_SUCCESS;
+        }
     }
+    
+    return FindAndAllocateNextFree(pivot_node, requested_ip, allocated_ip, pivot_depth);
+}
+
+static trie_status_e AllocateAtTarget(trie_node_t* current_node, trie_node_t** path_nodes,
+                                     int path_count, unsigned int target_ip, size_t remaining_depth, unsigned int* allocated_ip)
+{
+    trie_node_t* traverse_node = current_node;
+    int bit_position = 0;
+    
+    for(bit_position = (int)remaining_depth - 1; bit_position >= 0; --bit_position)
+    {
+        int direction = IsBitSet(target_ip, bit_position);
+        
+        if(!traverse_node->children[direction])
+        {
+            traverse_node->children[direction] = TRIECreateNode();
+            if(!traverse_node->children[direction])
+            {
+                return TRIE_ALLOC_FAILURE;
+            }
+        }
+        traverse_node = traverse_node->children[direction];
+    }
+    
+    traverse_node->is_leaf = LEAF_NODE;
+    *allocated_ip = target_ip;
+    TRIEUpdateMetadata(path_nodes, path_count);
+    
+    return TRIE_SUCCESS;
+}
+
+static trie_status_e FindAndAllocateNextFree(trie_node_t* pivot_node, unsigned int base_ip, 
+                                           unsigned int* allocated_ip, size_t pivot_depth)
+{
+    unsigned int next_ip = 0;
+    trie_status_e status = TRIE_SUCCESS;
+    
+    if(!pivot_node)
+    {
+        return TRIE_NO_IP_AVAILABLE;
+    }
+    
+    next_ip = base_ip | (BIT_SHIFT_ONE << pivot_depth);
+    status = TRIEInsertHelper(pivot_node, allocated_ip, next_ip, pivot_depth + 1);
+    
+    return (status == TRIE_SUCCESS) ? TRIE_IP_OCCUPIED_ALLOCATED_ANOTHER : status;
 }
 
 static trie_node_t* TraversePath(trie_node_t* root, unsigned int ip_address, size_t depth)
@@ -363,42 +295,31 @@ static trie_node_t* TraversePath(trie_node_t* root, unsigned int ip_address, siz
     
     for (bit_position = (int)depth - 1; bit_position >= 0; --bit_position) 
     {
-        /* BIT IS 1 - GO RIGHT*/
-        if(IsBitSet(ip_address,bit_position))
+        int direction = IsBitSet(ip_address, bit_position);
+        
+        if(!current_node->children[direction])
         {
-            if(!HAS_RIGHT_CHILD(current_node))
-            {
-                return NULL;
-            }
-            current_node = RIGHT_CHILD(current_node);
+            return NULL;
         }
-        else /* Bit IS 0 - Go LEFT */
-        {
-            if(!HAS_LEFT_CHILD(current_node))
-            {
-                return NULL;
-            }
-            current_node = LEFT_CHILD(current_node);
-        }
+        current_node = current_node->children[direction];
     }
     
     return current_node;
 }
 
-static trie_status_e InsertAndAllocate(trie_node_t* root, unsigned int* allocated_ip, unsigned int ip_address, size_t depth)
+static void TRIEUpdateMetadata(trie_node_t** path_nodes, int path_count)
 {
-    trie_status_e status = TRIE_SUCCESS;
+    int level = 0;
+    trie_node_t* current_node = NULL;
     
-    status = TRIECreatePath(root, ip_address, depth);
-    if(status != TRIE_SUCCESS)
+    for(level = path_count - 1; level >= 0; --level)
     {
-        return status;
+        current_node = path_nodes[level];
+        
+        current_node->has_free_in_subtree = !IS_LEAF(current_node) ||
+                                           HAS_AVAILABLE_CHILD_SLOT(current_node) ||
+                                           HasChildWithFreeSpace(current_node);
     }
-    
-    *allocated_ip = ip_address;
-    TRIEUpdateMetadata(root, ip_address, depth);
-    
-    return TRIE_SUCCESS;
 }
 
 static int HasChildWithFreeSpace(trie_node_t* node)
