@@ -181,66 +181,42 @@ static trie_status_e TRIEInsertHelper(trie_node_t* root, unsigned int* allocated
     int path_count = 0;
     int pivot_depth = -1;
     int bit_position = 0;
-    int reached_target = 1;
     
     for(bit_position = (int)depth - 1; bit_position >= 0; --bit_position)
     {
+        int direction = IsBitSet(requested_ip, bit_position);
+        trie_node_t* child = current_node->children[direction];
+        
         path_nodes[path_count++] = current_node;
         
-        if(IsBitSet(requested_ip, bit_position))
+        if(!direction && current_node->children[RIGHT] && HAS_FREE_IN_SUBTREE(current_node->children[RIGHT]))
         {
-            if(!HAS_RIGHT_CHILD(current_node))
-            {
-                return AllocateAtTarget(current_node, path_nodes, path_count, requested_ip, bit_position + 1, allocated_ip);
-            }
-            
-            if(!HAS_FREE_IN_SUBTREE(RIGHT_CHILD(current_node)))
-            {
-                reached_target = 0;
-                break;
-            }
-            
-            current_node = RIGHT_CHILD(current_node);
+            pivot_node = current_node;
+            pivot_depth = bit_position;
         }
-        else
+        
+        if(!child)
         {
-            if(HAS_RIGHT_CHILD(current_node) && HAS_FREE_IN_SUBTREE(RIGHT_CHILD(current_node)))
-            {
-                pivot_node = current_node;
-                pivot_depth = bit_position;
-            }
-            
-            if(!HAS_LEFT_CHILD(current_node))
-            {
-                return AllocateAtTarget(current_node, path_nodes, path_count, requested_ip, bit_position + 1, allocated_ip);
-            }
-            
-            if(!HAS_FREE_IN_SUBTREE(LEFT_CHILD(current_node)))
-            {
-                reached_target = 0;
-                break;
-            }
-            
-            current_node = LEFT_CHILD(current_node);
+            return AllocateAtTarget(current_node, path_nodes, path_count, requested_ip, bit_position + 1, allocated_ip);
         }
-    }
-    
-    if(reached_target && bit_position < 0)
-    {
-        if(IS_LEAF(current_node))
+        
+        if(!HAS_FREE_IN_SUBTREE(child))
         {
             return FindAndAllocateNextFree(pivot_node, requested_ip, allocated_ip, pivot_depth);
         }
-        else
-        {
-            current_node->is_leaf = LEAF_NODE;
-            *allocated_ip = requested_ip;
-            TRIEUpdateMetadata(path_nodes, path_count);
-            return TRIE_SUCCESS;
-        }
+        
+        current_node = child;
     }
     
-    return FindAndAllocateNextFree(pivot_node, requested_ip, allocated_ip, pivot_depth);
+    if(IS_LEAF(current_node))
+    {
+        return FindAndAllocateNextFree(pivot_node, requested_ip, allocated_ip, pivot_depth);
+    }
+    
+    current_node->is_leaf = LEAF_NODE;
+    *allocated_ip = requested_ip;
+    TRIEUpdateMetadata(path_nodes, path_count);
+    return TRIE_SUCCESS;
 }
 
 static trie_status_e AllocateAtTarget(trie_node_t* current_node, trie_node_t** path_nodes,
