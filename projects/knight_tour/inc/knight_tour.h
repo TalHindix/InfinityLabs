@@ -2,7 +2,7 @@
 Exercise:   Projects - Knight Tour
 Date:       31/8/2025
 Developer:  Tal Hindi
-Reviewer:   
+Reviewer:   Avi Tobar
 Status:     
 **************************************/
 
