@@ -263,21 +263,16 @@ static dhcp_status_e ConvertTrieStatus(trie_status_e trie_status)
 
 static dhcp_status_e AllocateNextAvailable(dhcp_t* dhcp, unsigned int* allocated_ip_address)
 {
-    unsigned int current_ip = FIRST_ALLOCATABLE_HOST;
-    unsigned int max_ip = (BIT_SHIFT_ONE << dhcp->depth) - FIRST_ALLOCATABLE_HOST;
     trie_status_e trie_status = TRIE_SUCCESS;
     
-    while (current_ip <= max_ip)
+    trie_status = TRIEInsert(dhcp->trie, allocated_ip_address, FIRST_ALLOCATABLE_HOST, dhcp->depth);
+    
+    if (trie_status == TRIE_SUCCESS || trie_status == TRIE_IP_OCCUPIED_ALLOCATED_ANOTHER)
     {
-        trie_status = TRIEInsert(dhcp->trie, allocated_ip_address, current_ip, dhcp->depth);
-        if (trie_status == TRIE_SUCCESS)
-        {
-            return IP_OCCUPIED_ALLOCATED_ANOTHER;
-        }
-        current_ip++;
+        return IP_OCCUPIED_ALLOCATED_ANOTHER;
     }
     
-    return NO_IP_AVAILABLE;
+    return ConvertTrieStatus(trie_status);
 }
 
 static void CleanupDhcp(dhcp_t* dhcp)
