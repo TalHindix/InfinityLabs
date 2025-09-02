@@ -3,7 +3,7 @@ Exercise:   Projects - Knight Tour
 Date:       31/8/2025
 Developer:  Tal Hindi
 Reviewer:   Avi Tobar
-Status:     
+Status:     Approved
 **************************************/
 
 #include <stdio.h> /* printf */
@@ -12,16 +12,17 @@ Status:
 #include "knight_tour.h" /* KnightTour */
 #include "bit_arr.h" /* BitArrGetBit */
 
-#define TIMEOUT_TIME 300
-#define NUM_KNIGHT_MOVES 8
+#define TIMEOUT_TIME (300)
+#define NUM_KNIGHT_MOVES (8)
 #define NUM_OF_SQUARES (CHESS_LEN * CHESS_LEN)
-#define NO_VALID_MOVE 255
+#define NO_VALID_MOVE (255)
+#define BINARY (2)
 
 /* Pre-computed lookup tables for performance */
 static size_t precomputed_moves[NUM_OF_SQUARES][NUM_KNIGHT_MOVES];
 static int moves_table_ready = 0;
 
-static const int knight_moves_lut[NUM_KNIGHT_MOVES][2] = {
+static const int knight_moves_lut[NUM_KNIGHT_MOVES][BINARY] = {
     {2, 1}, {1, 2}, {-1, 2}, {-2, 1},
     {-2, -1}, {-1, -2}, {1, -2}, {2, -1}
 };
@@ -51,7 +52,6 @@ static knight_tour_status_e TryMoves(size_t board[CHESS_LEN][CHESS_LEN],
 static size_t GetValidMoves(size_t current_idx, bit_arr_t visited, move_t moves[]);
 static size_t CountAccessibleMoves(size_t square_idx, bit_arr_t visited);
 static void InsertionSortMoves(move_t moves[], size_t count);
-static void InitializeBoard(size_t board[CHESS_LEN][CHESS_LEN]);
 
 knight_tour_status_e KnightTour(size_t board[CHESS_LEN][CHESS_LEN],
                                 chess_square_t start_square,
@@ -61,7 +61,6 @@ knight_tour_status_e KnightTour(size_t board[CHESS_LEN][CHESS_LEN],
     time_t start_time = 0;
     knight_tour_status_e result = FAIL;
     size_t start_idx = 0;
-    chess_square_t square = {0};
     
     if (0 == IsValidPosition(start_square.row, start_square.column))
     {
@@ -75,12 +74,11 @@ knight_tour_status_e KnightTour(size_t board[CHESS_LEN][CHESS_LEN],
         moves_table_ready = 1;
     }
 
-    InitializeBoard(board);
+
     start_idx = ConvertSquareToIndex(start_square);
     
-    /* Set starting position */
-    square = ConvertIndexToSquare(start_idx);
-    board[square.row][square.column] = 1;   
+    board[start_square.row][start_square.column] = 1;   
+
     visited = BitArrSetOn(0, start_idx);
 
     start_time = StartTimer();
@@ -155,9 +153,9 @@ static void PrecomputeValidMoves(void)
 {
     size_t i = 0;
     size_t j = 0;
-    chess_square_t current_square = {0};
     int new_row = 0;
     int new_col = 0;
+    chess_square_t current_square = {0};
     chess_square_t next_square = {0};
     
     for (i = 0; i < NUM_OF_SQUARES; i++)
@@ -209,10 +207,11 @@ static size_t CountAccessibleMoves(size_t square_idx, bit_arr_t visited)
 {
     size_t count = 0;
     size_t i = 0;
+    size_t next_idx = 0;
     
     for (i = 0; i < NUM_KNIGHT_MOVES; i++)
     {
-        size_t next_idx = precomputed_moves[square_idx][i];
+        next_idx = precomputed_moves[square_idx][i];
         
         if (next_idx != NO_VALID_MOVE && 0 == BitArrGetBit(visited, next_idx))
         {
@@ -225,22 +224,7 @@ static size_t CountAccessibleMoves(size_t square_idx, bit_arr_t visited)
 
 static int IsValidPosition(size_t row, size_t col)
 {
-    return (row < CHESS_LEN && col < CHESS_LEN && 
-            SIZE_MAX != row && SIZE_MAX != col);
-}
-
-static void InitializeBoard(size_t board[CHESS_LEN][CHESS_LEN])
-{
-    size_t i = 0;
-    size_t j = 0;
-    
-    for (i = 0; i < CHESS_LEN; i++)
-    {
-        for (j = 0; j < CHESS_LEN; j++)
-        {
-            board[i][j] = 0;
-        }
-    }
+    return (row < CHESS_LEN && col < CHESS_LEN);
 }
 
 /* Fast move generation using precomputed table */
