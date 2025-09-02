@@ -196,7 +196,6 @@ static knight_tour_status_e KnightTourRecursive(size_t board[CHESS_LEN][CHESS_LE
         return TIMEOUT;
     }
 
-    /* Menny's cleaner base case */
     if (move_count > NUM_OF_SQUARES)
     {
         return SUCCESS;
