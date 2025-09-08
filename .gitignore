@@ -1,17 +1,28 @@
-##### Ignore all files
+# Ignore everything
 *
 
-## except ignore files
-!**/
-!**/*.c
-!**/*.h
-!**/makefile
+# But not directories
+!*/
+
+# Keep gitignore itself
 !.gitignore
+
+# Custom directory
 !.myfuncs
-!**/*.jpeg
-!**/*.jpg
-!.my_aliases
 
+# C sources and headers
+!*.c
+!*.h
 
-!*mak
+# Makefiles
 !Makefile
+!makefile
+!*.mak
+
+# Shell scripts
+!*.sh
+
+# Markdown and text
+!*.md
+!*.txt
+
