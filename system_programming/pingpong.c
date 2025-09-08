@@ -70,6 +70,7 @@ int main()
 		}
 
 		printf("Parent process started, child PID: %d\n", pid);
+		sleep(1);
 		start_time = time(NULL);
 
 		printf("Parent: Sending first PING\n");
@@ -88,7 +89,7 @@ int main()
 		}
 
 		printf("Parent: Time's up! Stopping the game\n");
-		kill(pid, SIGKILL);
+		kill(pid, SIGTERM);
 		wait(NULL);
 		printf("Game finished\n");
 	}
