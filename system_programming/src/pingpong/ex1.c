@@ -1,5 +1,5 @@
 /**************************************
-Exercise: 	System Programming - Ping Pong
+Exercise: 	System Programming - Ping Pong Ex1
 Date:		07/09/2025
 Developer:	Tal Hindi
 Reviewer: 	Tamar Eisenstein
