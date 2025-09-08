@@ -213,9 +213,9 @@ static size_t CountAccessibleMoves(size_t square_idx, bit_arr_t visited)
     {
         next_idx = precomputed_moves[square_idx][i];
         
-        if (next_idx != NO_VALID_MOVE && 0 == BitArrGetBit(visited, next_idx))
+        if (NO_VALID_MOVE != next_idx && 0 == BitArrGetBit(visited, next_idx))
         {
-            count++;
+            ++count;
         }
     }
     

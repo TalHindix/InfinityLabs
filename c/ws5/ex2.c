@@ -78,7 +78,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     
     if (!filep) 
     {
-		perror("Error opening file for reading");
+		printf("Error opening file for reading");
     	return e_ACTION_ERR_OPENFILE;   
     }
     
@@ -100,7 +100,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     
     if (fclose(filep) == EOF)
 	{
-		perror("Error close the file after writing");
+		printf("Error close the file after writing");
 		return e_ACTION_ERR_CLOSEFILE;
 	}
     
@@ -109,7 +109,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     
     if (!filep)
     {
-        perror("Error opening file for writing");
+        printf("Error opening file for writing");
         return e_ACTION_ERR_OPENFILE;
     }
     
@@ -119,7 +119,7 @@ ActionStatus PrepandAction(const char *filename, const char *str)
     
     if (fclose(filep) == EOF)
     {
-        perror("Error closing file after writing");
+        printf("Error closing file after writing");
         return e_ACTION_ERR_OPENFILE;
     }
     
@@ -135,7 +135,7 @@ ActionStatus AppendAction(const char *filename, const char *str)
 	
     if (!fp)
     {
-        perror("fopen append");
+        printf("fopen append");
         return e_ACTION_ERR_OPENFILE;
     }
     
@@ -143,7 +143,7 @@ ActionStatus AppendAction(const char *filename, const char *str)
     
     if (fclose(fp) == EOF)
     {
-    	perror("Error close the file after append");
+    	printf("Error close the file after append");
     	return e_ACTION_ERR_CLOSEFILE;
     }
     
@@ -162,7 +162,7 @@ ActionStatus CountAction(const char *filename, const char *str)
 
     if (!fp)
     {
-        perror("fopen count");
+        printf("fopen count");
         return e_ACTION_ERR_OPENFILE;
     }
 
@@ -176,7 +176,7 @@ ActionStatus CountAction(const char *filename, const char *str)
 
     if (fclose(fp) == EOF)
     {
-        perror("Error close the file after counting");
+        printf("Error close the file after counting");
         return e_ACTION_ERR_CLOSEFILE;
     }
     

@@ -37,13 +37,13 @@ int Save_Student_Binary(const char *filepath, const Student_t *student)
     
     if (out == NULL) 
     {
-        perror("Error opening file for write");
+        printf("Error opening file for write");
         return 0;
     }
 
     if (fwrite(student, sizeof(Student_t), 1, out) != 1) 
     {
-        perror("Error writing student record");
+        printf("Error writing student record");
         fclose(out);
         return 0;
     }
@@ -59,13 +59,13 @@ int Load_Student_Binary (const char *filepath, Student_t *out_student)
     
     if (in == NULL) 
     {
-        perror("Error opening file for read");
+        printf("Error opening file for read");
         return 0;
     }
 
     if (fread(out_student, sizeof(Student_t), 1, in) != 1) 
     {
-        perror("Error reading student record");
+        printf("Error reading student record");
         fclose(in);
         return 0;
     }
