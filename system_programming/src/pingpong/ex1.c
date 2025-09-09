@@ -3,7 +3,7 @@ Exercise: 	System Programming - Ping Pong Ex1
 Date:		07/09/2025
 Developer:	Tal Hindi
 Reviewer: 	Tamar Eisenstein
-Status:		In Progress
+Status:		Approved
 **************************************/
 
 #define _POSIX_C_SOURCE (200809L)
@@ -18,7 +18,7 @@ Status:		In Progress
 
 volatile sig_atomic_t signal_received = 0;
 
-void signal_handler(int sig, siginfo_t* info, void* context);
+static void SignalHandler(int sig, siginfo_t* info, void* context);
 
 int main()
 {
@@ -27,7 +27,7 @@ int main()
 	time_t start_time = 0;
     int keep_running = 1;
 
-	sig_action.sa_sigaction = signal_handler;
+	sig_action.sa_sigaction = SignalHandler;
 	sig_action.sa_flags = SA_SIGINFO;
 
 	pid = fork();
@@ -97,7 +97,7 @@ int main()
 	return 0;
 }
 
-void signal_handler(int sig, siginfo_t* info, void* context)
+static void SignalHandler(int sig, siginfo_t* info, void* context)
 {
 	(void)info;
 	(void)context;

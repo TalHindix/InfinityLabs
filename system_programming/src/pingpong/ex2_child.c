@@ -3,7 +3,7 @@ Exercise: 	System Programming - Ping Pong Ex 2
 Date:		07/09/2025
 Developer:	Tal Hindi
 Reviewer: 	Tamar Eisenstein
-Status:		In Progress
+Status:		Approved
 **************************************/
 
 #define _POSIX_C_SOURCE (200809L)
