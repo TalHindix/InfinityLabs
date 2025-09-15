@@ -1,8 +1,8 @@
 /**************************************
-Exercise: 	System Programming - Producer Consumer 
+Exercise: 	System Programming - Producer Consumer Ex 1
 Date:		13/09/2025
 Developer:	Tal Hindi
-Reviewer: 	
+Reviewer: 	Guy Argaman
 Status:		In Progress
 **************************************/
 

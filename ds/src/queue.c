@@ -45,13 +45,10 @@ queue_t *QueueCreate(void)
     return q;                        
 }
 
-
 void QueueDestroy(queue_t* queue)
 {
 	if (!IsQueueInvalid(queue)) { SLLDestroy(queue->list); free(queue); }
 }
-
-
 
 int QueueEnqueue(queue_t *queue, void *data)
 {

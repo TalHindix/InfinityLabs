@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 
 static void CleanUp(void)
 {
-    size_t i = 0;
+    size_t i = 0; 
     
     if (NULL != g_semaphore)
     {
