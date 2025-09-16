@@ -65,8 +65,10 @@ static void* ThreadFunc(void* arg)
     for (i = 0; i < UIDS_PER_THREAD; ++i)
     {
         ilrd_uid_t uid = UIDCreate();
-        printf("Thread %lu created UID: counter=%lu, pid=%d\n",
-               index, uid.counter, (int)uid.pid);
+        printf("Thread:%lu created UID counter=%lu, pid=%d\n",
+        (unsigned long)index,
+        (unsigned long)uid.counter,
+        (int)uid.pid);
     }
 
     return NULL;

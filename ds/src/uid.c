@@ -16,7 +16,8 @@ Status:		Approved
 #include <arpa/inet.h>   /* inet_ntoa */
 #include <unistd.h>      /* */
 #include <pthread.h>     /* pthread_mutex */
-#define IP_LEN 14
+
+#define IP_LEN (INET_ADDRSTRLEN)
 
 /* "Bad" UID Indicate failure */
 const ilrd_uid_t UIDbadUID = {0, 0, 0, {0}};
@@ -35,16 +36,17 @@ ilrd_uid_t UIDCreate(void)
     
     pthread_mutex_lock(&lock);
 	new_uid.counter = ++counter;
-    pthread_mutex_unlock(&lock);
+    
 
 	new_uid.timestamp = GetTimeStamp();
 	new_uid.pid = GetPID();
 	
 	if (0 != GetIPAddress(new_uid.ip))
     {
+        pthread_mutex_unlock(&lock);
         return UIDbadUID;
     }
-    
+    pthread_mutex_unlock(&lock);
     return new_uid;
 }
 
@@ -77,28 +79,30 @@ static int GetIPAddress(unsigned char dest[IP_LEN])
     {
         return -1;
     }
-	
-	/* walk on the linked list . each node describe one address associated with an interface . */
+
     for (ifa = ifaddr; NULL != ifa; ifa = ifa->ifa_next)
     {
-    	/* skip missing address */
         if (NULL == ifa->ifa_addr)
         {
             continue;
         }
-		/* Filter for AF_INET family (IPv4). */
+
         if (AF_INET == ifa->ifa_addr->sa_family)
         {
             struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
-            const char *addr_str   = inet_ntoa(sa->sin_addr); /* Convert to dotted-decimal text with inet_ntoa */
-			
-			/* Ignore "127.0.0.1"; copy first other IPv4 into dest. */
-            if (0 != strcmp(addr_str, "127.0.0.1"))
+            char addr_str[INET_ADDRSTRLEN] = {0}; /* Thread-safe buffer */
+
+            if (NULL != inet_ntop(AF_INET, &(sa->sin_addr),
+                                  addr_str, sizeof(addr_str)))
             {
-                strncpy((char *)dest, addr_str, IP_LEN - 1);
-                dest[IP_LEN - 1] = '\0';
-                success = 1;
-                break;
+                /* Ignore loopback (127.0.0.1) */
+                if (0 != strcmp(addr_str, "127.0.0.1"))
+                {
+                    strncpy((char *)dest, addr_str, IP_LEN - 1);
+                    dest[IP_LEN - 1] = '\0';
+                    success = 1;
+                    break;
+                }
             }
         }
     }
@@ -106,4 +110,5 @@ static int GetIPAddress(unsigned char dest[IP_LEN])
     freeifaddrs(ifaddr);
     return success ? 0 : -1;
 }
+
 

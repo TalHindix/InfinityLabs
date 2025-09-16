@@ -11,8 +11,9 @@ Status:		Approved
 
 #include <time.h> /* time_t */
 #include <sys/types.h> /* pid_t */
+#include <arpa/inet.h>   /* inet_ntoa */
 
-#define IP_LEN 14
+#define IP_LEN (INET_ADDRSTRLEN)
 
 typedef struct uid
 {
