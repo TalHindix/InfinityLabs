@@ -3,11 +3,11 @@ Exercise: 	DS - UID
 Date:		20/7/2025
 Developer:	Tal Hindi
 Reviewer: 	Avi Tobar
-Status:		
+Status:		Approved
 **************************************/
 
-#ifndef ILRD_UID_H
-#define ILRD_UID_H
+#ifndef __ILRD_UID_H
+#define __ILRD_UID_H
 
 #include <time.h> /* time_t */
 #include <sys/types.h> /* pid_t */
@@ -59,4 +59,4 @@ ilrd_uid_t UIDCreate(void); /* O(1) */
  */
 int UIDIsSame(ilrd_uid_t uid1, ilrd_uid_t uid2); /* O(1) */
 
-#endif /* ILRD_UID_H */
+#endif /* __ILRD_UID_H */

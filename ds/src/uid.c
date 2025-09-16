@@ -2,36 +2,41 @@
 Exercise: 	DS - UID
 Date:		20/7/2025
 Developer:	Tal Hindi
-Reviewer: 	
-Status:		
+Reviewer: 	Avi Tobar
+Status:		Approved
 **************************************/
 
-#include "uid.h"
+#include "uid.h" /* UIDCreate */
 
-#include <string.h>      /* memset, memcpy, strcmp */
-#include <ifaddrs.h>     /* getifaddrs, freeifaddrs */
+#include <string.h>      /* memset */
+#include <ifaddrs.h>     /* getifaddrs */
 #include <sys/types.h>   /* AF_INET */
 #include <sys/socket.h>  /* struct sockaddr */
 #include <netinet/in.h>  /* struct sockaddr_in */
 #include <arpa/inet.h>   /* inet_ntoa */
-#include <unistd.h>
-
+#include <unistd.h>      /* */
+#include <pthread.h>     /* pthread_mutex */
 #define IP_LEN 14
 
 /* "Bad" UID Indicate failure */
 const ilrd_uid_t UIDbadUID = {0, 0, 0, {0}};
-
 static size_t counter = 0;
 
 static time_t GetTimeStamp(void);
 static pid_t GetPID(void);
 static int GetIPAddress(unsigned char dest[IP_LEN]);
 
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
 
 ilrd_uid_t UIDCreate(void)
 {
 	ilrd_uid_t new_uid = {0};
+    
+    pthread_mutex_lock(&lock);
 	new_uid.counter = ++counter;
+    pthread_mutex_unlock(&lock);
+
 	new_uid.timestamp = GetTimeStamp();
 	new_uid.pid = GetPID();
 	
