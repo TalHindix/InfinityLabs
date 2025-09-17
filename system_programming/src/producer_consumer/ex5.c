@@ -18,12 +18,9 @@ Status:		In Progress
 
 #define NUM_PRODUCERS (3)
 #define NUM_CONSUMERS (3)
-
 #define NUM_ITEMS (2)
 #define QUEUE_CAPACITY (5)
-
 #define MAX_VALUE (10)
-
 
 /* global variables */
 fsq_t* g_fsq = NULL;
@@ -65,7 +62,7 @@ static void* ProducerMsg(void* arg)
 	size_t i = 0;
 	size_t thread_id = 0;
 	int* message = NULL;
-	
+	unsigned int seed = (unsigned int)time(NULL) ^ (unsigned int)pthread_self();
 	thread_id = (size_t)arg;
 	
 	for (i = 0; i < NUM_ITEMS; ++i)
@@ -77,7 +74,7 @@ static void* ProducerMsg(void* arg)
 			return NULL;
 		}
         
-		*message = rand() % MAX_VALUE;
+		*message = rand_r(&seed) % MAX_VALUE;
 		
 		FSQEnqueue(g_fsq, message);
 		
@@ -114,7 +111,7 @@ static void CreateThreads(pthread_t producers[],pthread_t consumers[])
   
     size_t i = 0;
 
-    for (i = 0; i < NUM_PRODUCERS; i++)
+    for (i = 0; i < NUM_PRODUCERS; ++i)
     {
         pthread_create(&producers[i], NULL, ProducerMsg, (void*)i);
     }
@@ -130,7 +127,7 @@ static void JoinThreads(pthread_t producers[],pthread_t consumers[])
 {
     size_t i = 0;
 
-    for (i = 0; i < NUM_PRODUCERS; i++)
+    for (i = 0; i < NUM_PRODUCERS; ++i)
     {
         pthread_join(producers[i], NULL);
     }

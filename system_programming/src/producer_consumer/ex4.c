@@ -18,9 +18,7 @@ Status:		In Progress
 
 #define NUM_PRODUCERS (3)
 #define NUM_CONSUMERS (3)
-
 #define NUM_ITEMS (1)
-
 #define MAX_VALUE (10)
 
 /* Static global variables */
@@ -75,19 +73,21 @@ static void* ProducerMsg(void* arg)
     size_t i = 0;
 	int message = 0;
 	size_t index = (size_t)arg;
+    unsigned int seed = (unsigned int)time(NULL) ^ (unsigned int)pthread_self();
 
     for(i = 0; i < NUM_ITEMS; ++i)
     {
-        message = rand() % MAX_VALUE;
+        message = rand_r(&seed) % MAX_VALUE;
         
         sem_wait(&write_sem); /* Wait for space to write */
         
         pthread_mutex_lock(&mutex);
 
         CBuffWrite(g_cbuffer, &message, sizeof(int));
-        printf("Producer [%lu] - Message:%lu wrote %d\n", index + 1, i + 1, message);
-
+        
         pthread_mutex_unlock(&mutex);
+
+        printf("Producer [%lu] - Message:%lu wrote %d\n", index + 1, i + 1, message);
         
         sem_post(&read_sem); /* Signal that an item is available to read */
     }
@@ -108,9 +108,9 @@ static void* ConsumerMsg(void* arg)
         pthread_mutex_lock(&mutex);
 
         CBuffRead(g_cbuffer, &message, sizeof(int));
-        printf("Consumer [%lu] - Message:%lu read %d\n", index + 1, i + 1, message);
-
+        
         pthread_mutex_unlock(&mutex);
+        printf("Consumer [%lu] - Message:%lu read %d\n", index + 1, i + 1, message);
         
         sem_post(&write_sem); /* Signal that space is available for writing */
     }
@@ -128,7 +128,7 @@ static void CreateThreads(pthread_t producers[],pthread_t consumers[])
         pthread_create(&consumers[i], NULL, ConsumerMsg, (void*)i);
     }
 
-    for (i = 0; i < NUM_PRODUCERS; i++)
+    for (i = 0; i < NUM_PRODUCERS; ++i)
     {
         pthread_create(&producers[i], NULL, ProducerMsg, (void*)i);
     }
@@ -138,7 +138,7 @@ static void JoinThreads(pthread_t producers[],pthread_t consumers[])
 {
     size_t i = 0;
 
-    for (i = 0; i < NUM_PRODUCERS; i++)
+    for (i = 0; i < NUM_PRODUCERS; ++i)
     {
         pthread_join(producers[i], NULL);
     }
