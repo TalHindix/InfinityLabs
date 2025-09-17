@@ -2,8 +2,8 @@
 Exercise: 	System Programming - Producer Consumer Ex 5
 Date:		13/09/2025
 Developer:	Tal Hindi
-Reviewer: 	Guy Argaman
-Status:		In Progress
+Reviewer: 	Meir Avital
+Status:		Approved
 **************************************/
 
 #define _POSIX_C_SOURCE (200112L)
