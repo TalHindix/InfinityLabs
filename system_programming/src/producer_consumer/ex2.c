@@ -1,5 +1,5 @@
 /**************************************
-Exercise: 	System Programming - Producer Consumer Ex 2
+Exercise: 	System Programming - Producer Consumer Ex 3
 Date:		13/09/2025
 Developer:	Tal Hindi
 Reviewer: 	Meir Avital
@@ -25,7 +25,6 @@ static sll_t* g_list = NULL;
 static pthread_mutex_t mutex;
 static pthread_cond_t cond;
 
-/* סה"כ הודעות לעיבוד */
 static size_t g_messages_left = NUM_PRODUCERS * MSGS_PER_PRODUCER;
 
 static void* ProducerMsg(void* arg);
