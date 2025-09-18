@@ -1,6 +1,6 @@
 /**************************************
 Exercise: 	System Programming - Producer Consumer Ex 6
-Date:		17/09/2025
+Date:		18/09/2025
 Developer:	Tal Hindi
 Reviewer: 	Meir Avital
 Status:		In Progress
@@ -10,145 +10,128 @@ Status:		In Progress
 
 #include <stdio.h>      /* printf */
 #include <pthread.h>    /* pthread_t */
-#include <stdlib.h>     /* rand_r */
+#include <stdlib.h>     /* rand */
 #include <time.h>       /* time */
-#include <semaphore.h>  /* semaphore */
+#include <semaphore.h>  /* sem_t */
+#include <assert.h>     /* assert */
 
-
-#define BUFFER_EMPTY (0)
-#define BUFFER_FULL (1)
-
-#define NUM_PRODUCERS (1)
-#define NUM_CONSUMERS (3)
-
-#define MAX_VALUE (10)
+#define NUM_PRODUCERS       (1)
+#define NUM_CONSUMERS       (10)
+#define MAX_VALUE           (100)
 
 /* Static global variables */
 static pthread_mutex_t mutex;
-static sem_t items_sem;
+static pthread_cond_t cond;
+static sem_t done_sem;
 
-static size_t g_messages_left = NUM_PRODUCERS;
+static int g_message = 0;
+static int g_ready = 0;
 
 static void* ProducerMsg(void* arg);
 static void* ConsumerMsg(void* arg);
-static void CreateThreads(pthread_t producers[],pthread_t consumers[]);
-static void JoinThreads(pthread_t producers[],pthread_t consumers[]);
+static void CreateThreads(pthread_t producers[], pthread_t consumers[]);
+static void JoinThreads(pthread_t producers[], pthread_t consumers[]);
 
 int main(void)
 {
+	size_t i = 0;
 	pthread_t producers[NUM_PRODUCERS] = {0};
 	pthread_t consumers[NUM_CONSUMERS] = {0};
 
-    g_list = SLLCreate();
-    if(!g_list)
-    {
-        return -1;
-    }
+	srand((unsigned int)time(NULL));
 
-	srand(time(NULL));
+	pthread_mutex_init(&mutex, NULL);
+	pthread_cond_init(&cond, NULL);
 
-	printf("Starting Multiple Producers-Consumers with One mutex  \n\n");
-	
-    /* Init mutex and semaphore */
-    pthread_mutex_init(&mutex,NULL);
-    sem_init(&items_sem,0,0);
- 
-    CreateThreads(producers,consumers);
-    JoinThreads(producers,consumers);
- 
-	printf("\nAll messages processed successfully!\n");
-	
-    /* Clean Memory */
-    pthread_mutex_destroy(&mutex);
-    sem_destroy(&items_sem);
-    SLLDestroy(g_list);
+	if (0 != sem_init(&done_sem, 0, 0))
+	{
+		perror("sem_init");
+		return EXIT_FAILURE;
+	}
+
+	printf("Starting Single Producer - Multiple Consumers EX6 \n\n");
+
+	CreateThreads(producers, consumers);
+	JoinThreads(producers, consumers);
+
+	for (i = 0; i < NUM_CONSUMERS; ++i)
+	{
+		pthread_join(consumers[i], NULL);
+	}
+
+	printf("\nAll consumers finished successfully!\n");
+
+	pthread_mutex_destroy(&mutex);
+	pthread_cond_destroy(&cond);
+	sem_destroy(&done_sem);
 
 	return EXIT_SUCCESS;
 }
 
-
 static void* ProducerMsg(void* arg)
 {
-    size_t i = 0;
-	int* message = NULL;
-	size_t index = (size_t)arg;
-    unsigned int seed = (unsigned int)time(NULL) ^ (unsigned int)pthread_self();
+	size_t i = 0;
+	(void)arg;
 
-    message = (int*)malloc(sizeof(int));
-    if(!message)
-    {
-        return NULL;
-    }
+	pthread_mutex_lock(&mutex);
 
-    *message = rand_r(&seed) % MAX_VALUE;
+	g_message = rand() % MAX_VALUE;
+	g_ready = 1;
 
-    pthread_mutex_lock(&mutex);
+	printf("Producer wrote value %d\n", g_message);
 
-    pthread_mutex_unlock(&mutex);
+	pthread_cond_broadcast(&cond);
+	pthread_mutex_unlock(&mutex);
 
-    printf("Producer [%lu] - Message:%lu wrote %d\n",index + 1, i + 1, *message);
-
-    sem_post(&items_sem); /* Signal that an item was added */
+	for (i = 0; i < NUM_CONSUMERS; ++i)
+	{
+		sem_wait(&done_sem);
+	}
 
 	return NULL;
 }
 
 static void* ConsumerMsg(void* arg)
 {
-    size_t index = (size_t)arg;
+	size_t index = (size_t)arg;
 
-    while (1)
-    {
-        sem_wait(&items_sem);
+	pthread_mutex_lock(&mutex);
 
-        pthread_mutex_lock(&mutex);
+	while (0 == g_ready)
+	{
+		pthread_cond_wait(&cond, &mutex);
+	}
 
-        if (0 == g_messages_left)
-        {
-            pthread_mutex_unlock(&mutex);
-            break;
-        }
+	printf("Consumer [%lu] read %d\n", index + 1, g_message);
 
-        --g_messages_left;
+	sem_post(&done_sem);
 
-        pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(&mutex);
 
-        printf("Consumer [%lu] read %d, messages left: %lu\n",
-               index + 1, *message, g_messages_left);
-
-        free(message);
-    }
-}
-    
-    
-static void CreateThreads(pthread_t producers[],pthread_t consumers[])
-{
-  
-    size_t i = 0;
-
-    for(i = 0; i < NUM_CONSUMERS; ++i)
-    {
-        pthread_create(&consumers[i], NULL, ConsumerMsg, (void*)i);
-    }
-
-    for (i = 0; i < NUM_PRODUCERS; ++i)
-    {
-        pthread_create(&producers[i], NULL, ProducerMsg, (void*)i);
-    }
+	return NULL;
 }
 
-static void JoinThreads(pthread_t producers[],pthread_t consumers[])
+static void CreateThreads(pthread_t producers[], pthread_t consumers[])
 {
-    size_t i = 0;
+	size_t i = 0;
 
-    for (i = 0; i < NUM_PRODUCERS; ++i)
-    {
-        pthread_join(producers[i], NULL);
-    }
-    
-    for(i = 0; i < NUM_CONSUMERS; ++i)
-    {
-        pthread_join(consumers[i], NULL);
-    }
+	for (i = 0; i < NUM_CONSUMERS; ++i)
+	{
+		pthread_create(&consumers[i], NULL, ConsumerMsg, (void*)i);
+	}
 
+	for (i = 0; i < NUM_PRODUCERS; ++i)
+	{
+		pthread_create(&producers[i], NULL, ProducerMsg, (void*)i);
+	}
+}
+
+static void JoinThreads(pthread_t producers[], pthread_t consumers[])
+{
+	size_t i = 0;
+
+	for (i = 0; i < NUM_PRODUCERS; ++i)
+	{
+		pthread_join(producers[i], NULL);
+	}
 }
