@@ -93,13 +93,15 @@ void TaskSetTimeToRun(task_t* task, size_t interval_in_sec)
 
 size_t TaskGetTimeToRun(const task_t* task)
 {
-	time_t interval = 0;
-	
-    assert(task);
-    
-    interval = task->time_to_execute - time(NULL);
-    
-    return MAX(interval,0);
+	time_t now = 0;
+	time_t delta = 0;
+
+	assert(NULL != task);
+
+	now = time(NULL);
+	delta = task->time_to_execute - now;
+
+	return (size_t)MAX(delta, 0);
 }
 
 int TaskIsMatch(const task_t* task, ilrd_uid_t uid)
@@ -111,8 +113,23 @@ int TaskIsMatch(const task_t* task, ilrd_uid_t uid)
 
 int TaskCmp(const task_t* task1, const task_t* task2)
 {
-	assert(task1);
-	assert(task2);
+	time_t t1 = 0;
+	time_t t2 = 0;
 
-    return (int)(TaskGetTimeToRun(task1) - TaskGetTimeToRun(task2));
+	assert(NULL != task1);
+	assert(NULL != task2);
+
+	t1 = task1->time_to_execute;
+	t2 = task2->time_to_execute;
+
+	if (t1 < t2)
+	{
+		return -1;
+	}
+	if (t1 > t2)
+	{
+		return 1;
+	}
+	return 0;
 }
+

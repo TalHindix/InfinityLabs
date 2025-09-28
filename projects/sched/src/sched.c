@@ -9,6 +9,7 @@ Status:		Approved
 #include <assert.h> /* assert.h 	*/
 #include <unistd.h> /* sleep 		*/
 #include <stdlib.h> /* malloc		*/
+#include <time.h> 	/* time */
 
 #include "sched.h" 	/* SchedCreate 	*/
 #include "task.h"	/* TaskCreate	*/
@@ -21,7 +22,6 @@ struct sched
 };
 
 static run_status_e ComputeExitStatus(const sched_t *sch, int had_fail);
-static void SleepUntil(time_t when);
 static int WrapperTaskCmp(const void* task1, const void* task2);
 static int WrapperTaskIsMatch(const void* data, const void* param);
 
@@ -68,10 +68,16 @@ run_status_e SchedRun(sched_t *sch)
 
     while (!sch->stop_flag && !HeapIsEmpty(sch->heap))
     {
+        size_t to_sleep = 0;
         task = (task_t *)HeapPeek(sch->heap);
 		HeapPop(sch->heap);
 
-        SleepUntil((time_t)TaskGetTimeToRun(task));
+
+		to_sleep = TaskGetTimeToRun(task);
+		while (0 != to_sleep)
+		{
+			to_sleep = sleep(to_sleep);
+		}
 
         result = TaskRun(task);
 
@@ -88,7 +94,7 @@ run_status_e SchedRun(sched_t *sch)
             continue;
         }
 
-        TaskSetTimeToRun(task, result);
+        TaskSetTimeToRun(task, (size_t)result);
         if (HeapPush(sch->heap, task))
         {
             TaskDestroy(task);
@@ -183,16 +189,6 @@ static int WrapperTaskCmp(const void* task1, const void* task2)
 static int WrapperTaskIsMatch(const void* data, const void* param)
 {	
 	return TaskIsMatch((const task_t*)data, *(const ilrd_uid_t*)param);
-}
-
-static void SleepUntil(time_t when)
-{
-    time_t now = time(NULL);
-    while (now < when)
-    {
-        sleep(when - now);
-        now = time(NULL);
-    }
 }
 
 static run_status_e ComputeExitStatus(const sched_t *sch, int had_fail)
