@@ -3,7 +3,7 @@ Exercise:	Utils – Watchdog "Shared Lib"
 Date:		28/09/2025
 Developer:	Tal Hindi
 Reviewer:	Shiran Swisa
-Status:		
+Status:		Approved
 **************************************/
 
 #define _POSIX_C_SOURCE (200809L)
@@ -218,11 +218,11 @@ static ssize_t TaskCheckCounter(void* param)
 
 		if (UIDIsSame(UIDbadUID, SchedAdd(ctx->sched, TaskSendHeartbeat, ctx, 0, NoCleanup, NULL)))
 		{
-			return 0;
+			return -1;
 		}
 		if (UIDIsSame(UIDbadUID, SchedAdd(ctx->sched, TaskCheckCounter, ctx, 0, NoCleanup, NULL)))
 		{
-			return 0;
+			return -1;
 		}
 	}
 

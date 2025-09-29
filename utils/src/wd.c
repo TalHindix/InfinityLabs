@@ -1,9 +1,9 @@
 /**************************************
-Exercise:	Utils – Watchdog
+Exercise:	Utils – Watchdog (Process)
 Date:		28/09/2025
 Developer:	Tal Hindi
-Reviewer:
-Status:		
+Reviewer:	Shiran Swisa
+Status:		Approved
 **************************************/
 
 #define _POSIX_C_SOURCE (200809L)

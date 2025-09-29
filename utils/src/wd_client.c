@@ -3,7 +3,7 @@ Exercise:	Utils – Watchdog Client
 Date:		28/09/2025
 Developer:	Tal Hindi
 Reviewer:	Shiran Swisa
-Status:		
+Status:		Approved
 **************************************/
 
 #define _POSIX_C_SOURCE (200809L)
