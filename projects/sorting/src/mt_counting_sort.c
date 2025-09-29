@@ -7,8 +7,7 @@ Status:		Wait For Review
 **************************************/
 
 #include <limits.h> /* CHAR_MIN */
-#include <pthread.h> /* pthread_mutex_t */
-#include <errno.h> /* EAGAIN */
+#include <pthread.h> /* pthread_t */
 #include <assert.h> /* assert */
 #include <stdlib.h> /* malloc */
 #include <stdio.h> /* FILE */
@@ -22,7 +21,7 @@ typedef struct
     char* arr;
     size_t start_index;
     size_t end_index;
-    size_t* local_count_arr; /* Local counting array for this thread */
+    size_t* local_count_arr;
 } thread_data_t;
 
 
@@ -110,7 +109,6 @@ int MTCountingSort(char* arr, size_t length, size_t num_of_threads)
     return 0;
 }
 
-
 static void* CountSegment(void* arg)
 {
     thread_data_t* thread_data = (thread_data_t*)arg;
@@ -168,7 +166,4 @@ char* ReadDictionary(size_t* length)
 
     return buffer;
 }
-
-
-
 

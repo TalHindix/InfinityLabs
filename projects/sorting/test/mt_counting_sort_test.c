@@ -7,10 +7,8 @@ Status:		Wait For Review
 **************************************/
 
 #include <stdio.h>      /* printf */
-#include <pthread.h>    /* pthread_create */
 #include <time.h>       /* clock */
-#include <stdlib.h>     /* malloc, free */
-#include <string.h>     /* memcpy */
+#include <stdlib.h>     /* malloc */
 
 #include "mt_counting_sort.h" /* MTCountingSort */
 
