@@ -65,8 +65,8 @@ void CountingSort(int* arr, size_t size)
 	
 	for (i = size; i > 0; --i)
 	{
-		index = (size_t)(arr[i] - min);
-		out_put[--count_arr[index]] = arr[i];
+		index = (size_t)(arr[i - 1] - min);
+		out_put[--count_arr[index]] = arr[i - 1];
 	}
 	
 	for (i = 0; i < size; ++i)
