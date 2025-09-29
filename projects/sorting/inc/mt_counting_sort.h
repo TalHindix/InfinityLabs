@@ -3,7 +3,7 @@ Exercise: 	SA - Multithreaded Counting Sort
 Date:		29/9/2025
 Developer:	Tal Hindi
 Reviewer: 	Guy Argaman
-Status:		Wait For Review
+Status:		Approved
 **************************************/
 
 #ifndef __ILRD_MT_COUNTING_SORT_H__
