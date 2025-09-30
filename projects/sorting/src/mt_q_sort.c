@@ -3,7 +3,7 @@ Exercise:   SA - Multithreaded Quick Sort
 Date:       29/09/2025
 Developer:  Tal Hindi
 Reviewer:   Yuval Hochman
-Status:     In Progress
+Status:     Approved
 **************************************/
 
 #include <stdlib.h> /* malloc */
@@ -345,33 +345,30 @@ static void Merge(char** arr, size_t start, size_t mid, size_t end)
 
 static void MergeSortedParts(char** arr, size_t length, size_t num_of_threads)
 {
-    size_t chunk_size = 0;
-    size_t current_size = 0;
-    size_t i = 0;
-    
-    assert(NULL != arr);
-    assert(0 < num_of_threads);
-    
-    if (1 == num_of_threads)
-    {
-        return;
-    }
-    
-    chunk_size = length / num_of_threads;
-    current_size = chunk_size;
-    
-    /* progressively merge chunks */
-    for (i = 1; i < num_of_threads; ++i)
-    {
-        if (i == num_of_threads - 1)
-        {
-            Merge(arr, 0, current_size, length);
-        }
-        else
-        {
-            Merge(arr, 0, current_size, current_size + chunk_size);
-            current_size += chunk_size;
-        }
-    }
-}
+	size_t chunk_size = 0;
+	size_t step = 0;
+	size_t i = 0;
 
+	assert(NULL != arr);
+	assert(0 < num_of_threads);
+
+	if (1 == num_of_threads)
+	{
+		return;
+	}
+
+	chunk_size = length / num_of_threads;
+	step = chunk_size;
+
+	while (step < length)
+	{
+		for (i = 0; i + step < length; i += 2 * step)
+		{
+			size_t mid = i + step;
+			size_t end = (i + 2 * step < length) ? (i + 2 * step) : length;
+
+			Merge(arr, i, mid, end);
+		}
+		step *= 2;
+	}
+}

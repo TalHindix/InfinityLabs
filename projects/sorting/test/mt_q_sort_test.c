@@ -3,7 +3,7 @@ Exercise:   SA - Multithreaded Quick Sort
 Date:       29/09/2025
 Developer:  Tal Hindi
 Reviewer:   Yuval Hochman
-Status:     In Progress
+Status:     Approved
 **************************************/
 
 #define _POSIX_C_SOURCE 199309L
@@ -49,7 +49,7 @@ int main(void)
     {
         free(words);
         free(buffer);
-        return 1;
+        return -1;
     }
     
     for (i = 0; i < num_of_words; ++i)
@@ -58,7 +58,7 @@ int main(void)
         {
             free(words);
             free(buffer);
-            return 1;
+            return -1;
         }
     }
     

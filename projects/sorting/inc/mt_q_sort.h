@@ -3,7 +3,7 @@ Exercise: 	SA - Multithreaded Quick Sort
 Date:		29/9/2025
 Developer:	Tal Hindi
 Reviewer: 	Yuval Hochman
-Status:		In Progress
+Status:		Approved
 **************************************/
 
 #ifndef __ILRD_MT_QUICK_SORT_H__
