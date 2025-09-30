@@ -65,7 +65,7 @@ void SelectionSort(int *arr, size_t size)
         }
     }
 }
-
+PascalCase
 void InsertionSort(int *arr, size_t size)
 {
     size_t i = 0;
