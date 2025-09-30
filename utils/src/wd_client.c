@@ -105,7 +105,7 @@ wd_status_e WDStart(size_t tolerance, size_t interval_sec, char** argv, int argc
 		sem_destroy(&user_sem);
 		return WD_FAIL;
 	}
-
+	
 	if (0 != pthread_create(&tid, NULL, ClientThread, args))
 	{
 		kill(args->wd_pid, SIGKILL);
@@ -116,15 +116,14 @@ wd_status_e WDStart(size_t tolerance, size_t interval_sec, char** argv, int argc
 	}
 	g_client_tid = tid;
 
-	ret = sem_wait(&user_sem);
-	sem_destroy(&user_sem);
-	if (0 != ret)
+	if (0 != sem_wait(&user_sem))
 	{
 		WDTasksRequestStop();
 		kill(g_wd_pid, SIGUSR2);
 		return WD_FAIL;
 	}
 
+	sem_destroy(&user_sem);
 	return WD_SUCCESS;
 }
 
