@@ -32,15 +32,13 @@ stack_t* StackCreate(size_t capacity, size_t element_size)
 		return NULL;
 	}
 	
-	new_stack = (stack_t*)malloc(sizeof(stack_t));
-	
+	new_stack = (stack_t*)malloc(sizeof(stack_t));	
 	if(NULL == new_stack) 
 	{
 		return NULL;
 	}
 	
 	buffer = (char *)malloc(capacity * element_size);
-	
 	if (NULL == buffer)
 	{
 		free(new_stack);

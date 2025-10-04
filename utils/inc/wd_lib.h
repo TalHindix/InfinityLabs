@@ -3,7 +3,7 @@ Exercise:	Utils – Watchdog
 Date:		28/09/2025
 Developer:	Tal Hindi
 Reviewer:	Shiran Swisa
-Status:		
+Status:		Approved
 **************************************/
 
 #ifndef __ILRD_WD_LIB_H__
@@ -27,7 +27,6 @@ void WDTasksRequestStop(void);
 
 void WDTasksInstallStopHandler(void);
 
-void WDTasksStartHeartbeats(void);
 
 #endif /* __ILRD_WD_LIB_H__ */
 
