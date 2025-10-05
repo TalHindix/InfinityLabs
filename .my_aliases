@@ -1,69 +1,105 @@
-alias h='history'
-alias please='sudo $(history -p !!)' #open the last command with sudo.
-alias makear='ar rcs' # make archive
-alias ..='cd ..'
-alias c='clear'
-## get rid of command not found ##
-alias cd..='cd ..'
+# ============================================================================
+# SYSTEM & NAVIGATION ALIASES
+# ============================================================================
 
-## a quick way to get out of current directory ##
+# History management
+alias h='history'
+alias please='sudo $(history -p !!)'  # Run last command with sudo
+
+# Clear screen
+alias c='clear'
+
+# Directory navigation
 alias ..='cd ..'
+alias cd..='cd ..'              # Typo protection
 alias ...='cd ../../../'
 alias ....='cd ../../../../'
 alias .....='cd ../../../../'
+
+# ============================================================================
+# FILE OPERATIONS & SEARCH
+# ============================================================================
+
+# Search utilities
 alias search='grep -rnI --color=auto'
 alias ffind='find / -type f -name'
 
+# Listing files
+alias ls='ls --color=auto'      # Colorized output
+alias ll='ls -la'               # Long format with hidden files
+alias l.='ls -d .* --color=auto'  # Show only hidden files
 
-## Colorize the ls output ##
-alias ls='ls --color=auto'
-## Use a long listing format ##
-alias ll='ls -la'
-## Show hidden files ##
-alias l.='ls -d .* --color=auto'
-
-alias rm='rm -i'              
+# Safe file operations (interactive prompts)
+alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
 
-#Git aliases
+# ============================================================================
+# BUILD & DEVELOPMENT TOOLS
+# ============================================================================
+
+# Archive creation
+alias makear='ar rcs'
+
+# Object file compilation and linking
+alias co='gcc -c -ansi -pedantic-errors -Wall -Wextra -g'
+alias link='gcc *.o -o myprog'
+
+# ============================================================================
+# GCC/G++ COMPILER ALIASES
+# ============================================================================
+
+# C89/ANSI C compilation
+alias gc='gcc -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3'  # Release
+alias gd='gcc -ansi -pedantic-errors -Wall -Wextra -g'            # Debug
+
+# C99 compilation
+alias gc9='gcc -std=c99 -pedantic-errors -Wall -Wextra -DNDEBUG -O3'  # Release
+alias gd9='gcc -std=c99 -pedantic-errors -Wall -Wextra -g'            # Debug
+
+# C++98 compilation
+alias gpc='g++ -std=c++98 -pedantic-errors -Wall -Wextra -DNDEBUG -O3'  # Release
+alias gpd='g++ -std=c++98 -pedantic-errors -Wall -Wextra -g'            # Debug
+
+# C++11 compilation
+alias gpc11='g++ -std=c++11 -pedantic-errors -Wall -Wextra -DNDEBUG -O3'  # Release
+alias gpd11='g++ -std=c++11 -pedantic-errors -Wall -Wextra -g'            # Debug
+
+# ============================================================================
+# DEBUGGING TOOLS
+# ============================================================================
+
+# Valgrind memory checker
+alias vlg='valgrind --leak-check=yes --track-origins=yes'
+
+# ============================================================================
+# GIT ALIASES
+# ============================================================================
+
+# Status and information
 alias gs='git status'
 alias gb='git branch'
 alias gr='git remote -v'
 
-alias gaa='git add -A'                     # הוסף הכל
-alias gcm='git commit -m'                  # קומיט עם הודעה
+# Staging and committing
+alias gaa='git add -A'          # Stage all changes
+alias gcm='git commit -m'       # Commit with message
 
-alias gpull='git pull'                     # משיכה מ-remote
-alias gpush='git push'                     # דחיפה ל-master
+# Remote operations
+alias gpull='git pull'          # Pull from remote
+alias gpush='git push'          # Push to remote
 
-alias gundo='git reset --soft HEAD~1'     # מבטל קומיט, משאיר את השינויים ב-stage
+# Undo operations
+alias gundo='git reset --soft HEAD~1'     # Undo last commit, keep changes staged
+alias gunstage='git restore --staged'     # Unstage files
+alias greset='git reset HEAD'             # Alternative unstage
 
-alias gunstage='git restore --staged'     # הסרת קובץ מה-stage (לא מוחק תוכן)
-alias greset='git reset HEAD'             # שקול ל־gunstage
+# ============================================================================
+# CUSTOM FUNCTIONS
+# ============================================================================
 
-
-#Compiler aliases 
-# gcc compilation aliases: c89, c99, debug mode, release mode 
-alias gc='gcc -ansi -pedantic-errors -Wall -Wextra -DNDEBUG -O3' 
-alias gd='gcc -ansi -pedantic-errors -Wall -Wextra -g' 
-alias gd9='gcc -std=c99 -pedantic-errors -Wall -Wextra -g' 
-alias gc9='gcc -std=c99 -pedantic-errors -Wall -Wextra -DNDEBUG -O3'
-
-             
-alias gebit='gedit "$HOME/git/ds/src/sortedl.c" \
-                   "$HOME/git/ds/test/sortedl_test.c" \
-                   "$HOME/git/ds/src/dll.c" \
-                   "$HOME/git/ds/inc/dll.h" \
-                   "$HOME/git/ds/test/dll_test.c" \
-                   "$HOME/git/ds/inc/sortedl.h" &'
-
-alias co='gcc -c -ansi -pedantic-errors -Wall -Wextra -g'
-alias link='gcc *.o -o myprog'
- 
-# vagrind alias 
-alias vlg='valgrind --leak-check=yes --track-origins=yes'  
-
+# Navigate to C projects directory
+# Usage: cgit [subdirectory]
 cgit() {
     if [ -z "$1" ]; then
         cd ~/git/c
@@ -71,5 +107,3 @@ cgit() {
         cd ~/git/c/"$1"
     fi
 }
-
-
