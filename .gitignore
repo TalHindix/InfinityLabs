@@ -14,6 +14,10 @@
 !*.c
 !*.h
 
+# C++ sources and headers
+!*.cpp
+!*.hpp
+
 # Makefiles
 !Makefile
 !makefile
@@ -26,3 +30,5 @@
 !*.md
 !*.txt
 
+# Sandbox directory
+sandbox/
