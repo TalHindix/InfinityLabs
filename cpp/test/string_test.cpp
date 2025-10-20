@@ -2,18 +2,20 @@
 * Exercise:    Simple String Exe
 * Date:        20/10/2025
 * Developer:   Tal Hindi
-* Reviewer:    
+* Reviewer:    Maria
 * Status:      In Progress
 *****************************************************************************/
+#include <cstring> // strlen
 
-#include "../inc/string.hpp"
+#include "string.hpp" // String
 
-#include <iostream>
+
+using namespace ilrd;
 
 using std::cout;
 using std::endl;
+using std::cin;
 
-using namespace ilrd;
 
 void Foo(String s)
 {
@@ -39,18 +41,18 @@ int main()
     Foo(tmp);
 
     ilrd::String name;
-    std::cout << "Enter name: ";
-    std::cin >> name;
-    std::cout << "You entered: " << name << std::endl;
+    cout << "Enter name: ";
+    cin >> name;
+    cout << "You entered: " << name << endl;
     
     // Comparison operators
     if (s1 == s2)
     {
-        std::cout << "Equal" << std::endl;
+        cout << "Equal" << endl;
     }
     else if (s1 < s2)
     {
-        std::cout << s1 << " comes before " << s2 << std::endl;
+        cout << s1 << " comes before " << s2 << endl;
     }
 
     return 0;
