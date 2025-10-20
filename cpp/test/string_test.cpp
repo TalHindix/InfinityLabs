@@ -6,6 +6,7 @@
 * Status:      In Progress
 *****************************************************************************/
 #include <cstring> // strlen
+#include <iostream> // cout, cin
 
 #include "string.hpp" // String
 
