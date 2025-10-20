@@ -18,7 +18,6 @@ namespace ilrd
     class String
     {
     public:
-        // Constructor: Creates string from C-string (default: empty string)
         // Non-explicit to allow implicit conversion from const char*
         String(const char* str = "");
 
@@ -40,6 +39,7 @@ namespace ilrd
     private:
         char* m_str;
         // helper functions
+        char* AllocateAndCopy(const char* str);
     };// String class
     
     // Comparison functions 
