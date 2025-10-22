@@ -15,34 +15,34 @@
 
 namespace ilrd
 {
-class String
-{
-public:
-    String(const char* str = "");
+    class String
+    {
+    public:
+        String(const char* str = "");
 
-    String(const String& other);
+        String(const String& other);
 
-    String& operator=(const String& other);
+        String& operator=(const String& other);
 
-    ~String();
+        ~String();
 
-    size_t Length() const;
+        size_t Length() const;
 
-    char* Cstr() const;
+        char* Cstr() const;
 
-private:
-    char* m_str;
-    char* AllocateAndCopy(const char* str);
-}; // String class
+    private:
+        char* m_str;
+        char* AllocateAndCopy(const char* str);
+    }; // String class
 
-// Comparison functions
-bool operator==(const String& lhs, const String& rhs);
-bool operator>(const String& lhs, const String& rhs);
-bool operator<(const String& lhs, const String& rhs);
+    // Comparison functions
+    bool operator==(const String& lhs, const String& rhs);
+    bool operator>(const String& lhs, const String& rhs);
+    bool operator<(const String& lhs, const String& rhs);
 
-// Operator functions
-std::ostream& operator<<(std::ostream& os, const String& other); // advanced
-std::istream& operator>>(std::istream& is, String& other);       // advanced
+    // Operator functions
+    std::ostream& operator<<(std::ostream& os, const String& other); // advanced
+    std::istream& operator>>(std::istream& is, String& other);       // advanced
 } // namespace ilrd
 
 #endif //__ILRD_STRING__

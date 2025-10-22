@@ -1,10 +1,10 @@
 /*****************************************************************************
-* Exercise:    ex28
-* Date:        20/10/2025
-* Developer:   Tal Hindi
-* Reviewer:     
-* Status:      In Progress
-*****************************************************************************/
+ * Exercise:    ex28
+ * Date:        20/10/2025
+ * Developer:   Tal Hindi
+ * Reviewer:
+ * Status:      In Progress
+ *****************************************************************************/
 
 #include <iostream> // cout
 
@@ -17,13 +17,16 @@ int operator+(const X& x1_, const X& x2_)
     return 7;
 }
 
-ostream& operator<<(ostream& os_, const X& x_);
+// ostream& operator<<(ostream& os_, const X& x_);
 
 class X
 {
 public:
-    bool operator==(const X& o_) const { return m_a == o_.m_a; }
-    //Java style inline – not allowed in our coding standard
+    bool operator==(const X& o_) const
+    {
+        return m_a == o_.m_a;
+    }
+    // Java style inline – not allowed in our coding standard
 private:
     friend ostream& operator<<(ostream& os_, const X& x_);
     int m_a;
@@ -34,45 +37,57 @@ int main()
     X x1;
     X x2;
 
-    cout<< " x1+x2:" << x1 + x2 <<
-           " x1==x2:" << (x1 == x2) <<
-           " x1:" << x1 <<
-           " x2:" << x2 << endl;
+    cout << " x1+x2:" << x1 + x2 << " x1==x2:" << (x1 == x2) << " x1:" << x1
+         << " x2:" << x2 << endl;
 
     return 0;
 }
 
-ostream& operator<<(ostream& os_, const X& x_) 
+ostream& operator<<(ostream& os_, const X& x_)
 {
     return os_ << x_.m_a;
 }
 
-
 /*
-b. Note the differences between member operators vs. global operators. When will we use each?
-    Member Operators - Num of param (1) , Access to member data , Implict Conversions (just from the right side )
-    Global Operators -  Num of Param (2) , Not have access to member data , Implict Conversions (from both sides .)
-c. Investigate all the syntax used in this example. Write the type / side-effect / value of every expression in main().
-    
-d. Why do we need the line class X;at the beginning?
+b. Member operators vs. global operators:
+   Member: 1 parameter, has access to private members, implicit conversion only
+on right side Global: 2 parameters, no member access (unless friend), implicit
+conversion on both sides Use member for: ==, =, +=, [], ->, operations that
+modify left operand Use global for: +, <<, binary arithmetic, when left operand
+isn't your class
 
-e. What is the purpose of the line starting with friend? Remove it to investigate.
+c. Expression types/side-effects/values in main():
+   x1 + x2: type=int, value=7, side-effect=none
+   x1 == x2: type=bool, value=undefined (m_a uninitialized), side-effect=none
+   x1: type=X&, value=x1, side-effect=outputs m_a to cout
+   x2: type=X&, value=x2, side-effect=outputs m_a to cout
 
-f. Will non-member operators always be friends? Why?
+d. class X; forward declaration needed because global operator+ uses X before
+class definition
 
-g. Find a way to implement operator<< without it being a friend.
+e. friend allows operator<< to access private m_a
+   Without it: compilation error - cannot access private member
 
-h. How does friend *play* with public and private? Does it break encapsulation?
+f. No. Only need friend if accessing private/protected members
 
-i. In order for the operator<<() function to be able to access m_a in this case, should we use a friend attribute, or supply a GetA() getter method? Why?
+g. Add public getter GetA() in class, use x_.GetA() in operator
 
-j. Return the friend line and remove the forward declaration of operator<<. What happens? Why?
+h. friend doesn't break encapsulation - it's controlled access granted by the
+class
 
-k. Where in the class body should the friend declaration be? What does this depend on?
+i. Use friend - operator<< is part of X's interface, GetA() would expose m_a
+unnecessarily
 
-l. Implement some more operators. What did you learn?
+j. Compilation error - operator<< used before declared
+   friend declaration also serves as forward declaration
 
-m. When should you use operators vs. regular functions?
+k. Anywhere in class body (public/private). Convention: in private section
 
-n. Why do we call this "syntactic sugar"?
+l. (Your findings from implementing operators)
+
+m. Use operators for intuitive operations (==, +, <<)
+   Use functions for complex/non-intuitive operations
+
+n. "Syntactic sugar" - operators provide nicer syntax without new functionality
+   x1.Add(x2) vs x1 + x2 - same result, cleaner syntax
 */
