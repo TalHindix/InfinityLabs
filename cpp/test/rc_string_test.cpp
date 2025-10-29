@@ -3,8 +3,8 @@
  * Exercise:    RC String
  * Date:        27/10/2025
  * Developer:   Tal Hindi
- * Reviewer:
- * Status:      In Progress
+ * Reviewer:    Guy Argaman
+ * Status:      Approved
  *****************************************************************************/
  
 #include "rc_string.hpp"

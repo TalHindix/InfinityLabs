@@ -4,8 +4,8 @@
  * Exercise:    RC String 
  * Date:        27/10/2025
  * Developer:   Tal Hindi
- * Reviewer:    
- * Status:      In Progress
+ * Reviewer:    Guy Argaman
+ * Status:      Approved
  *****************************************************************************/
 
 #include "rc_string.hpp"
@@ -27,7 +27,7 @@ RCString::RCString(const RCString& other) : m_rc(other.m_rc)
 
 RCString& RCString::operator=(const RCString& other)
 {
-    if (this == &other)
+    if (m_rc == other.m_rc)
     {
         return *this;
     }
