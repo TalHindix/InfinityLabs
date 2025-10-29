@@ -23,4 +23,19 @@ namespace ilrd
         std::cout << *this << std::endl;
     }
 
+    // by ref
+    Complex AddByRef(const Complex& lhs, const Complex& rhs)
+    {
+        Complex result(lhs);
+        result += rhs;
+        return result;
+    }
+
+    // by val
+    Complex AddByValue(Complex lhs,Complex rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
 } // namespace ilrd

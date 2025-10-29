@@ -3,7 +3,7 @@
  * Date:        20/10/2025
  * Developer:   Tal Hindi
  * Reviewer:    Maria
- * Status:      In Progress
+ * Status:      Approved
  *****************************************************************************/
 
 #include "string.hpp" // String

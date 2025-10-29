@@ -49,12 +49,17 @@ int main()
 
     Fifi(x1);     // (1)
     Fifi(X(7));   // (2)
-    Fifi(9);      // (3)
-    // Fifi(3, 4); // (4)
+ //   Fifi(9);      // (3)
+     Fifi(X(3, 4)); // (4)
 
     return x1 * 3; //(5)
 }
 
+
+// m. Explain the syntax of line (5) including type / value / side-effect.
+//     Type: int
+//     Value: x1.operator int() * 3 = 7 * 3 = 21
+//     Side-effect: Calls conversion operator on x1
 /*
 b. Explain the syntax of line (2) including type / value / side-effect.
     Type: X (temporary object)
@@ -133,7 +138,7 @@ s. Find all the differences in meaning, usage, misusage, readability, conversion
     X& x_      - No copy, modifiable, NO temps, requires lvalue
     const X& x_ - No copy, read-only, accepts temps, MOST EFFICIENT for read-only
     const X x_  - Copy created, read-only, rare (redundant const)
-    X* x_      - No copy, nullable, modifiable, pointer semantics
+    X* x_      - No copy, nullable, modifiable, pointer semantics 
     const X* x_ - No copy, nullable, read-only
     X* const x_ - Pointer itself is const, object modifiable
 

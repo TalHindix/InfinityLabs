@@ -9,7 +9,6 @@
 #ifndef __ILRD_COMPLEX__
 #define __ILRD_COMPLEX__
 
-#include <cmath>    // std::abs
 #include <iostream> // std::ostream
 
 namespace ilrd
@@ -21,27 +20,10 @@ namespace ilrd
         Complex(double real = 0,
                 double imaginary = 0); // non-explicit on purpose
 
-        inline double GetReal() const
-        {
-            return m_real;
-        }
-
-        inline double GetImaginary() const
-        {
-            return m_imaginary;
-        }
-
-        inline void SetReal(double real)
-        {
-            m_real = real;
-        }
-
-        inline void SetImaginary(double imaginary)
-        {
-            m_imaginary = imaginary;
-        }
-
-        void Print() const;
+        inline double GetReal() const;
+        inline double GetImaginary() const;
+        inline void SetReal(double real);
+        inline void SetImaginary(double imaginary);
 
         inline Complex& operator+=(const Complex& rhs);
         inline Complex& operator-=(const Complex& rhs);
@@ -52,6 +34,32 @@ namespace ilrd
         double m_real;
         double m_imaginary;
     };
+
+    /* ------------For the benchmark ----------- */
+    Complex AddByRef(const Complex& lhs, const Complex& rhs);
+
+    Complex AddByValue(Complex lhs, Complex rhs);
+
+
+    inline double Complex::GetReal() const
+    {
+        return m_real;
+    }
+
+    inline double Complex::GetImaginary() const
+    {
+        return m_imaginary;
+    }
+
+    inline void Complex::SetReal(double real)
+    {
+        m_real = real;
+    }
+
+    inline void Complex::SetImaginary(double imaginary)
+    {
+        m_imaginary = imaginary;
+    }
 
     // Compound assignment operators - implementation
     inline Complex& Complex::operator+=(const Complex& rhs)
@@ -72,7 +80,7 @@ namespace ilrd
     {
         double newReal = m_real * rhs.m_real - m_imaginary * rhs.m_imaginary;
         double newImaginary =
-            m_real * rhs.m_imaginary + m_imaginary * rhs.m_real;
+            m_real * rhs.m_imaginary + m_imaginary * rhs.m_real; // Delete the newImaginary
 
         m_real = newReal;
         m_imaginary = newImaginary;
@@ -88,7 +96,7 @@ namespace ilrd
         double newReal =
             (m_real * rhs.m_real + m_imaginary * rhs.m_imaginary) / denominator;
         double newImaginary =
-            (m_imaginary * rhs.m_real - m_real * rhs.m_imaginary) / denominator;
+            (m_imaginary * rhs.m_real - m_real * rhs.m_imaginary) / denominator; // Delete the newImaginary
 
         m_real = newReal;
         m_imaginary = newImaginary;
@@ -101,7 +109,7 @@ namespace ilrd
     {
         Complex result(lhs);
         result += rhs;
-        return result;
+        return result; // return Complex()
     }
 
     inline Complex operator-(const Complex& lhs, const Complex& rhs)
