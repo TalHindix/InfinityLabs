@@ -10,7 +10,6 @@
 
 #include "string.hpp" // String
 
-
 using namespace ilrd;
 
 using std::cout;
@@ -45,7 +44,7 @@ int main()
     cout << "Enter name: ";
     cin >> name;
     cout << "You entered: " << name << endl;
-    
+
     // Comparison operators
     if (s1 == s2)
     {

@@ -20,27 +20,34 @@
 
 namespace ilrd
 {
+
+const size_t BUFFER_SIZE = 256;
+
 class RCString
 {
 public:
-    RCString(const char* str = ""); // non-explicit on purpose
-    RCString(const RCString& other);
-    RCString& operator=(const RCString& other);
-    ~RCString() noexcept;
-    inline char* ToCStr() const noexcept;
-    inline size_t Length() const noexcept;
-    char operator[](size_t idx) const;
-    char& operator[](size_t idx);
+ 	RCString(const char* str = ""); //non-explicit on purpose
+	RCString(const RCString& other);
+	~RCString() noexcept;
 
+	RCString& operator=(const RCString& other);
+	char operator[](size_t idx) const;
+	char& operator[](size_t idx);
+
+	inline const char* ToCStr() const noexcept;
+	inline size_t Length() const noexcept;
 private:
-    struct RCImp
-    {
-        size_t m_count;
-        char m_str[1];
-    }* m_rc;
+	struct RCImp
+	{
+		size_t m_count;
+		char m_str[1];
+	} *m_rc;
 
-    static RCImp* Init(const char* str);
-}; // RCString class
+	RCImp* CreateMRC(const char* src);
+	RCImp* IncNShare() const;
+	void DecOrDel();
+	int IsShared() const;
+}; //RCString class
 
 inline bool operator==(const RCString& lhs, const RCString& rhs);
 inline bool operator!=(const RCString& lhs, const RCString& rhs);
@@ -50,36 +57,35 @@ inline bool operator<(const RCString& lhs, const RCString& rhs);
 std::ostream& operator<<(std::ostream& os, const RCString& other);
 std::istream& operator>>(std::istream& is, RCString& other);
 
-inline char* RCString::ToCStr() const noexcept
+inline const char* RCString::ToCStr() const noexcept
 {
-    return m_rc->m_str;
+	return m_rc->m_str;
 }
 
 inline size_t RCString::Length() const noexcept
 {
-    return strlen(m_rc->m_str);
+	return std::strlen(m_rc->m_str);
 }
 
 inline bool operator==(const RCString& lhs, const RCString& rhs)
 {
-    return (0 == strcmp(lhs.ToCStr(), rhs.ToCStr()));
+	return !std::strcmp(lhs.ToCStr(), rhs.ToCStr());
 }
 
 inline bool operator!=(const RCString& lhs, const RCString& rhs)
 {
-    return !(lhs == rhs);
+	return !(lhs == rhs);
 }
 
 inline bool operator>(const RCString& lhs, const RCString& rhs)
 {
-    return (strcmp(lhs.ToCStr(), rhs.ToCStr()) > 0);
+	return (0 < std::strcmp(lhs.ToCStr(), rhs.ToCStr()));
 }
 
 inline bool operator<(const RCString& lhs, const RCString& rhs)
 {
-    return (strcmp(lhs.ToCStr(), rhs.ToCStr()) < 0);
+	return (0 > std::strcmp(lhs.ToCStr(), rhs.ToCStr()));
 }
-
-} // namespace ilrd
+} //ilrd
 
 #endif //__ILRD_RCSTRING__

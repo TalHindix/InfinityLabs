@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Exercise:    RC String 
+ * Exercise:    RC String
  * Date:        27/10/2025
  * Developer:   Tal Hindi
  * Reviewer:    Guy Argaman
@@ -8,54 +8,33 @@
 
 #include "rc_string.hpp"
 
+#include <cstddef> // offstof
 #include <cstring> // strlen
 #include <new>     // new
-#include <cstddef> // offstof
 
-using namespace ilrd;
-
-RCString::RCString(const char* str) : m_rc(Init(str))
+namespace ilrd
+{
+RCString::RCString(const char* str): m_rc(CreateMRC(str))
 {
 }
 
-RCString::RCString(const RCString& other) : m_rc(other.m_rc)
+RCString::RCString(const RCString& other): m_rc(other.IncNShare())
 {
-    ++m_rc->m_count;
 }
 
 RCString& RCString::operator=(const RCString& other)
 {
-    if (m_rc == other.m_rc)
-    {
-        return *this;
-    }
+    RCImp* rc = other.IncNShare();
+    DecOrDel();
 
-    ++other.m_rc->m_count;
-
-    if (m_rc->m_count == 1)
-    {
-        operator delete(m_rc);
-    }
-    else
-    {
-        --m_rc->m_count;
-    }
-
-    m_rc = other.m_rc;
+    m_rc = rc;
 
     return *this;
 }
 
 RCString::~RCString() noexcept
 {
-    if (m_rc->m_count == 1)
-    {
-        operator delete(m_rc);
-    }
-    else
-    {
-        --m_rc->m_count;
-    }
+    DecOrDel();
 }
 
 char RCString::operator[](size_t idx) const
@@ -65,10 +44,12 @@ char RCString::operator[](size_t idx) const
 
 char& RCString::operator[](size_t idx)
 {
-    if (m_rc->m_count > 1)
+    if (IsShared())
     {
-        --m_rc->m_count;
-        m_rc = Init(m_rc->m_str);
+        RCImp* rc = CreateMRC(m_rc->m_str);
+        DecOrDel();
+
+        m_rc = rc;
     }
 
     return m_rc->m_str[idx];
@@ -81,23 +62,48 @@ std::ostream& operator<<(std::ostream& os, const RCString& other)
 
 std::istream& operator>>(std::istream& is, RCString& other)
 {
-    char buff[BUFSIZ];
-    std::memset(buff, 0, BUFSIZ);
+    char buffer[BUFFER_SIZE] = {0};
 
-    is >> buff;
-    other = RCString(buff);
+    is >> buffer;
+    other = buffer;
 
     return is;
 }
 
-RCString::RCImp* RCString::Init(const char* str)
+RCString::RCImp* RCString::IncNShare() const
 {
-    size_t len = std::strlen(str);
-    void* memory = operator new(offsetof(RCImp, m_str) + len + 1);
+    ++(m_rc->m_count);
 
-    RCImp* rc = reinterpret_cast<RCImp*>(memory);
-    std::strcpy(rc->m_str, str);
+    return m_rc;
+}
+
+void RCString::DecOrDel()
+{
+    if (IsShared())
+    {
+        --m_rc->m_count;
+    }
+    else
+    {
+        delete m_rc;
+    }
+
+    m_rc = NULL;
+}
+
+RCString::RCImp* RCString::CreateMRC(const char* src)
+{
+    RCImp* rc = static_cast<RCImp*>(operator new(offsetof(RCImp, m_str) +
+                                                 strlen(src) + 1));
+
     rc->m_count = 1;
+    strcpy(rc->m_str, src);
 
     return rc;
 }
+
+int RCString::IsShared() const
+{
+    return m_rc->m_count > 1;
+}
+} // namespace ilrd
