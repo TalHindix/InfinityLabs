@@ -28,7 +28,7 @@ public:
     {
         cout << "s_count: " << s_count << "\n";
     }
-    
+
 protected:
     int get_ID()
     {
@@ -40,6 +40,7 @@ private:
     int m_license_plate;
     PublicTransport &operator=(const PublicTransport &); // disabled
 };
+
 
 int PublicTransport::s_count = 0;
 
@@ -223,7 +224,6 @@ int main(int argc, char **argv, char **envp)
     }
 
     PublicTransport arr2[] = { Minibus(), Taxi(), PublicTransport() };
-
     for (int i = 0; i < 3; ++i) {
         arr2[i].display();
     }

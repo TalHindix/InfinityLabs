@@ -35,25 +35,25 @@ extern const vtable_t g_vtable_st;
 
 void PublicTransport_Ctor(public_transport_t* this, const vtable_t* vptr);
 void PublicTransport_CCtor(public_transport_t* this, public_transport_t* other,const vtable_t* vptr);
-void PublicTransport_Dtor(void* this);
-void PublicTransport_Display(void* this);
+void V_PublicTransport_Dtor(void* this);
+void V_PublicTransport_Display(void* this);
 
 void Taxi_Ctor(taxi_t* this, const vtable_t* vptr);
 void Taxi_CCtor(taxi_t* this, taxi_t* other, const vtable_t* vptr);
-void Taxi_Dtor(void* this);
-void Taxi_Display(void* this);
+void V_Taxi_Dtor(void* this);
+void V_Taxi_Display(void* this);
 
 void Minibus_Ctor(minibus_t* this,const vtable_t* vptr);
-void Minibus_Dtor(void* this);
-void Minibus_Display(void* this);
-void Minibus_Wash(void* this, int min);
+void V_Minibus_Dtor(void* this);
+void V_Minibus_Display(void* this);
+void V_Minibus_Wash(void* this, int min);
 
 void Armyminibus_Ctor(army_minibus_t* this);
-void Armyminibus_Dtor(void* this);
+void V_Armyminibus_Dtor(void* this);
 
 void SpecialTaxi_Ctor(special_taxi_t* this);
-void SpecialTaxi_Dtor(void* this);
-void SpecialTaxi_Display(void* this);
+void V_SpecialTaxi_Dtor(void* this);
+void V_SpecialTaxi_Display(void* this);
 
 void PrintInfo(void);
 void PublicTransport_PrintInfo(public_transport_t* pt);

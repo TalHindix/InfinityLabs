@@ -38,7 +38,7 @@ int main(void)
 
     ret_val = PublicTransport_PrintInfo2(3);
     ret_val.vptr->Display(&ret_val);
-    PublicTransport_Dtor(&ret_val);
+    V_PublicTransport_Dtor(&ret_val);
 
     array[0] = (public_transport_t*)malloc(sizeof(minibus_t));
     array[1] = (public_transport_t*)malloc(sizeof(taxi_t));
@@ -67,8 +67,8 @@ int main(void)
 
     PublicTransport_Ctor(&arr2[2], &g_vtable_pt);
 
-    Taxi_Dtor(&temp_copy);
-    Minibus_Dtor(&temp_mb);
+    V_Taxi_Dtor(&temp_copy);
+    V_Minibus_Dtor(&temp_mb);
 
     for (i = 0; i < 3; ++i)
     {
@@ -96,7 +96,7 @@ int main(void)
 
     for (i = 4; i > 0; --i)
     {
-        Taxi_Dtor(&arr4[i - 1]);
+        V_Taxi_Dtor(&arr4[i - 1]);
     }
     free(arr4);
 
@@ -106,7 +106,7 @@ int main(void)
     SpecialTaxi_Ctor(&st);
     Taxi_CCtor(&temp_copy, &st.base,&g_vtable_t);
     Taxi_DisplayByVal(temp_copy);
-    Taxi_Dtor(&temp_copy);
+    V_Taxi_Dtor(&temp_copy);
 
     army_minibus = (army_minibus_t*)malloc(sizeof(army_minibus_t));
     Armyminibus_Ctor(army_minibus);
@@ -115,21 +115,21 @@ int main(void)
     army_minibus->base.base.vptr->Dtor(army_minibus);
     free(army_minibus);
 
-    SpecialTaxi_Dtor(&st);
+    V_SpecialTaxi_Dtor(&st);
 
     for (i = 4; i > 0; --i)
     {
-        Minibus_Dtor(&arr3[i - 1]);
+        V_Minibus_Dtor(&arr3[i - 1]);
     }
 
-    Minibus_Dtor(&m2);
+    V_Minibus_Dtor(&m2);
 
     for (i = 3; i > 0; --i)
     {
-        PublicTransport_Dtor(&arr2[i - 1]);
+        V_PublicTransport_Dtor(&arr2[i - 1]);
     }
 
-    Minibus_Dtor(&m);
+    V_Minibus_Dtor(&m);
 
     return 0;
 }
