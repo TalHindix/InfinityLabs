@@ -30,8 +30,7 @@ struct PT_VTable
 };
 struct MB_VTable
 {
-    void (*Dtor)(MiniBus_t*);
-    void (*Display)(MiniBus_t*);
+    PublicTransport_Vtable base;
     void (*Wash)(MiniBus_t*, int);
 };
 
@@ -103,8 +102,10 @@ const PublicTransport_Vtable taxi_vtable =
 
 const Minibus_Vtable mini_bus_vtable =
 {
-    Minibus_Dtor,
-    Minibus_Display,
+    {
+        (void (*)(PublicTransport_t*))Minibus_Dtor,
+        (void (*)(PublicTransport_t*))Minibus_Display
+    },
     Minibus_Wash
 };
 
@@ -116,8 +117,10 @@ const PublicTransport_Vtable special_taxi_vtable =
 
 const Minibus_Vtable army_minibus_vtable =
 {
-    (void (*)(MiniBus_t*))Armyminibus_Dtor,
-    Minibus_Display,
+    {
+        (void (*)(PublicTransport_t*))Armyminibus_Dtor,
+        (void (*)(PublicTransport_t*))Minibus_Display
+    },
     Minibus_Wash
 };
 
