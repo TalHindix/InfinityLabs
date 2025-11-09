@@ -137,7 +137,6 @@ const Minibus_Vtable army_minibus_vtable =
     Minibus_Wash
 };
 
-
 /* ------------------- helper functions ----------------------*/
 static int GetID(PublicTransport_t* this)
 {
@@ -148,7 +147,6 @@ static void PublicTransport_PrintCount()
 {
     printf("s_count: %d\n",s_count);
 }
-
 
 /* ------------------- PublicTransport Implementations -------------------*/
 void PublicTransport_Ctor(PublicTransport_t* this)
@@ -203,6 +201,7 @@ void Taxi_Display(Taxi_t* this)
 {
     printf("Taxi::display() ID:%d\n", GetID((PublicTransport_t*)this));
 }
+
 /* ------------------- MiniBus Implementations ---------------------*/
 void Minibus_Ctor(MiniBus_t* this)
 {
@@ -299,7 +298,6 @@ PublicTransport_t PublicTransport_PrintInfo2(int i)
 
     return ret;
 }
-
 
 void Taxi_DisplayByVal(Taxi_t* t)
 {
