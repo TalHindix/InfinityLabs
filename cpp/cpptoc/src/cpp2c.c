@@ -94,7 +94,7 @@ void SpecialTaxi_Display(SpecialTaxi_t* this);
 void PrintInfo(void);
 void PublicTransport_PrintInfo(PublicTransport_t* pt);
 void Minibus_PrintInfo(MiniBus_t* mb);
-PublicTransport_t PublicTransport_PrintInfo2(int i);
+void PublicTransport_PrintInfo2(PublicTransport_t* this,int i);
 void Taxi_DisplayByVal(Taxi_t* t);
 
 static int GetID(PublicTransport_t* this);
@@ -277,31 +277,28 @@ void PublicTransport_PrintInfo(PublicTransport_t* pt)
 
 void Minibus_PrintInfo(MiniBus_t* mb)
 {
-    const Minibus_Vtable* mb_ptr = (const Minibus_Vtable*)((const PublicTransport_t*)mb)->vptr;
-    mb_ptr->Wash(mb,3);
+    (*(Minibus_Vtable**)mb)->Wash(mb,3);
 }
 
-PublicTransport_t PublicTransport_PrintInfo2(int i)
+void PublicTransport_PrintInfo2(PublicTransport_t* this, int i)
 {
-    MiniBus_t m = {0};
-    PublicTransport_t ret = {0};
+    MiniBus_t ret = {0};
 
     (void)i;
 
-    Minibus_Ctor(&m);
+    Minibus_Ctor(&ret);
     printf("print_info(int i)\n");
 
-    ((PublicTransport_t*)&m)->vptr->Display((PublicTransport_t*)&m);
+    Minibus_Display(&ret);
 
-    PublicTransport_CCtor(&ret, (PublicTransport_t*)&m);
-    Minibus_Dtor(&m);
+    PublicTransport_CCtor(this, (PublicTransport_t*)&ret);
+    Minibus_Dtor(&ret);
 
-    return ret;
 }
 
 void Taxi_DisplayByVal(Taxi_t* t)
 {
-    ((PublicTransport_t*)t)->vptr->Display((PublicTransport_t*)t);
+    Taxi_Display(t);
 }
 
 int main(void)
@@ -322,7 +319,7 @@ int main(void)
     Minibus_Ctor(&m);
     Minibus_PrintInfo(&m);
 
-    ret_val = PublicTransport_PrintInfo2(3);
+    PublicTransport_PrintInfo2(&ret_val,3);
     ret_val.vptr->Display(&ret_val);
     PublicTransport_Dtor(&ret_val);
 
