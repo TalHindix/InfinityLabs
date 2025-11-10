@@ -1,9 +1,9 @@
 /*****************************************************************************
 * Exercise:    Cpp 2 c exercise
-* Date:        9/11/2025
+* Date:        10/11/2025
 * Developer:   Tal Hindi
 * Reviewer:    Maria
-* Status:      Waiting for 3rd review
+* Status:      Approved
 *****************************************************************************/
 
 #include <stdio.h> /* printf */
