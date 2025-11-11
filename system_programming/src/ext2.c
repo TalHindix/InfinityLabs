@@ -1,43 +1,47 @@
-/* /*****************************************************************************
+/*****************************************************************************
 * Exercise:    ext 2
-* Date:        10/11/2025
+* Date:        11/11/2025
 * Developer:   Tal Hindi
-* Reviewer:
+* Reviewer:    Guy Argaman
 * Status:
 *****************************************************************************/
 
+#define _POSIX_C_SOURCE 200809L
 
-#include "ext2.h"
+#include <ext2fs/ext2_fs.h> /* ext2 structs */
+#include <stdio.h>          /* printf */
+#include <stdlib.h>         /* malloc */
+#include <sys/types.h>      /* off_t */
+#include <sys/stat.h>       /* S_ISREG */
+#include <fcntl.h>          /* open */
+#include <unistd.h>         /* close */
+#include <string.h>         /* strlen */
 
-#include <ext2fs/ext2_fs.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
+#include "ext2.h" /* Open */
 
-#define BASE_OFFSET 1024
-#define EXT2_ROOT_INODE 2
+#define BASE_OFFSET       (1024)
+#define EXT2_ROOT_INODE   (2)
+#define MIN(a, b)         (((a) < (b)) ? (a) : (b))
+/* ext2 block numbers are absolute; offset = block * block_size */
+#define BLOCK_OFFSET(block) ((off_t)(block) * g_block_size)
 
+/* Global variables */
 static int g_device_fd = -1;
 static struct ext2_super_block g_superblock;
 static struct ext2_group_desc g_group_desc;
 static size_t g_block_size = 0;
 
-static void PrintSuperBlock(void);
-static void PrintGroupDesc(void);
+/* Helper funcs - forward declaration */
+static int LoadSuperBlock(void);
+static int LoadGroupDesc(void);
 static int ReadBlock(size_t block_num, void* buffer);
 static int GetInode(size_t inode_num, struct ext2_inode* inode);
-static int FindInDirectory(size_t dir_inode_num, const char* name,
-                          size_t* found_inode);
+static int FindInDirectory(size_t dir_inode_num, const char* name, size_t* found_inode);
 static int PathToInode(const char* path, size_t* inode_num);
-static void Cleanup(void);
 
+/* API Implementation */
 int Open(char* device, char* filename)
 {
-    off_t gd_offset = 0;
     size_t inode_num = 0;
 
     g_device_fd = open(device, O_RDONLY);
@@ -47,31 +51,25 @@ int Open(char* device, char* filename)
         return -1;
     }
 
-    lseek(g_device_fd, BASE_OFFSET, SEEK_SET);
-    read(g_device_fd, &g_superblock, sizeof(struct ext2_super_block));
-
-    if (g_superblock.s_magic != 0xEF53)
+    if (0 != LoadSuperBlock())
     {
-        fprintf(stderr, "Not an ext2 filesystem\n");
         close(g_device_fd);
         g_device_fd = -1;
         return -1;
     }
 
-    g_block_size = 1024 << g_superblock.s_log_block_size;
-
-    PrintSuperBlock();
-
-    gd_offset = g_block_size * (g_superblock.s_first_data_block + 1);
-    lseek(g_device_fd, gd_offset, SEEK_SET);
-    read(g_device_fd, &g_group_desc, sizeof(struct ext2_group_desc));
-
-    PrintGroupDesc();
-
-    if (PathToInode(filename, &inode_num) != 0)
+    if (0 != LoadGroupDesc())
     {
-        fprintf(stderr, "File not found: %s\n", filename);
-        Cleanup();
+        close(g_device_fd);
+        g_device_fd = -1;
+        return -1;
+    }
+
+    if (0 != PathToInode(filename, &inode_num))
+    {
+        fprintf(stderr, "File  iss not found: %s\n", filename);
+        close(g_device_fd);
+        g_device_fd = -1;
         return -1;
     }
 
@@ -80,132 +78,99 @@ int Open(char* device, char* filename)
 
 int Read(int file_inode, char* buffer, size_t count)
 {
-    struct ext2_inode inode;
-    size_t file_size = 0;
-    size_t to_read = 0;
-    size_t total_read = 0;
+    struct ext2_inode inode = {0};
     void* block_buf = NULL;
+    size_t total_read = 0;
     size_t i = 0;
+    size_t bytes_to_copy = 0;
 
-    if (GetInode((size_t)file_inode, &inode) != 0)
+    if (g_device_fd < 0)
     {
-        Cleanup();
+        fprintf(stderr, "Device not open\n");
+        return -1;
+    }
+
+    if (NULL == buffer)
+    {
+        fprintf(stderr, "Invalid buffer\n");
+        close(g_device_fd);
+        g_device_fd = -1;
+        return -1;
+    }
+
+    if (0 != GetInode((size_t)file_inode, &inode))
+    {
+        close(g_device_fd);
+        g_device_fd = -1;
         return -1;
     }
 
     if (!S_ISREG(inode.i_mode))
     {
         fprintf(stderr, "Not a regular file\n");
-        Cleanup();
+        close(g_device_fd);
+        g_device_fd = -1;
         return -1;
     }
 
-    file_size = inode.i_size;
-    to_read = (count < file_size) ? count : file_size;
+    count = MIN(count, inode.i_size);
 
     block_buf = malloc(g_block_size);
-
-    for (i = 0; i < EXT2_NDIR_BLOCKS && inode.i_block[i] != 0; ++i)
+    if (NULL == block_buf)
     {
-        size_t bytes_in_block = 0;
+        perror("malloc");
+        close(g_device_fd);
+        g_device_fd = -1;
+        return -1;
+    }
 
-        if (total_read >= to_read)
+    for (i = 0; i < EXT2_NDIR_BLOCKS && total_read < count && 0 != inode.i_block[i]; ++i)
+    {
+        if (0 != ReadBlock(inode.i_block[i], block_buf))
         {
-            break;
+            free(block_buf);
+            close(g_device_fd);
+            g_device_fd = -1;
+            return -1;
         }
 
-        ReadBlock(inode.i_block[i], block_buf);
+        bytes_to_copy = (total_read + g_block_size > count) ? count - total_read : g_block_size;
 
-        bytes_in_block = g_block_size;
-        if (total_read + bytes_in_block > to_read)
-        {
-            bytes_in_block = to_read - total_read;
-        }
-
-        memcpy(buffer + total_read, block_buf, bytes_in_block);
-        total_read += bytes_in_block;
+        memcpy(buffer + total_read, block_buf, bytes_to_copy);
+        total_read += bytes_to_copy;
     }
 
     free(block_buf);
-    Cleanup();
-
+    close(g_device_fd);
+    g_device_fd = -1;
     return (int)total_read;
 }
 
-static void PrintSuperBlock(void)
-{
-    printf("\n------ Printing Super Block ------\n");
-    printf("Reading super-block:\n"
-           "Inodes count            : %u\n"
-           "Blocks count            : %u\n"
-           "Reserved blocks count   : %u\n"
-           "Free blocks count       : %u\n"
-           "Free inodes count       : %u\n"
-           "First data block        : %u\n"
-           "Block size              : %zu\n"
-           "Blocks per group        : %u\n"
-           "Inodes per group        : %u\n"
-           "Creator OS              : %u\n"
-           "First non-reserved inode: %u\n"
-           "Size of inode structure : %hu\n",
-           g_superblock.s_inodes_count,
-           g_superblock.s_blocks_count,
-           g_superblock.s_r_blocks_count,
-           g_superblock.s_free_blocks_count,
-           g_superblock.s_free_inodes_count,
-           g_superblock.s_first_data_block,
-           g_block_size,
-           g_superblock.s_blocks_per_group,
-           g_superblock.s_inodes_per_group,
-           g_superblock.s_creator_os,
-           g_superblock.s_first_ino,
-           g_superblock.s_inode_size);
-}
-
-static void PrintGroupDesc(void)
-{
-    printf("\n------ Printing Group Desc ------\n");
-    printf("Reading first group-descriptor:\n"
-           "Blocks bitmap block: %u\n"
-           "Inodes bitmap block: %u\n"
-           "Inodes table block : %u\n"
-           "Free blocks count  : %u\n"
-           "Free inodes count  : %u\n"
-           "Directories count  : %u\n",
-           g_group_desc.bg_block_bitmap,
-           g_group_desc.bg_inode_bitmap,
-           g_group_desc.bg_inode_table,
-           g_group_desc.bg_free_blocks_count,
-           g_group_desc.bg_free_inodes_count,
-           g_group_desc.bg_used_dirs_count);
-}
-
+/* Helper functions implementations */
 static int ReadBlock(size_t block_num, void* buffer)
 {
-    off_t offset = (off_t)(block_num * g_block_size);
+    ssize_t bytes_read = pread(g_device_fd, buffer, g_block_size, BLOCK_OFFSET(block_num));
 
-    lseek(g_device_fd, offset, SEEK_SET);
-    read(g_device_fd, buffer, g_block_size);
+    if ((ssize_t)g_block_size != bytes_read)
+    {
+        perror("pread block");
+        return -1;
+    }
 
     return 0;
 }
 
 static int GetInode(size_t inode_num, struct ext2_inode* inode)
 {
-    size_t inodes_per_group = 0;
-    size_t index = 0;
-    size_t inode_table = 0;
-    off_t offset = 0;
+    size_t inode_index = (inode_num - 1) % g_superblock.s_inodes_per_group;
+    off_t inode_offset = BLOCK_OFFSET(g_group_desc.bg_inode_table) + (off_t)(inode_index * g_superblock.s_inode_size);
 
-    inodes_per_group = g_superblock.s_inodes_per_group;
-    index = (inode_num - 1) % inodes_per_group;
-    inode_table = g_group_desc.bg_inode_table;
-
-    offset = (off_t)(inode_table * g_block_size + index * g_superblock.s_inode_size);
-
-
-    lseek(g_device_fd, offset, SEEK_SET);
-    read(g_device_fd, inode, sizeof(struct ext2_inode));
+    ssize_t bytes_read = pread(g_device_fd, inode, sizeof(struct ext2_inode), inode_offset);
+    if (sizeof(struct ext2_inode) != bytes_read)
+    {
+        perror("pread inode");
+        return -1;
+    }
 
     return 0;
 }
@@ -215,12 +180,14 @@ static int FindInDirectory(size_t dir_inode_num, const char* name, size_t* found
     struct ext2_inode dir_inode = {0};
     struct ext2_dir_entry_2* entry = NULL;
     void* block = NULL;
-    int i = 0;
-    size_t offset = 0;
+    size_t i = 0;
 
     *found_inode = 0;
 
-    GetInode(dir_inode_num, &dir_inode);
+    if (0 != GetInode(dir_inode_num, &dir_inode))
+    {
+        return -1;
+    }
 
     if (!S_ISDIR(dir_inode.i_mode))
     {
@@ -229,31 +196,39 @@ static int FindInDirectory(size_t dir_inode_num, const char* name, size_t* found
     }
 
     block = malloc(g_block_size);
-
-    for (i = 0; i < EXT2_NDIR_BLOCKS && dir_inode.i_block[i] != 0; ++i)
+    if (NULL == block)
     {
-        ReadBlock(dir_inode.i_block[i], block);
+        perror("malloc");
+        return -1;
+    }
 
-        offset = 0;
-        while (offset < g_block_size)
+    for (i = 0; i < EXT2_NDIR_BLOCKS && 0 != dir_inode.i_block[i]; ++i)
+    {
+        size_t entry_offset = 0;
+
+        if (0 != ReadBlock(dir_inode.i_block[i], block))
         {
-            entry = (struct ext2_dir_entry_2*)((char*)block + offset);
+            free(block);
+            return -1;
+        }
 
-            if (entry->rec_len == 0)
+        while (entry_offset + sizeof(struct ext2_dir_entry_2) <= g_block_size)
+        {
+            entry = (struct ext2_dir_entry_2*)((char*)block + entry_offset);
+
+            if (0 >= entry->rec_len)
             {
                 break;
             }
 
-            if (entry->inode &&
-                entry->name_len == strlen(name) &&
-                memcmp(entry->name, name, entry->name_len) == 0)
+            if (0 != entry->inode && strlen(name) == entry->name_len && 0 == memcmp(entry->name, name, entry->name_len))
             {
                 *found_inode = entry->inode;
                 free(block);
                 return 0;
             }
 
-            offset += entry->rec_len;
+            entry_offset += entry->rec_len;
         }
     }
 
@@ -263,58 +238,84 @@ static int FindInDirectory(size_t dir_inode_num, const char* name, size_t* found
 
 static int PathToInode(const char* path, size_t* inode_num)
 {
-    size_t current_inode = 0;
-    size_t next_inode = 0;
     char* path_copy = NULL;
     char* token = NULL;
 
-    if (strcmp(path, "/") == 0)
+    if (0 == strcmp(path, "/"))
     {
         *inode_num = EXT2_ROOT_INODE;
         return 0;
     }
 
-    if (path[0] != '/')
+    if ('/' != path[0])
     {
         fprintf(stderr, "Path must start with '/'\n");
         return -1;
     }
 
-    current_inode = EXT2_ROOT_INODE;
+    *inode_num = EXT2_ROOT_INODE;
 
     path_copy = malloc(strlen(path) + 1);
-    strcpy(path_copy, path);
+    if (NULL == path_copy)
+    {
+        perror("malloc");
+        return -1;
+    }
+
+    strcpy(path_copy, path); /* strtok change the original path , so we have to make a copy before use it */
     token = strtok(path_copy, "/");
 
-    while (token != NULL)
+    while (NULL != token)
     {
-        printf("token: %s\n", token);
+        size_t temp_inode = 0;
 
-        if (FindInDirectory(current_inode, token, &next_inode) != 0)
+        if (0 != FindInDirectory(*inode_num, token, &temp_inode))
         {
-            fprintf(stderr, "Not found: %s\n", token);
+            fprintf(stderr, "FindInDirectory:Not found: %s\n", token);
             free(path_copy);
             return -1;
         }
 
-        current_inode = next_inode;
+        *inode_num = temp_inode;
         token = strtok(NULL, "/");
     }
 
     free(path_copy);
-    *inode_num = current_inode;
+    return 0;
+}
+
+static int LoadSuperBlock(void)
+{
+    ssize_t bytes_read = pread(g_device_fd, &g_superblock, sizeof(struct ext2_super_block), BASE_OFFSET);
+
+    if (sizeof(struct ext2_super_block) != bytes_read)
+    {
+        perror("pread superblock");
+        return -1;
+    }
+
+    if (EXT2_SUPER_MAGIC != g_superblock.s_magic)
+    {
+        fprintf(stderr, "WRONG ext2 magic number\n");
+        return -1;
+    }
+
+    g_block_size = 1024 << g_superblock.s_log_block_size;
 
     return 0;
 }
 
-static void Cleanup(void)
+static int LoadGroupDesc(void)
 {
-    if (g_device_fd >= 0)
+    off_t gd_offset = (off_t)g_block_size * (g_superblock.s_first_data_block + 1);
+
+    ssize_t bytes_read = pread(g_device_fd, &g_group_desc, sizeof(struct ext2_group_desc), gd_offset);
+
+    if (sizeof(struct ext2_group_desc) != bytes_read)
     {
-        close(g_device_fd);
-        g_device_fd = -1;
+        perror("pread group descriptor");
+        return -1;
     }
 
-    g_block_size = 0;
+    return 0;
 }
-

@@ -1,22 +1,19 @@
 /*****************************************************************************
 * Exercise:    ext 2
-* Date:        10/11/2025
+* Date:        11/11/2025
 * Developer:   Tal Hindi
-* Reviewer:
+* Reviewer:    Guy Argaman
 * Status:
 *****************************************************************************/
 
 #include <stdio.h> /* printf */
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
-#include "ext2.h" /* Ext2OpenFilesystem */
+#include "ext2.h" /* Open */
 
-int main(void)
+int main(int argc, char** argv)
 {
     char buf[64] = {0};
-    int fd = Open("/dev/ram0","/myfile.txt");
+    int fd = Open(argv[1],argv[2]);
     int n = Read(fd, buf, sizeof(buf)-1);
     printf("read %d bytes: \"%s\"\n", n, buf);
 

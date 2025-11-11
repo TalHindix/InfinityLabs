@@ -1,8 +1,8 @@
 /*****************************************************************************
 * Exercise:    ext 2
-* Date:        10/11/2025
+* Date:        11/11/2025
 * Developer:   Tal Hindi
-* Reviewer:
+* Reviewer:    Guy Argaman
 * Status:
 *****************************************************************************/
 
@@ -11,8 +11,8 @@
 
 #include <stddef.h>  /* size_t */
 
-ssize_t Open(char* device, char* filename);
+int Open(char* device, char* filename);
 
-ssize_t Read(int file_inode, char* buffer, size_t count);
+int Read(int file_inode, char* buffer, size_t count);
 
 #endif /* _ILRD_EXT2_H */
