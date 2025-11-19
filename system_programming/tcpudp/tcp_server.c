@@ -1,9 +1,9 @@
 /**************************************
-Exercise:   Ex2 - TCP Ping pong
+Exercise:   Ex2 - TCP Ping pong(Server)
 Date:       17/11/2025
 Developer:  Tal Hindi
-Reviewer:
-Status:
+Reviewer:   Yuval Hochman
+Status:     Approved
 **************************************/
 
 #include <stdio.h> /* printf */
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
         port = atoi(argv[1]);
     }
 
-    server_fd = TcpSocket();
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0 || BindToPort(server_fd, port) < 0)
     {
         perror("Setup failed");

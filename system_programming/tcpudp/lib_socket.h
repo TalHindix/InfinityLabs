@@ -2,8 +2,8 @@
 Exercise:   Lib - Socket
 Date:       17/11/2025
 Developer:  Tal Hindi
-Reviewer:
-Status:
+Reviewer:   Yuval Hochman
+Status:     Approved
 **************************************/
 
 #ifndef _ILRD_LIBSOCKET
@@ -12,14 +12,8 @@ Status:
 #include <stddef.h>     /* size_t */
 #include <netinet/in.h> /* struct sockaddr_in */
 
-#define PORT 5005
+#define PORT 5000
 #define BUFFER_SIZE 256
-
-/* Creates UDP socket, returns fd or -1 on error */
-int UdpSocket(void);
-
-/* Creates TCP socket with SO_REUSEADDR, returns fd or -1 on error */
-int TcpSocket(void);
 
 /* Binds socket to port, returns 0 on success, -1 on error */
 int BindToPort(int socket_fd, int port);
@@ -28,6 +22,9 @@ int BindToPort(int socket_fd, int port);
 int EnableBroadcast(int socket_fd);
 
 /* Initializes sockaddr_in with ip and port */
-void InitAddress(struct sockaddr_in *addr, const char *ip, int port);
+void InitAddress(struct sockaddr_in* addr, const char* ip, int port);
+
+/* Make the sockets non-blocking , change the fcntl flag status */
+int SetNonBlocking(int socked_fd);
 
 #endif /* _ILRD_LIBSOCKET */

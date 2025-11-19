@@ -2,8 +2,8 @@
 Exercise:   Ex1 - UDP Ping pong
 Date:       17/11/2025
 Developer:  Tal Hindi
-Reviewer:
-Status:
+Reviewer:   Yuval Hochman
+Status:     Approved
 **************************************/
 
 #include <stdio.h>      /* printf */
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         port = atoi(argv[1]);
     }
 
-    socket_fd = UdpSocket();
+    socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_fd < 0 || BindToPort(socket_fd, port) < 0)
     {
         perror("Setup failed");
