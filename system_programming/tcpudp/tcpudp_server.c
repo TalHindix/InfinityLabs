@@ -3,8 +3,8 @@
 Exercise:   Ex - Server (UDP/TCP)
 Date:       19/11/2025
 Developer:  Tal Hindi
-Reviewer:   
-Status:
+Reviewer:   Menny Markovich
+Status:     In Progress
 **************************************/
 
 #include <stdio.h>      /* printf */
@@ -13,8 +13,10 @@ Status:
 #include <sys/select.h> /* fd_set */
 #include <errno.h>      /* EAGAIN*/
 #include "lib_socket.h" /* InitAddress */
+#include <string.h>     /* strcmp */
+#include <arpa/inet.h>  /* inet_ntoa */
 
-#define MAX_LENGTH_QUEUE (10)
+#define BACKLOG (10)
 #define MAX_CLIENTS (10)
 
 int g_clients[MAX_CLIENTS];
@@ -47,7 +49,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if(listen(tcp_sock_fd,MAX_LENGTH_QUEUE) < 0)
+    if(listen(tcp_sock_fd,BACKLOG) < 0)
     {
         perror("[Server] -> TCP Listen mode failed .\n");
         close(tcp_sock_fd);
@@ -73,8 +75,8 @@ int main(int argc, char *argv[])
     }
 
     EnableBroadcast(udp_sock_fd);
-
     SetNonBlocking(udp_sock_fd);
+
 
     for(i = 0; i < MAX_CLIENTS; ++i)
     {
@@ -170,7 +172,7 @@ static void HandleStdin(int* is_running)
 
         if (0 == strcmp(buffer, "ping"))
         {
-            printf("[Server] STDIN <- pong\n");
+            printf("[Server] STDOUT <- pong\n");
         }
         else if (0 == strcmp(buffer, "quit"))
         {
@@ -221,12 +223,12 @@ static void HandleUdp(int udp_sock_fd)
     }
 
     buffer[bytes_received] = '\0';
-    printf("[Server] -> UDP %s:%d -> %s\n", inet_ntoa(sender_addr.sin_addr), ntohs(sender_addr.sin_port), buffer);
+    printf("[Server] -> UDP Client %s:%d -> %s\n", inet_ntoa(sender_addr.sin_addr), ntohs(sender_addr.sin_port), buffer);
 
     if (0 == strcmp(buffer, "ping"))
     {
         sendto(udp_sock_fd, "pong", 4, 0, (struct sockaddr*)&sender_addr, addr_len);
-        printf("[Server] -> UDP <- pong\n");
+        printf("[Server] -> UDP Client <- pong\n");
     }
 }
 
@@ -246,7 +248,7 @@ static void HandleTcpClients(fd_set* read_fds)
             {
                 if (0 == bytes_received || (errno == EAGAIN && errno == EWOULDBLOCK))
                 {
-                    printf("[Server] -> TCP Client %ld died\n", i);
+                    printf("[Server] -> TCP Client %ld died\n", i + 1);
                     close(g_clients[i]);
                     g_clients[i] = -1;
                 }
@@ -254,12 +256,12 @@ static void HandleTcpClients(fd_set* read_fds)
             else
             {
                 buffer[bytes_received] = '\0';
-                printf("[Server] -> TCP Cliente %ld -> %s\n", i, buffer);
+                printf("[Server] -> TCP Client %ld -> %s\n", i + 1, buffer);
 
                 if (0 == strcmp(buffer, "ping"))
                 {
                     send(g_clients[i], "pong", 4, 0);
-                    printf("[Server] -> TCP Client %ld <- pong\n", i);
+                    printf("[Server] -> TCP Client %ld <- pong\n", i + 1);
                 }
             }
         }
