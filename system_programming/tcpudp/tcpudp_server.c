@@ -56,7 +56,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    SetNonBlocking(tcp_sock_fd);
 
     udp_sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if(udp_sock_fd < 0)
@@ -75,8 +74,6 @@ int main(int argc, char *argv[])
     }
 
     EnableBroadcast(udp_sock_fd);
-    SetNonBlocking(udp_sock_fd);
-
 
     for(i = 0; i < MAX_CLIENTS; ++i)
     {
@@ -191,8 +188,6 @@ static void HandleTcpAccept(int tcp_sock_fd)
         perror("[Server] -> TCP Accept failed");
         return;
     }
-
-    SetNonBlocking(client_fd);
 
     for (slot = 0; slot < MAX_CLIENTS; ++slot)
     {

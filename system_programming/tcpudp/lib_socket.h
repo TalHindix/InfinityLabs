@@ -24,7 +24,4 @@ int EnableBroadcast(int socket_fd);
 /* Initializes sockaddr_in with ip and port */
 void InitAddress(struct sockaddr_in* addr, const char* ip, int port);
 
-/* Make the sockets non-blocking , change the fcntl flag status */
-int SetNonBlocking(int socked_fd);
-
 #endif /* _ILRD_LIBSOCKET */

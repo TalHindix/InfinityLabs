@@ -47,14 +47,3 @@ void InitAddress(struct sockaddr_in* addr, const char* ip, int port)
         addr->sin_addr.s_addr = INADDR_ANY;
     }
 }
-
-int SetNonBlocking(int sockfd)
-{
-    int flags = fcntl(sockfd, F_GETFL, 0);
-    if (flags < 0)
-    {
-        return -1;
-    }
-
-    return fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
-}
