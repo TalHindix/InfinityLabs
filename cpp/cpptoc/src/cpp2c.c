@@ -326,14 +326,14 @@ void PublicConvoy_Dtor(PublicConvoy_t* this)
 {
     ((PublicTransport_t*)this)->vptr = &public_convoy_vtable;
 
-    Minibus_Dtor((MiniBus_t*)this->m_pt1);
+    this->m_pt1->vptr->Dtor(this->m_pt1);
     free(this->m_pt1);
 
-    Taxi_Dtor((Taxi_t*)this->m_pt2);
+    this->m_pt2->vptr->Dtor(this->m_pt2);
     free(this->m_pt2);
 
-    Minibus_Dtor(&this->m_m);
     Taxi_Dtor(&this->m_t);
+    Minibus_Dtor(&this->m_m);
 
     PublicTransport_Dtor(&this->base);
 }
@@ -397,6 +397,8 @@ int main(void)
     SpecialTaxi_t st = {0};
     ArmyMiniBus_t* army_minibus = NULL;
     size_t i = 0;
+    PublicConvoy_t* ts1 = NULL;
+    PublicConvoy_t* ts2 = NULL;
 
     Minibus_Ctor(&m);
     Minibus_PrintInfo(&m);
@@ -473,6 +475,24 @@ int main(void)
     Taxi_CCtor(&temp_copy, &st.base);
     Taxi_DisplayByVal(&temp_copy);
     Taxi_Dtor(&temp_copy);
+
+    ts1 = (PublicConvoy_t*)malloc(sizeof(PublicConvoy_t));
+    PublicConvoy_Ctor(ts1);
+
+    ts2 = (PublicConvoy_t*)malloc(sizeof(PublicConvoy_t));
+    PublicConvoy_CCtor(ts2, ts1);
+
+    ((PublicTransport_t*)ts1)->vptr->Display((PublicTransport_t*)ts1);
+
+    ((PublicTransport_t*)ts2)->vptr->Display((PublicTransport_t*)ts2);
+
+    ((PublicTransport_t*)ts1)->vptr->Dtor((PublicTransport_t*)ts1);
+    free(ts1);
+
+    ((PublicTransport_t*)ts2)->vptr->Display((PublicTransport_t*)ts2);
+
+    ((PublicTransport_t*)ts2)->vptr->Dtor((PublicTransport_t*)ts2);
+    free(ts2);
 
     army_minibus = (ArmyMiniBus_t*)malloc(sizeof(ArmyMiniBus_t));
     Armyminibus_Ctor(army_minibus);
