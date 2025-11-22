@@ -185,7 +185,7 @@ static void HandleTcpAccept(int tcp_sock_fd)
 
     if (client_fd < 0)
     {
-        perror("[Server] -> TCP Accept failed");
+        perror("[Server] -> TCP Client Accept failed");
         return;
     }
 

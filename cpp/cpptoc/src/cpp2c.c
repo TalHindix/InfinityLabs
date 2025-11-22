@@ -17,6 +17,7 @@ typedef struct Taxi Taxi_t;
 typedef struct Minibus MiniBus_t;
 typedef struct Armyminibus ArmyMiniBus_t;
 typedef struct SpecialTaxi SpecialTaxi_t;
+typedef struct PublicConvoy PublicConvoy_t;
 
 /* ------------------- vtables typedef ------------------- */
 typedef struct PT_VTable PublicTransport_Vtable;
@@ -37,7 +38,7 @@ struct PT_VTable
 
 struct MB_VTable
 {
-    PublicTransport_Vtable base;
+    const PublicTransport_Vtable base;
     MB_WashFuncPtr Wash;
 };
 
@@ -68,6 +69,15 @@ struct SpecialTaxi
     Taxi_t base;
 };
 
+struct PublicConvoy
+{
+    PublicTransport_t base;
+    PublicTransport_t* m_pt1;
+    PublicTransport_t* m_pt2;
+    MiniBus_t m_m;
+    Taxi_t m_t;
+};
+
 /* ------------------- prototypes -------------------*/
 void PublicTransport_Ctor(PublicTransport_t* this);
 void PublicTransport_CCtor(PublicTransport_t* this, PublicTransport_t* other);
@@ -80,6 +90,7 @@ void Taxi_Dtor(Taxi_t* this);
 void Taxi_Display(Taxi_t* this);
 
 void Minibus_Ctor(MiniBus_t* this);
+void MinibusCCtor(MiniBus_t* this, MiniBus_t* other);
 void Minibus_Dtor(MiniBus_t* this);
 void Minibus_Display(MiniBus_t* this);
 void Minibus_Wash(MiniBus_t* this, int min);
@@ -90,6 +101,11 @@ void Armyminibus_Dtor(ArmyMiniBus_t* this);
 void SpecialTaxi_Ctor(SpecialTaxi_t* this);
 void SpecialTaxi_Dtor(SpecialTaxi_t* this);
 void SpecialTaxi_Display(SpecialTaxi_t* this);
+
+void PublicConvoy_Ctor(PublicConvoy_t* this);
+void PublicConvoy_CCtor(PublicConvoy_t* this,PublicConvoy_t* other);
+void PublicConvoy_Dtor(PublicConvoy_t* this);
+void PublicConvoy_Display(PublicConvoy_t* this);
 
 void PrintInfo(void);
 void PublicTransport_PrintInfo(PublicTransport_t* pt);
@@ -135,6 +151,12 @@ const Minibus_Vtable army_minibus_vtable =
         (PT_FuncPtr)Minibus_Display
     },
     Minibus_Wash
+};
+
+const PublicTransport_Vtable public_convoy_vtable =
+{
+    (PT_FuncPtr)PublicConvoy_Dtor,
+    (PT_FuncPtr)PublicConvoy_Display
 };
 
 /* ------------------- helper functions ----------------------*/
@@ -210,6 +232,13 @@ void Minibus_Ctor(MiniBus_t* this)
     this->m_numSeats = 20;
     printf("Minibus::Ctor()\n");
 }
+void MinibusCCtor(MiniBus_t* this, MiniBus_t* other)
+{
+    PublicTransport_CCtor((PublicTransport_t*)this ,(PublicTransport_t*)other);
+    ((PublicTransport_t*)this)->vptr = (PublicTransport_Vtable*)&mini_bus_vtable;
+    this->m_numSeats = other->m_numSeats;
+    printf("Minibus::CCtor()\n");
+}
 
 void Minibus_Dtor(MiniBus_t* this)
 {
@@ -262,6 +291,59 @@ void SpecialTaxi_Display(SpecialTaxi_t* this)
 {
     printf("SpecialTaxi::display() ID:%d \n",
            GetID((PublicTransport_t*)this));
+}
+
+/* Public Convoy Implementation  */
+
+void PublicConvoy_Ctor(PublicConvoy_t* this)
+{
+    PublicTransport_Ctor(&this->base);
+    this->m_pt1 = (PublicTransport_t*)malloc(sizeof(MiniBus_t));
+    Minibus_Ctor((MiniBus_t*)this->m_pt1);
+    this->m_pt2 = (PublicTransport_t*)malloc(sizeof(Taxi_t));
+    Taxi_Ctor((Taxi_t*)this->m_pt2);
+    Minibus_Ctor(&this->m_m);
+    Taxi_Ctor(&this->m_t);
+    ((PublicTransport_t*)this)->vptr = &public_convoy_vtable;
+
+}
+
+void PublicConvoy_CCtor(PublicConvoy_t* this ,PublicConvoy_t* other)
+{
+    PublicTransport_CCtor(&this->base,&other->base);
+    ((PublicTransport_t*)this)->vptr = &public_convoy_vtable;
+
+    this->m_pt1 = (PublicTransport_t*)malloc(sizeof(MiniBus_t));
+    MinibusCCtor((MiniBus_t*)this->m_pt1, (MiniBus_t*)other->m_pt1);
+    this->m_pt2 = (PublicTransport_t*)malloc(sizeof(Taxi_t));
+    Taxi_CCtor((Taxi_t*)this->m_pt2,(Taxi_t*)other->m_pt2);
+
+    MinibusCCtor(&this->m_m,&other->m_m);
+    Taxi_CCtor(&this->m_t,&other->m_t);
+}
+
+void PublicConvoy_Dtor(PublicConvoy_t* this)
+{
+    ((PublicTransport_t*)this)->vptr = &public_convoy_vtable;
+
+    Minibus_Dtor((MiniBus_t*)this->m_pt1);
+    free(this->m_pt1);
+
+    Taxi_Dtor((Taxi_t*)this->m_pt2);
+    free(this->m_pt2);
+
+    Minibus_Dtor(&this->m_m);
+    Taxi_Dtor(&this->m_t);
+
+    PublicTransport_Dtor(&this->base);
+}
+
+void PublicConvoy_Display(PublicConvoy_t* this)
+{
+    this->m_pt1->vptr->Display(this->m_pt1);
+    this->m_pt2->vptr->Display(this->m_pt2);
+    Minibus_Display(&this->m_m);
+    Taxi_Display(&this->m_t);
 }
 
 /* ------------------- Non-member functions ------------------- */
