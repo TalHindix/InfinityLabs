@@ -482,16 +482,14 @@ int main(void)
     ts2 = (PublicConvoy_t*)malloc(sizeof(PublicConvoy_t));
     PublicConvoy_CCtor(ts2, ts1);
 
-    ((PublicTransport_t*)ts1)->vptr->Display((PublicTransport_t*)ts1);
+    PublicConvoy_Display(ts1);
 
-    ((PublicTransport_t*)ts2)->vptr->Display((PublicTransport_t*)ts2);
-
-    ((PublicTransport_t*)ts1)->vptr->Dtor((PublicTransport_t*)ts1);
+    PublicConvoy_Dtor(ts1);
     free(ts1);
 
-    ((PublicTransport_t*)ts2)->vptr->Display((PublicTransport_t*)ts2);
+    PublicConvoy_Display(ts2);
 
-    ((PublicTransport_t*)ts2)->vptr->Dtor((PublicTransport_t*)ts2);
+    PublicConvoy_Dtor(ts2);
     free(ts2);
 
     army_minibus = (ArmyMiniBus_t*)malloc(sizeof(ArmyMiniBus_t));
