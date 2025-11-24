@@ -11,6 +11,7 @@
 
 using namespace std;
 
+
 class Mutex
 {
 public:
@@ -30,7 +31,15 @@ public:
     }
 
     void UnLock()
-    {
+    {for (size_t i = 0; i < 10; ++i)
+    // {
+    //     pthread_create(&threads[i], NULL, NotWork, NULL);
+    // }
+
+    // for (size_t i = 0; i < 10; ++i)
+    // {
+    //     pthread_join(threads[i], NULL);
+    // }
         pthread_mutex_unlock(&m_mutex);
     }
 
@@ -65,10 +74,73 @@ private:
     Lockable& m_lock;
 };
 
+Mutex m;
+int counter = 0;
+
+void* TestIt(void* arg)
+{
+    (void)arg;
+
+    for (size_t i = 0; i < 1000000 ; i++)
+    {
+        LockGuard<Mutex> lock(m);
+        ++counter;
+        cout << "Counter: " << counter << endl;
+    }
+
+    return NULL;
+}
+
+void* NotWork(void* arg)
+{
+    (void)arg;
+
+    for (size_t i = 0; i < 1000000 ; i++)
+    {
+        ++counter;
+        cout << "Counter: " << counter << endl;
+    }
+
+    return NULL;
+}
+
+void ThreadTest()
+{
+    pthread_t threads[10] = { 0 };
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        pthread_create(&threads[i], NULL, TestIt, NULL);
+    }
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        pthread_join(threads[i], NULL);
+    }
+
+    // for (size_t i = 0; i < 10; ++i)
+    // {
+    //     pthread_create(&threads[i], NULL, NotWork, NULL);
+    // }
+
+    // for (size_t i = 0; i < 10; ++i)
+    // {
+    //     pthread_join(threads[i], NULL);
+    // }
+
+
+
+
+}
+
+
+
+
 int main(void)
 {
-    Mutex m;
-    LockGuard<Mutex> mutex(m);
+    ThreadTest();
+
+
     return 0;
 }
 
