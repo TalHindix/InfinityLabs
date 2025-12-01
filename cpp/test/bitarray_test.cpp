@@ -2,8 +2,8 @@
  * Exercise:    BitArray
  * Date:        25/11/2025
  * Developer:   Tal Hindi
- * Reviewer:
- * Status:
+ * Reviewer:    Baruchi
+ * Status:      Approved
  *****************************************************************************/
  #include <iostream>
 

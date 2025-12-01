@@ -2,8 +2,8 @@
  * Exercise:    BitArray Ex
  * Date:        27/11/2025
  * Developer:   Tal Hindi
- * Reviewer:
- * Status:
+ * Reviewer:    Baruchi
+ * Status:      Approved
  *****************************************************************************/
 
 #ifndef __ILRD_BITARRAY_
