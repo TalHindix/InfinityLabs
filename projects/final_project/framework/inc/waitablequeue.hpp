@@ -25,6 +25,7 @@ public:
     ~WaitableQueue() = default;
 
     void push(const T& value);
+
     void pop(T* value);
     bool pop(T* value, std::chrono::milliseconds timeout);
     bool empty() const;
@@ -48,6 +49,7 @@ void WaitableQueue<T, Container>::push(const T& value)
     m_queue.push(value);
     m_cond_var.notify_one();
 }
+
 
 template<typename T, typename Container>
 void WaitableQueue<T, Container>::pop(T* value)

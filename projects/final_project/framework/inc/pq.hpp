@@ -24,27 +24,27 @@ class PriorityQueue
 {
 public:
 
-    void Push(const T& item)
+    void push(const T& item)
     {
         m_pq.push(item);
     }
 
-    void Pop()
+    void pop()
     {
         m_pq.pop();
     }
 
-    const T& Front() const
+    const T& front() const
     {
         return m_pq.top();
     }
 
-    bool Empty() const
+    bool empty() const
     {
         return m_pq.empty();
     }
 
-    std::size_t Size() const
+    std::size_t size() const
     {
         return m_pq.size();
     }
