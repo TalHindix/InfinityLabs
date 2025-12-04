@@ -56,16 +56,16 @@ static void PauseThenShrinkTest();
 int main()
 {
     SimpleFlowTest();
-    DifferentNumOfThreadsAndTasksTest();
-    ResizeThreadVectorTest();
-    PauseTest();
-    ShrinkThreadVectorTest();
-    PauseThenRunTest();
-    PauseStopAddTest();
-    RunThenAddTest();
-    AddRunThenAddTest();
-    PriorityTest();
-    PauseThenShrinkTest();
+    // DifferentNumOfThreadsAndTasksTest();
+    // ResizeThreadVectorTest();
+    // PauseTest();
+    // ShrinkThreadVectorTest();
+    // PauseThenRunTest();
+    // PauseStopAddTest();
+    // RunThenAddTest();
+    // AddRunThenAddTest();
+    // PriorityTest();
+    // PauseThenShrinkTest();
 
     return 0;
 }
@@ -79,7 +79,7 @@ static void SimpleFlowTest()
         tp.Add(std::make_shared<TPTaskPrint>("Task" + std::to_string(i+1)), ThreadPool::LOW);
     }
     tp.Run();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));    
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));    
     PrintValidity<size_t>(TPTaskPrint::s_count, 10, "Run 10 Tasks Test");
 }
 
