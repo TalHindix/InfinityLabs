@@ -85,9 +85,7 @@ private:
     std::mutex m_pauseMutex;
     std::condition_variable m_pauseCond;
 
-    //-------------------------------------------------------------------------
-    // Private Methods
-    //-------------------------------------------------------------------------
+    
     void CreateWorkers(std::size_t count);
     void SendPoisonPills(std::size_t count);
 
