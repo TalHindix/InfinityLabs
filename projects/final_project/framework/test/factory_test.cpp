@@ -9,7 +9,7 @@
 #include <iostream>   // std::cout
 #include <string>     // std::string
 
-#include "factory_design_pattern.hpp"
+#include "factory.hpp"
 
 using namespace ilrd;
 

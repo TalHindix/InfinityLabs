@@ -1,75 +1,345 @@
 #******************************************************************************
-# Exercise:    ThreadPool
-# Date:        03/12/2025
+# Project:     Final Project - Generic Build System
+# Date:        08/12/2025
 # Developer:   Tal Hindi
-# Reviewer:    
-# Status:      
+# Description: Generic Makefile supporting framework/concrete hierarchy,
+#              shared libraries (.so), plugins, and modular component addition
 #******************************************************************************
 
-CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -g -pthread
-LDFLAGS = -pthread
+#==============================================================================
+# Compiler Settings
+#==============================================================================
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -fPIC
+LDFLAGS := -pthread
+DEPFLAGS = -MMD -MP
 
-# Directories - relative to project root
-FW_INC_DIR = framework/inc
-FW_SRC_DIR = framework/src
-FW_TEST_DIR = framework/test
-OBJ_DIR = obj
-BIN_DIR = bin
+#==============================================================================
+# Directory Structure
+#==============================================================================
+# Root directories
+FW_DIR := framework
+CONC_DIR := concrete
+PLUGIN_DIR := plugins
 
-INCLUDES = -I$(FW_INC_DIR)
+# Subdirectories
+INC_DIR := inc
+SRC_DIR := src
+TEST_DIR := test
 
-# Headers
-HEADERS = $(FW_INC_DIR)/thread_pool.hpp \
-          $(FW_INC_DIR)/waitablequeue.hpp \
-          $(FW_INC_DIR)/pq.hpp
+# Build directories
+OBJ_DIR := obj
+BIN_DIR := bin
+LIB_DIR := lib
 
-# Target
-TARGET = $(BIN_DIR)/thread_pool_test
+# Framework paths
+FW_INC := $(FW_DIR)/$(INC_DIR)
+FW_SRC := $(FW_DIR)/$(SRC_DIR)
+FW_TEST := $(FW_DIR)/$(TEST_DIR)
 
-.PHONY: all clean run debug release valgrind tsan help
+# Concrete paths
+CONC_INC := $(CONC_DIR)/$(INC_DIR)
+CONC_SRC := $(CONC_DIR)/$(SRC_DIR)
+CONC_TEST := $(CONC_DIR)/$(TEST_DIR)
 
-all: directories $(TARGET)
-	@echo "Build successful!"
+# Object subdirectories
+FW_OBJ := $(OBJ_DIR)/framework
+CONC_OBJ := $(OBJ_DIR)/concrete
+TEST_OBJ := $(OBJ_DIR)/test
 
-directories:
-	@mkdir -p $(OBJ_DIR) $(BIN_DIR)
+#==============================================================================
+# Include Paths
+#==============================================================================
+INCLUDES := -I$(FW_INC) -I$(CONC_INC)
 
-$(TARGET): $(OBJ_DIR)/thread_pool.o $(OBJ_DIR)/thread_pool_test.o
-	$(CXX) $^ -o $@ $(LDFLAGS)
+#==============================================================================
+# Source Files Discovery
+#==============================================================================
+# Framework sources (excluding tests)
+FW_SRCS := $(wildcard $(FW_SRC)/*.cpp)
+FW_OBJS := $(patsubst $(FW_SRC)/%.cpp,$(FW_OBJ)/%.o,$(FW_SRCS))
 
-$(OBJ_DIR)/thread_pool.o: $(FW_SRC_DIR)/thread_pool.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+# Concrete sources (excluding tests)
+CONC_SRCS := $(wildcard $(CONC_SRC)/*.cpp)
+CONC_OBJS := $(patsubst $(CONC_SRC)/%.cpp,$(CONC_OBJ)/%.o,$(CONC_SRCS))
 
-$(OBJ_DIR)/thread_pool_test.o: $(FW_TEST_DIR)/thread_pool_test.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+# Test sources
+FW_TEST_SRCS := $(wildcard $(FW_TEST)/*.cpp)
+CONC_TEST_SRCS := $(wildcard $(CONC_TEST)/*.cpp)
+ALL_TEST_SRCS := $(FW_TEST_SRCS) $(CONC_TEST_SRCS)
 
-run: all
-	./$(TARGET)
+# Test objects
+FW_TEST_OBJS := $(patsubst $(FW_TEST)/%.cpp,$(TEST_OBJ)/fw_%.o,$(FW_TEST_SRCS))
+CONC_TEST_OBJS := $(patsubst $(CONC_TEST)/%.cpp,$(TEST_OBJ)/conc_%.o,$(CONC_TEST_SRCS))
 
-debug: CXXFLAGS += -DDEBUG -O0
+# Test executables
+FW_TEST_BINS := $(patsubst $(FW_TEST)/%.cpp,$(BIN_DIR)/%,$(FW_TEST_SRCS))
+CONC_TEST_BINS := $(patsubst $(CONC_TEST)/%.cpp,$(BIN_DIR)/%,$(CONC_TEST_SRCS))
+ALL_TEST_BINS := $(FW_TEST_BINS) $(CONC_TEST_BINS)
+
+# Plugin sources and libraries
+PLUGIN_SRCS := $(wildcard $(PLUGIN_DIR)/*.cpp)
+PLUGIN_LIBS := $(patsubst $(PLUGIN_DIR)/%.cpp,$(LIB_DIR)/lib%.so,$(PLUGIN_SRCS))
+
+# Dependency files
+DEPS := $(FW_OBJS:.o=.d) $(CONC_OBJS:.o=.d) $(FW_TEST_OBJS:.o=.d) $(CONC_TEST_OBJS:.o=.d)
+
+#==============================================================================
+# Shared Library Settings
+#==============================================================================
+FW_LIB_NAME := ilrd_framework
+CONC_LIB_NAME := ilrd_concrete
+
+FW_LIB := $(LIB_DIR)/lib$(FW_LIB_NAME).so
+CONC_LIB := $(LIB_DIR)/lib$(CONC_LIB_NAME).so
+
+# Runtime library path
+RPATH := -Wl,-rpath,'$$ORIGIN/../$(LIB_DIR)'
+
+#==============================================================================
+# Build Configurations
+#==============================================================================
+# Debug build (default)
+DEBUG_FLAGS := -g -O0 -DDEBUG
+
+# Release build
+RELEASE_FLAGS := -O2 -DNDEBUG
+
+# Sanitizers
+TSAN_FLAGS := -fsanitize=thread
+ASAN_FLAGS := -fsanitize=address -fsanitize=undefined
+
+#==============================================================================
+# Phony Targets
+#==============================================================================
+.PHONY: all clean debug release tests libs run help
+.PHONY: tsan asan valgrind
+.PHONY: dirs fw_lib conc_lib plugins
+.PHONY: list-tests list-plugins
+
+#==============================================================================
+# Default Target
+#==============================================================================
+all: CXXFLAGS += $(DEBUG_FLAGS)
+all: dirs libs plugins tests
+	@echo ""
+	@echo "========================================="
+	@echo "  Build completed successfully!"
+	@echo "========================================="
+	@echo "  Libraries: $(LIB_DIR)/"
+	@echo "  Plugins:   $(LIB_DIR)/"
+	@echo "  Tests:     $(BIN_DIR)/"
+	@echo "========================================="
+
+#==============================================================================
+# Directory Creation
+#==============================================================================
+dirs:
+	@mkdir -p $(FW_OBJ) $(CONC_OBJ) $(TEST_OBJ) $(BIN_DIR) $(LIB_DIR) $(PLUGIN_DIR)
+
+#==============================================================================
+# Library Targets
+#==============================================================================
+libs: fw_lib conc_lib
+
+fw_lib: dirs $(FW_LIB)
+
+conc_lib: dirs fw_lib $(CONC_LIB)
+
+# Framework shared library
+$(FW_LIB): $(FW_OBJS)
+	@echo "[LD] Creating framework library: $@"
+	@if [ -n "$(FW_OBJS)" ] && [ "$(FW_OBJS)" != "" ]; then \
+		$(CXX) -shared $(LDFLAGS) $^ -o $@; \
+	else \
+		echo "  (No framework sources - creating empty library placeholder)"; \
+		touch $@; \
+	fi
+
+# Concrete shared library (depends on framework)
+$(CONC_LIB): $(CONC_OBJS) | $(FW_LIB)
+	@echo "[LD] Creating concrete library: $@"
+	@if [ -n "$(CONC_OBJS)" ] && [ "$(CONC_OBJS)" != "" ]; then \
+		$(CXX) -shared $(LDFLAGS) $^ -L$(LIB_DIR) -l$(FW_LIB_NAME) -o $@; \
+	else \
+		echo "  (No concrete sources - creating empty library placeholder)"; \
+		touch $@; \
+	fi
+
+#==============================================================================
+# Plugin Targets (for dlopen testing - e.g., Singleton)
+#==============================================================================
+plugins: dirs $(FW_LIB) $(PLUGIN_LIBS)
+
+$(LIB_DIR)/lib%.so: $(PLUGIN_DIR)/%.cpp $(FW_LIB)
+	@echo "[LD] Building plugin: $@"
+	$(CXX) $(CXXFLAGS) -shared $< -L$(LIB_DIR) -l$(FW_LIB_NAME) $(INCLUDES) $(RPATH) -o $@
+
+#==============================================================================
+# Test Targets
+#==============================================================================
+tests: libs plugins $(ALL_TEST_BINS)
+
+# Special case: singleton_test needs -ldl and depends on plugin
+$(BIN_DIR)/singleton_test: $(TEST_OBJ)/fw_singleton_test.o $(FW_LIB) $(LIB_DIR)/libsingleton_plugin.so
+	@echo "[LD] Linking test: $@"
+	$(CXX) $(LDFLAGS) -rdynamic $< -L$(LIB_DIR) -l$(FW_LIB_NAME) -ldl $(RPATH) -o $@
+
+# Framework test executables (general rule)
+$(BIN_DIR)/%: $(TEST_OBJ)/fw_%.o $(FW_LIB)
+	@echo "[LD] Linking test: $@"
+	$(CXX) $(LDFLAGS) $< -L$(LIB_DIR) -l$(FW_LIB_NAME) $(RPATH) -o $@
+
+# Concrete test executables
+$(BIN_DIR)/%: $(TEST_OBJ)/conc_%.o $(CONC_LIB) $(FW_LIB)
+	@echo "[LD] Linking test: $@"
+	$(CXX) $(LDFLAGS) $< -L$(LIB_DIR) -l$(CONC_LIB_NAME) -l$(FW_LIB_NAME) $(RPATH) -o $@
+
+#==============================================================================
+# Object File Compilation
+#==============================================================================
+# Framework objects
+$(FW_OBJ)/%.o: $(FW_SRC)/%.cpp
+	@echo "[CXX] Compiling: $<"
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) $(INCLUDES) -c $< -o $@
+
+# Concrete objects
+$(CONC_OBJ)/%.o: $(CONC_SRC)/%.cpp
+	@echo "[CXX] Compiling: $<"
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) $(INCLUDES) -c $< -o $@
+
+# Framework test objects
+$(TEST_OBJ)/fw_%.o: $(FW_TEST)/%.cpp
+	@echo "[CXX] Compiling test: $<"
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) $(INCLUDES) -c $< -o $@
+
+# Concrete test objects
+$(TEST_OBJ)/conc_%.o: $(CONC_TEST)/%.cpp
+	@echo "[CXX] Compiling test: $<"
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) $(INCLUDES) -c $< -o $@
+
+#==============================================================================
+# Include Dependencies
+#==============================================================================
+-include $(DEPS)
+
+#==============================================================================
+# Build Configurations
+#==============================================================================
+debug: CXXFLAGS += $(DEBUG_FLAGS)
 debug: clean all
 
-release: CXXFLAGS += -DNDEBUG -O2
+release: CXXFLAGS += $(RELEASE_FLAGS)
 release: clean all
 
-valgrind: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
-
-tsan: CXXFLAGS += -fsanitize=thread
-tsan: LDFLAGS += -fsanitize=thread
+#==============================================================================
+# Sanitizer Builds
+#==============================================================================
+tsan: CXXFLAGS += $(DEBUG_FLAGS) $(TSAN_FLAGS)
+tsan: LDFLAGS += $(TSAN_FLAGS)
 tsan: clean all
-	./$(TARGET)
 
+asan: CXXFLAGS += $(DEBUG_FLAGS) $(ASAN_FLAGS)
+asan: LDFLAGS += $(ASAN_FLAGS)
+asan: clean all
+
+#==============================================================================
+# Run Targets
+#==============================================================================
+# Run specific test: make run TEST=thread_pool_test
+TEST ?= $(firstword $(notdir $(ALL_TEST_BINS)))
+
+run: all
+	@echo ""
+	@echo "Running: $(BIN_DIR)/$(TEST)"
+	@echo "========================================="
+	@LD_LIBRARY_PATH=$(LIB_DIR):$$LD_LIBRARY_PATH ./$(BIN_DIR)/$(TEST)
+
+# Run all tests
+run-all: all
+	@echo ""
+	@echo "Running all tests..."
+	@echo "========================================="
+	@for test in $(ALL_TEST_BINS); do \
+		echo ""; \
+		echo ">>> Running: $$test"; \
+		echo "-----------------------------------------"; \
+		LD_LIBRARY_PATH=$(LIB_DIR):$$LD_LIBRARY_PATH ./$$test || exit 1; \
+	done
+	@echo ""
+	@echo "========================================="
+	@echo "  All tests passed!"
+	@echo "========================================="
+
+#==============================================================================
+# Valgrind
+#==============================================================================
+valgrind: all
+	@echo ""
+	@echo "Running Valgrind on: $(BIN_DIR)/$(TEST)"
+	@echo "========================================="
+	@LD_LIBRARY_PATH=$(LIB_DIR):$$LD_LIBRARY_PATH \
+		valgrind --leak-check=full --show-leak-kinds=all \
+		--track-origins=yes ./$(BIN_DIR)/$(TEST)
+
+#==============================================================================
+# Utility Targets
+#==============================================================================
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@echo "Cleaning build artifacts..."
+	@rm -rf $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR)
+	@echo "Clean complete."
 
+list-tests:
+	@echo "Available tests:"
+	@for test in $(notdir $(ALL_TEST_BINS)); do \
+		echo "  - $$test"; \
+	done
+
+list-plugins:
+	@echo "Available plugins:"
+	@for plugin in $(notdir $(PLUGIN_LIBS)); do \
+		echo "  - $$plugin"; \
+	done
+
+#==============================================================================
+# Help
+#==============================================================================
 help:
-	@echo "Targets:"
-	@echo "  all       - Build"
-	@echo "  run       - Build and run"
-	@echo "  clean     - Remove build files"
-	@echo "  debug     - Debug build"
-	@echo "  release   - Release build"
-	@echo "  valgrind  - Run with Valgrind"
-	@echo "  tsan      - Run with ThreadSanitizer"
+	@echo "========================================"
+	@echo "  Final Project Build System"
+	@echo "========================================"
+	@echo ""
+	@echo "Usage: make [target] [options]"
+	@echo ""
+	@echo "Main Targets:"
+	@echo "  all        - Build everything (debug mode)"
+	@echo "  libs       - Build shared libraries only"
+	@echo "  plugins    - Build plugin libraries (for dlopen)"
+	@echo "  tests      - Build test executables"
+	@echo "  clean      - Remove all build artifacts"
+	@echo ""
+	@echo "Build Configurations:"
+	@echo "  debug      - Debug build with symbols"
+	@echo "  release    - Optimized release build"
+	@echo "  tsan       - Build with ThreadSanitizer"
+	@echo "  asan       - Build with AddressSanitizer"
+	@echo ""
+	@echo "Run Targets:"
+	@echo "  run        - Run single test (default: first found)"
+	@echo "  run TEST=x - Run specific test"
+	@echo "  run-all    - Run all tests"
+	@echo "  valgrind   - Run with Valgrind memory checker"
+	@echo ""
+	@echo "Utility:"
+	@echo "  list-tests   - Show available test executables"
+	@echo "  list-plugins - Show available plugins"
+	@echo "  help         - Show this help message"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make                             # Build all"
+	@echo "  make run TEST=singleton_test     # Test singleton"
+	@echo "  make run TEST=thread_pool_test   # Run specific test"
+	@echo "  make tsan run TEST=thread_pool_test"
+	@echo "  make valgrind TEST=factory_design_pattern_test"
+	@echo ""

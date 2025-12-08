@@ -73,7 +73,7 @@ private:
 
 
 template<typename BASE, typename KEY, typename... ARGS>
-void Factory<BASE, KEY, ARGS...>::Add(const KEY& key, CTOR ctor)
+void Factory<BASE, KEY, ARGS...>::Add(const KEY& key, CTOR ctor) noexcept
 {
     m_map[key] = ctor;
 }
