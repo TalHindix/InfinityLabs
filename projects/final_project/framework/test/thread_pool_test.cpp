@@ -56,16 +56,16 @@ static void PauseThenShrinkTest();
 int main()
 {
     SimpleFlowTest();
-    // DifferentNumOfThreadsAndTasksTest();
-    // ResizeThreadVectorTest();
-    // PauseTest();
-    // ShrinkThreadVectorTest();
-    // PauseThenRunTest();
-    // PauseStopAddTest();
-    // RunThenAddTest();
-    // AddRunThenAddTest();
-    // PriorityTest();
-    // PauseThenShrinkTest();
+    DifferentNumOfThreadsAndTasksTest();
+    ResizeThreadVectorTest();
+    PauseTest();
+    ShrinkThreadVectorTest();
+    PauseThenRunTest();
+    PauseStopAddTest();
+    RunThenAddTest();
+    AddRunThenAddTest();
+    PriorityTest();
+    PauseThenShrinkTest();
 
     return 0;
 }

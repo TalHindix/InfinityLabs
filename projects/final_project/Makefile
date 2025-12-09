@@ -10,7 +10,7 @@
 # Compiler Settings
 #==============================================================================
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -fPIC -D__HANDLETON__
+CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -fPIC 
 LDFLAGS := -pthread
 DEPFLAGS = -MMD -MP
 
