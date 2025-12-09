@@ -40,9 +40,6 @@ int main()
         pluginRun();
     }
 
-    std::cout << "\n=== Back to Main ===" << std::endl;
-    logger->Log("After plugin");
-    std::cout << "Total logs: " << logger->GetCount() << std::endl;
 
     dlclose(handle);
     return 0;

@@ -78,8 +78,7 @@ std::mutex Singleton<T>::s_mutex;
 template<typename T>
 std::atomic<bool> Singleton<T>::s_isDestroyed{false};
 
-template<typename T>
-T* GetSingletonInstance();
+
 
 } // namespace ilrd
 
