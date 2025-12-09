@@ -3,14 +3,14 @@
 # Date:        08/12/2025
 # Developer:   Tal Hindi
 # Description: Generic Makefile supporting framework/concrete hierarchy,
-#              shared libraries (.so), plugins, and modular component addition
+#              shared libraries (.so), and modular component addition
 #******************************************************************************
 
 #==============================================================================
 # Compiler Settings
 #==============================================================================
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -fPIC
+CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -fPIC -D__HANDLETON__
 LDFLAGS := -pthread
 DEPFLAGS = -MMD -MP
 
@@ -20,7 +20,6 @@ DEPFLAGS = -MMD -MP
 # Root directories
 FW_DIR := framework
 CONC_DIR := concrete
-PLUGIN_DIR := plugins
 
 # Subdirectories
 INC_DIR := inc
@@ -77,10 +76,6 @@ FW_TEST_BINS := $(patsubst $(FW_TEST)/%.cpp,$(BIN_DIR)/%,$(FW_TEST_SRCS))
 CONC_TEST_BINS := $(patsubst $(CONC_TEST)/%.cpp,$(BIN_DIR)/%,$(CONC_TEST_SRCS))
 ALL_TEST_BINS := $(FW_TEST_BINS) $(CONC_TEST_BINS)
 
-# Plugin sources and libraries
-PLUGIN_SRCS := $(wildcard $(PLUGIN_DIR)/*.cpp)
-PLUGIN_LIBS := $(patsubst $(PLUGIN_DIR)/%.cpp,$(LIB_DIR)/lib%.so,$(PLUGIN_SRCS))
-
 # Dependency files
 DEPS := $(FW_OBJS:.o=.d) $(CONC_OBJS:.o=.d) $(FW_TEST_OBJS:.o=.d) $(CONC_TEST_OBJS:.o=.d)
 
@@ -114,20 +109,19 @@ ASAN_FLAGS := -fsanitize=address -fsanitize=undefined
 #==============================================================================
 .PHONY: all clean debug release tests libs run help
 .PHONY: tsan asan valgrind
-.PHONY: dirs fw_lib conc_lib plugins
-.PHONY: list-tests list-plugins
+.PHONY: dirs fw_lib conc_lib
+.PHONY: list-tests
 
 #==============================================================================
 # Default Target
 #==============================================================================
 all: CXXFLAGS += $(DEBUG_FLAGS)
-all: dirs libs plugins tests
+all: dirs libs tests
 	@echo ""
 	@echo "========================================="
 	@echo "  Build completed successfully!"
 	@echo "========================================="
 	@echo "  Libraries: $(LIB_DIR)/"
-	@echo "  Plugins:   $(LIB_DIR)/"
 	@echo "  Tests:     $(BIN_DIR)/"
 	@echo "========================================="
 
@@ -135,7 +129,7 @@ all: dirs libs plugins tests
 # Directory Creation
 #==============================================================================
 dirs:
-	@mkdir -p $(FW_OBJ) $(CONC_OBJ) $(TEST_OBJ) $(BIN_DIR) $(LIB_DIR) $(PLUGIN_DIR)
+	@mkdir -p $(FW_OBJ) $(CONC_OBJ) $(TEST_OBJ) $(BIN_DIR) $(LIB_DIR)
 
 #==============================================================================
 # Library Targets
@@ -167,25 +161,11 @@ $(CONC_LIB): $(CONC_OBJS) | $(FW_LIB)
 	fi
 
 #==============================================================================
-# Plugin Targets (for dlopen testing - e.g., Singleton)
-#==============================================================================
-plugins: dirs $(FW_LIB) $(PLUGIN_LIBS)
-
-$(LIB_DIR)/lib%.so: $(PLUGIN_DIR)/%.cpp $(FW_LIB)
-	@echo "[LD] Building plugin: $@"
-	$(CXX) $(CXXFLAGS) -shared $< -L$(LIB_DIR) -l$(FW_LIB_NAME) $(INCLUDES) $(RPATH) -o $@
-
-#==============================================================================
 # Test Targets
 #==============================================================================
-tests: libs plugins $(ALL_TEST_BINS)
+tests: libs $(ALL_TEST_BINS)
 
-# Special case: singleton_test needs -ldl and depends on plugin
-$(BIN_DIR)/singleton_test: $(TEST_OBJ)/fw_singleton_test.o $(FW_LIB) $(LIB_DIR)/libsingleton_plugin.so
-	@echo "[LD] Linking test: $@"
-	$(CXX) $(LDFLAGS) -rdynamic $< -L$(LIB_DIR) -l$(FW_LIB_NAME) -ldl $(RPATH) -o $@
-
-# Framework test executables (general rule)
+# Framework test executables
 $(BIN_DIR)/%: $(TEST_OBJ)/fw_%.o $(FW_LIB)
 	@echo "[LD] Linking test: $@"
 	$(CXX) $(LDFLAGS) $< -L$(LIB_DIR) -l$(FW_LIB_NAME) $(RPATH) -o $@
@@ -222,6 +202,19 @@ $(TEST_OBJ)/conc_%.o: $(CONC_TEST)/%.cpp
 # Include Dependencies
 #==============================================================================
 -include $(DEPS)
+
+#==============================================================================
+# Plugins (for dlopen testing)
+#==============================================================================
+PLUGIN_DIR := plugins
+PLUGIN_SRCS := $(wildcard $(PLUGIN_DIR)/*.cpp)
+PLUGIN_LIBS := $(patsubst $(PLUGIN_DIR)/%.cpp,$(LIB_DIR)/lib%.so,$(PLUGIN_SRCS))
+
+plugins: dirs $(FW_LIB) $(PLUGIN_LIBS)
+
+$(LIB_DIR)/lib%.so: $(PLUGIN_DIR)/%.cpp $(FW_LIB)
+	@echo "[LD] Building plugin: $@"
+	$(CXX) $(CXXFLAGS) -shared $< -L$(LIB_DIR) -l$(FW_LIB_NAME) $(INCLUDES) -o $@
 
 #==============================================================================
 # Build Configurations
@@ -288,18 +281,13 @@ valgrind: all
 clean:
 	@echo "Cleaning build artifacts..."
 	@rm -rf $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR)
+	@rm -f log_file
 	@echo "Clean complete."
 
 list-tests:
 	@echo "Available tests:"
 	@for test in $(notdir $(ALL_TEST_BINS)); do \
 		echo "  - $$test"; \
-	done
-
-list-plugins:
-	@echo "Available plugins:"
-	@for plugin in $(notdir $(PLUGIN_LIBS)); do \
-		echo "  - $$plugin"; \
 	done
 
 #==============================================================================
@@ -315,7 +303,6 @@ help:
 	@echo "Main Targets:"
 	@echo "  all        - Build everything (debug mode)"
 	@echo "  libs       - Build shared libraries only"
-	@echo "  plugins    - Build plugin libraries (for dlopen)"
 	@echo "  tests      - Build test executables"
 	@echo "  clean      - Remove all build artifacts"
 	@echo ""
@@ -332,14 +319,12 @@ help:
 	@echo "  valgrind   - Run with Valgrind memory checker"
 	@echo ""
 	@echo "Utility:"
-	@echo "  list-tests   - Show available test executables"
-	@echo "  list-plugins - Show available plugins"
-	@echo "  help         - Show this help message"
+	@echo "  list-tests - Show available test executables"
+	@echo "  help       - Show this help message"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make                             # Build all"
-	@echo "  make run TEST=singleton_test     # Test singleton"
-	@echo "  make run TEST=thread_pool_test   # Run specific test"
-	@echo "  make tsan run TEST=thread_pool_test"
-	@echo "  make valgrind TEST=factory_design_pattern_test"
+	@echo "  make                           # Build all"
+	@echo "  make run TEST=logger_test      # Run specific test"
+	@echo "  make tsan run TEST=logger_test"
+	@echo "  make valgrind TEST=logger_test"
 	@echo ""

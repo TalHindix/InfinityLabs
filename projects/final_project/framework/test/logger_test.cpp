@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Exercise:    Singleton - Logger
+ * Exercise:    Handleton - Logger
  * Date:        08/12/2025
  * Developer:   Tal Hindi
  * Reviewer:    
@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "singleton.hpp"
+#include "handleton.hpp"
 #include "logger.hpp"
 
 using namespace ilrd;
@@ -43,10 +43,10 @@ static int CountLinesInFile(const std::string& filePath)
     return count;
 }
 
-static void TestSingleton()
+static void TestHandleton()
 {
-   Logger* logger1 = Singleton<Logger>::GetInstance();
-   Logger* logger2 = Singleton<Logger>::GetInstance();
+   Logger* logger1 = Handleton<Logger>::GetInstance();
+   Logger* logger2 = Handleton<Logger>::GetInstance();
 
    PrintResult(logger1 == logger2, "Same instance ret");
    PrintResult(logger1 != nullptr, "Instance is not null");
@@ -56,7 +56,7 @@ static void TestBasicLogging()
 {
     std::cout << "\n=== Test: Basic Logging ===" << std::endl;
 
-    Logger* logger = Singleton<Logger>::GetInstance();
+    Logger* logger = Handleton<Logger>::GetInstance();
     logger->SetLevel(Logger::INFO);
 
     int linesBefore = CountLinesInFile("./log_file");
@@ -80,7 +80,7 @@ static void TestLogLevelFiltering()
 {
     std::cout << "\n=== Test: Log Level Filtering ===" << std::endl;
     
-    Logger* logger = Singleton<Logger>::GetInstance();
+    Logger* logger = Handleton<Logger>::GetInstance();
     
     int linesBefore = CountLinesInFile("./log_file");
     
@@ -106,7 +106,7 @@ static void TestMultiThreadedLogging()
 {
     std::cout << "\n=== Test: Multi-Threaded Logging ===" << std::endl;
     
-    Logger* logger = Singleton<Logger>::GetInstance();
+    Logger* logger = Handleton<Logger>::GetInstance();
     logger->SetLevel(Logger::INFO);
     
     int linesBefore = CountLinesInFile("./log_file");
@@ -146,7 +146,7 @@ static void TestMultiThreadedLogging()
 
 int main()
 {
-   TestSingleton();
+   TestHandleton();
    TestBasicLogging();
    TestLogLevelFiltering();
    TestMultiThreadedLogging();

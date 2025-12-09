@@ -15,7 +15,8 @@
 #include <string>       // std::string
 
 #include "waitablequeue.hpp"
-#include "singleton.hpp" 
+#include "handleton.hpp"
+#include "singleton.hpp"
 
 namespace ilrd
 {
@@ -52,8 +53,9 @@ private:
         int line;
     };
 
+    friend class Handleton<Logger>;
     friend class Singleton<Logger>;
-    
+
     Logger();
     ~Logger();
     

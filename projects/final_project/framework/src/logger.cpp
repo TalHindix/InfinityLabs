@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Exercise:    Singleton - Logger
+ * Exercise:    Handleton - Logger
  * Date:        08/12/2025
  * Developer:   Tal Hindi
  * Reviewer:    
