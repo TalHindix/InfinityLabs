@@ -92,9 +92,6 @@ private:
 }; // class ThreadPool
 
 
-//=============================================================================
-// TaskWrapper - : Wraps task with priority and promise
-//=============================================================================
 class ThreadPool::TaskWrapper
 {
 public:
@@ -116,10 +113,6 @@ private:
     bool m_isPoisonPill;
 };
 
-
-//=============================================================================
-// ComparePriority - For priority queue ordering
-//=============================================================================
 inline bool ThreadPool::ComparePriority::operator()(
     const WrappedTaskPtr& lhs,
     const WrappedTaskPtr& rhs) const
