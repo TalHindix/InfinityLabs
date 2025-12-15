@@ -3,7 +3,7 @@
  * Date:        10/12/2025
  * Developer:   Tal Hindi
  * Reviewer:    Menny Markovich
- * Status:      
+ * Status:      Approved
  *****************************************************************************/
 
 #ifndef __ILRD_DISPATCHER__
@@ -74,7 +74,6 @@ public:
     virtual void Notify(const EVENT& event) override;
     virtual void NotifyDeathEx() override;
 
-    OBSERVER* GetObserver() const;
 
 private:
     OBSERVER& m_observer;
@@ -152,11 +151,7 @@ void Dispatcher<EVENT>::Broadcast(const EVENT& event)
 
     for (BaseCallback<EVENT>* callback : callbacksCopy)
     {
-        // Check if callback is still subscribed (wasn't removed during broadcast)
-        if (m_callbacks.find(callback) != m_callbacks.end())
-        {
-            callback->Notify(event);
-        }
+        callback->Notify(event);
     }
 }
 
@@ -184,12 +179,6 @@ void Callback<EVENT, OBSERVER>::NotifyDeathEx()
     {
         (m_observer.*m_notifyDeathFunc)();
     }
-}
-
-template <typename EVENT, typename OBSERVER>
-OBSERVER* Callback<EVENT, OBSERVER>::GetObserver() const
-{
-    return &m_observer;
 }
 
 } // namespace ilrd
