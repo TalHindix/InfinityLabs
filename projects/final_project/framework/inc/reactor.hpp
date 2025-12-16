@@ -27,7 +27,7 @@ public:
 
     using FdPair = std::pair<int, Reactor::Mode>;
     using CallBack = std::function<void(int, Mode)>;
-
+    
     class IListener
     {
     public:
@@ -63,7 +63,11 @@ private:
         // shimon's example: return std::hash<int>{}(p.first * (1 + (10 * p.second)));
     };
     
-    std::unordered_map<FdPair, CallBack, Hasher> m_callbacks;
+    using CallbackMap = std::unordered_map<FdPair, CallBack, Hasher>;
+
+    std::vector<FdPair> GetMonitoredFds() const;
+    void InvokeCallback(const FdPair& fdPair);
+    CallbackMap m_callbacks;
     const std::shared_ptr<IListener> m_listener;
     bool m_is_running;
     

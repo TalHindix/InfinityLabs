@@ -2,8 +2,8 @@
  * Exercise:    DirMonitor
  * Date:        11/12/2025
  * Developer:   Tal Hindi
- * Reviewer:    
- * Status:      
+ * Reviewer:    Avi Tobar
+ * Status:      Approved
  *****************************************************************************/
 
 #include <sys/inotify.h>        // inotify_init
