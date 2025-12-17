@@ -51,20 +51,26 @@ void Scheduler::SetTimer(TimePoint exec_time)
     auto now = std::chrono::steady_clock::now();
     auto delay = exec_time - now;
     
-    if (delay.count() < 0)
+    if (delay.count() <= 0)
     {
         delay = std::chrono::nanoseconds(1);
     }
     
     auto delay_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(delay);
-    
+    std::cout << "SetTimer: delay = " << delay.count() << std::endl;
     struct itimerspec its;
     std::memset(&its, 0, sizeof(its));
     
-    its.it_value.tv_sec = delay_ns.count() / 1000000000;
-    its.it_value.tv_nsec = delay_ns.count() % 1000000000;
+    its.it_value.tv_sec = delay.count() / 1000000000;
+    its.it_value.tv_nsec = delay.count() % 1000000000;
     
     timer_settime(m_timer, 0, &its, nullptr);
+
+    int rc = timer_settime(m_timer, 0, &its, nullptr);
+    if (rc == -1)
+    {
+        throw std::runtime_error("bbb");
+    }
 }
 
 void Scheduler::TimerCallback(union sigval sv)

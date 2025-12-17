@@ -105,12 +105,28 @@ void TestTaskAddingTask()
     std::cout << " Test 3 - Done " << std::endl;
 }
 
+void TestZeroDelay()
+{
+    std::cout << "\n=== Test: Zero Delay ===" << std::endl;
+    
+    Scheduler* sched = Handleton<Scheduler>::GetInstance();
+    
+    sched->Add(std::make_shared<PrintTask>("Immediate task (0ms)"),
+               std::chrono::milliseconds(0));
+    
+    std::cout << "Task added with 0 delay" << std::endl;
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    std::cout << "=== Test Complete ===" << std::endl;
+}
+
 int main()
 {
 
-    TestSingleTask();
-    TestTwoTasksPriorityOrder();
-    TestTaskAddingTask();
-   
+ //   TestSingleTask();
+ //   TestTwoTasksPriorityOrder();
+ //   TestTaskAddingTask();
+      TestZeroDelay();
     return 0;
 }
