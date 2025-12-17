@@ -2,18 +2,18 @@
  * Exercise:    Scheduler
  * Date:        16/12/2025
  * Developer:   Tal Hindi
- * Reviewer:    
+ * Reviewer:    Dana Chesner
  * Status:      
  *****************************************************************************/
 
 #define __HANDLETON__
 
-#include <iostream>
-#include <chrono>
-#include <thread>
+#include <iostream>     // std::cout
+#include <chrono>       // std::chrono
+#include <thread>       // std::this_thread
 
-#include "scheduler.hpp"
-#include "handleton.hpp"
+#include "scheduler.hpp" // Scheduler
+#include "handleton.hpp" // Handleton
 
 using namespace ilrd;
 

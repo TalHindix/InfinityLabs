@@ -12,8 +12,7 @@
 #include <sys/types.h>         // timer_t
 
 #include <memory>              // std::shared_ptr
-#include <chrono>
-#include <thread>
+#include <chrono>              // std::chrono
 
 #include "handleton.hpp"       // Handleton
 #include "waitablequeue.hpp"   // WaitableQueue

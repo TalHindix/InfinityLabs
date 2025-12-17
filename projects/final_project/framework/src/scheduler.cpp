@@ -9,7 +9,7 @@
 #include <signal.h>    // sigevent
 #include <time.h>      // timer_create
 #include <cstring>     // memset
-#include <iostream>
+#include <iostream>    // cout
 
 #include "scheduler.hpp"
 
