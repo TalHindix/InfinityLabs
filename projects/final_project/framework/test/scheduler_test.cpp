@@ -6,7 +6,6 @@
  * Status:      
  *****************************************************************************/
 
-#define __HANDLETON__
 
 #include <iostream>     // std::cout
 #include <chrono>       // std::chrono

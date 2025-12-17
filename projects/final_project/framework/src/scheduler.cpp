@@ -51,7 +51,6 @@ void Scheduler::SetTimer(TimePoint exec_time)
     auto now = std::chrono::steady_clock::now();
     auto delay = exec_time - now;
     
-
     if (delay.count() < 0)
     {
         delay = std::chrono::nanoseconds(1);
@@ -79,9 +78,21 @@ void Scheduler::TimerCallback(union sigval sv)
     task t;
     sched->m_waitable_queue.pop(&t);
     
+
     std::cout << "TimerCallback: popped! Executing..." << std::endl;
 
-    t.first->Execute();
+    auto now = std::chrono::steady_clock::now();
+    
+    if (t.second <= now)
+    {
+        t.first->Execute();
+    }
+    else
+    {
+        sched->m_waitable_queue.push(t);
+        sched->SetTimer(t.second);
+        return;
+    }
     
     task next;
     if (sched->m_waitable_queue.pop(&next, std::chrono::milliseconds(0)))
