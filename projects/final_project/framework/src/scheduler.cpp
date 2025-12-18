@@ -3,7 +3,7 @@
  * Date:        16/12/2025
  * Developer:   Tal Hindi
  * Reviewer:    Dana Chesner
- * Status:      
+ * Status:      Approved
  *****************************************************************************/
 
 #include <signal.h>    // sigevent
@@ -17,8 +17,6 @@ namespace ilrd
 {
 
 Scheduler::Scheduler()
-    : m_waitable_queue()
-    , m_timer()
 {
     struct sigevent sev;
     std::memset(&sev, 0, sizeof(sev));
@@ -55,7 +53,6 @@ void Scheduler::SetTimer(TimePoint exec_time)
     }
     
     auto delay_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(delay);
-    std::cout << "SetTimer: delay = " << delay.count() << std::endl;
     struct itimerspec its;
     std::memset(&its, 0, sizeof(its));
     
@@ -64,8 +61,7 @@ void Scheduler::SetTimer(TimePoint exec_time)
     
     timer_settime(m_timer, 0, &its, nullptr);
 
-    int rc = timer_settime(m_timer, 0, &its, nullptr);
-    if (rc == -1)
+    if (timer_settime(m_timer, 0, &its, nullptr) == -1)
     {
         throw std::runtime_error("bbb");
     }
@@ -73,18 +69,12 @@ void Scheduler::SetTimer(TimePoint exec_time)
 
 void Scheduler::TimerCallback(union sigval sv)
 {
-     std::cout << "TimerCallback: started" << std::endl;
     
     Scheduler* sched = static_cast<Scheduler*>(sv.sival_ptr);
-    
-    std::cout << "TimerCallback: about to pop..." << std::endl;
-    
+  
     task t;
     sched->m_waitable_queue.pop(&t);
     
-
-    std::cout << "TimerCallback: popped! Executing..." << std::endl;
-
     auto now = std::chrono::steady_clock::now();
     
     if (t.second <= now)

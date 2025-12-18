@@ -1,12 +1,3 @@
-/*****************************************************************************
- * Exercise:    Scheduler
- * Date:        16/12/2025
- * Developer:   Tal Hindi
- * Reviewer:    Dana Chesner
- * Status:      
- *****************************************************************************/
-
-
 #include <iostream>     // std::cout
 #include <chrono>       // std::chrono
 #include <thread>       // std::this_thread

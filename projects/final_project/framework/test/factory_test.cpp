@@ -1,11 +1,3 @@
-/*****************************************************************************
- Exercise:    Factory Design Pattern - Test
- Date:        04/12/2025
- Developer:   Tal Hindi
- Reviewer:    Avi Tobar
- Status:      Approved
- *****************************************************************************/
-
 #include <iostream>   // std::cout
 #include <string>     // std::string
 

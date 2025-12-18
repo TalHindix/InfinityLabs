@@ -1,18 +1,10 @@
-/*****************************************************************************
- * Exercise:    Dispatcher
- * Date:        10/12/2025
- * Developer:   Tal Hindi
- * Reviewer:    Menny Markovich
- * Status:      Approved
- *****************************************************************************/
 
- #include <iostream> std::cout
- #include <string>   std::string
+ #include <iostream> //std::cout
+ #include <string>   //std::string
 
  #include "dispatcher.hpp"
 
  using namespace ilrd;
-// Define an event (the send data.)
  struct Event
  {
     std::string data;
@@ -56,7 +48,7 @@
     int m_notify_count;
  };
 
- // Publisher 
+
  class SimpleSender
  {
  public:

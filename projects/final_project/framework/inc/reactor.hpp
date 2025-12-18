@@ -2,7 +2,7 @@
  * Exercise:    Reactor
  * Date:        11/12/2025
  * Developer:   Tal Hindi
- * Reviewer:    
+ * Reviewer:    Yuval Hochman
  * Status:      
  *****************************************************************************/
 
@@ -44,10 +44,10 @@ public:
     Reactor& operator=(const Reactor&& other) = delete;
     
     void Add (int fd, Mode mode, CallBack callback);
-    void Remove (int fd, Mode mode);                  
-    //run is a blocking function, and it returns when stop is called
-    void Run ();
-    void Stop ();
+    void Remove (int fd, Mode mode);
+
+    void Run();
+    void Stop();
 
     
 private:
@@ -60,7 +60,6 @@ private:
             std::size_t h2 = std::hash<int>{}(pair.second);
             return h1 ^ (h2 << 1);
         }
-        // shimon's example: return std::hash<int>{}(p.first * (1 + (10 * p.second)));
     };
     
     using CallbackMap = std::unordered_map<FdPair, CallBack, Hasher>;
