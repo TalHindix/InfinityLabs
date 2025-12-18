@@ -68,7 +68,7 @@ std::vector<Reactor::FdPair> Reactor::GetMonitoredFds() const
 {
     std::vector<FdPair> fds;
     fds.reserve(m_callbacks.size());
-
+    
     for (const CallbackMap::value_type& entry : m_callbacks)
     {
         fds.push_back(entry.first);

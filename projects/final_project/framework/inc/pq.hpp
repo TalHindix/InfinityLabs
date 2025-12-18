@@ -51,7 +51,6 @@ public:
 
 private:
     std::priority_queue<T, Container, Compare> m_pq;
-
 };
 
 } // namespace ilrd

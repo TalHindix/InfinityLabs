@@ -39,9 +39,7 @@ void Scheduler::Add(std::shared_ptr<ISTask> task, const Duration delay)
 {
     TimePoint exec_time = std::chrono::steady_clock::now() + delay;
         
-    std::cout << "Add: pushing to queue..." << std::endl;
     m_waitable_queue.push({task, exec_time});
-    std::cout << "Add: pushed! Setting timer..." << std::endl;
 
     SetTimer(exec_time);
 }
