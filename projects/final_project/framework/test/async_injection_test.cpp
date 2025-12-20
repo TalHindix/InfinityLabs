@@ -27,9 +27,9 @@ static void TestBasicAsyncInjection()
             ++counter;
             std::cout << "Tick " << counter << std::endl;
             
-            return counter < 5;
+            return counter == 5;
         },
-        std::chrono::milliseconds(500)
+        std::chrono::milliseconds(50)
     );
     
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));

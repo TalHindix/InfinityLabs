@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Exercise:    Handleton - Logger
+ * Exercise:    Logger
  * Date:        08/12/2025
  * Developer:   Tal Hindi
  * Reviewer:    
@@ -15,11 +15,7 @@ namespace ilrd
 
 static const std::chrono::milliseconds QUEUE_TIMEOUT(100);
 
-Logger::Logger() : m_is_alive(true),
-                    m_queue(),
-                    m_curr_level(DEBUGING),
-                    m_file(),
-                    m_writer()
+Logger::Logger() : m_is_alive(true),m_curr_level(DEBUGING)                  
 {
     m_file.open(g_log_path, std::ios::app);
 
@@ -33,16 +29,13 @@ Logger::Logger() : m_is_alive(true),
 
 Logger::~Logger()
 {
-    // Signal the writer thread to stop
     m_is_alive.store(false);
     
-    // Wait for writer thread to finish
     if (m_writer.joinable())
     {
         m_writer.join();
     }
     
-    // Close the file
     if (m_file.is_open())
     {
         m_file.close();
@@ -52,7 +45,6 @@ Logger::~Logger()
 void Logger::Log(const std::string& msg, LogLevel level, 
                  std::string file_name, int line)
 {
-    // Filter by level first (optimization)
     if (level > m_curr_level)
     {
         return;

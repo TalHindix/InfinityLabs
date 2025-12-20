@@ -35,10 +35,10 @@ Scheduler::~Scheduler() noexcept
 
 void Scheduler::Add(std::shared_ptr<ISTask> task, const Duration delay)
 {
-    TimePoint exec_time = std::chrono::steady_clock::now() + delay;
-        
-    m_waitable_queue.push({task, exec_time});
+    std::lock_guard<std::mutex> lock(m_mutex);
 
+    TimePoint exec_time = std::chrono::steady_clock::now() + delay;
+    m_waitable_queue.push({task, exec_time});
     SetTimer(exec_time);
 }
 
@@ -59,41 +59,43 @@ void Scheduler::SetTimer(TimePoint exec_time)
     its.it_value.tv_sec = delay.count() / 1000000000;
     its.it_value.tv_nsec = delay.count() % 1000000000;
     
-    timer_settime(m_timer, 0, &its, nullptr);
 
     if (timer_settime(m_timer, 0, &its, nullptr) == -1)
     {
-        throw std::runtime_error("bbb");
+        throw std::runtime_error("Failed to set timer");
     }
 }
 
 void Scheduler::TimerCallback(union sigval sv)
 {
-    
     Scheduler* sched = static_cast<Scheduler*>(sv.sival_ptr);
-  
-    task t;
-    sched->m_waitable_queue.pop(&t);
     
-    auto now = std::chrono::steady_clock::now();
+    task currentTask;
+    std::unique_lock<std::mutex> lock(sched->m_mutex);
     
-    if (t.second <= now)
+    if (!sched->m_waitable_queue.pop(&currentTask, std::chrono::milliseconds(0)))
     {
-        t.first->Execute();
-    }
-    else
-    {
-        sched->m_waitable_queue.push(t);
-        sched->SetTimer(t.second);
         return;
     }
     
-    task next;
-    if (sched->m_waitable_queue.pop(&next, std::chrono::milliseconds(0)))
+    if (currentTask.second > std::chrono::steady_clock::now())
     {
-        const auto nextTime = next.second;
-        sched->m_waitable_queue.push(next);
-        sched->SetTimer(nextTime);
+        sched->m_waitable_queue.push(currentTask);
+        sched->SetTimer(currentTask.second);
+        return;
+    }
+    
+    lock.unlock();
+    
+    currentTask.first->Execute();
+    
+    lock.lock();
+    
+    task nextTask;
+    if (sched->m_waitable_queue.pop(&nextTask, std::chrono::milliseconds(0)))
+    {
+        sched->m_waitable_queue.push(nextTask);
+        sched->SetTimer(nextTask.second);
     }
 }
 

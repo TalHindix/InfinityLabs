@@ -3,7 +3,7 @@
  Date:        03/12/2025
  Developer:   Tal Hindi
  Reviewer:    Shiran Swisa
- Status:      
+ Status:      Approved
  *****************************************************************************/
 
 #include <stdexcept>    // std::runtime_error
@@ -14,26 +14,17 @@
 namespace ilrd
 {
 
-//=============================================================================
-// Constants
-//=============================================================================
 static const int POISON_PILL_PRIORITY = ThreadPool::HIGH + 1;
 static const std::chrono::milliseconds POP_TIMEOUT(100);
 
-//=============================================================================
-// TaskWrapper Implementation
-//=============================================================================
 
-// Regular task constructor
 ThreadPool::TaskWrapper::TaskWrapper(TaskPtr task, Priority priority)
     : m_task(task)
     , m_priority(priority)
-    , m_promise()
     , m_isPoisonPill(false)
 {
 }
 
-// Poison pill constructor
 ThreadPool::TaskWrapper::TaskWrapper(Priority priority)
     : m_task()
     , m_priority(priority)
@@ -78,10 +69,6 @@ ThreadPool::Future ThreadPool::TaskWrapper::GetFuture()
     return m_promise.get_future().share();
 }
 
-
-//=============================================================================
-// Worker - Internal thread that processes tasks
-//=============================================================================
 class ThreadPool::Worker
 {
 public:
@@ -168,11 +155,6 @@ void ThreadPool::Worker::WaitWhilePaused()
         m_pauseCond.wait(lock);
     }
 }
-
-
-//=============================================================================
-// ThreadPool Implementation
-//=============================================================================
 
 ThreadPool::ThreadPool(std::size_t numThreads)
     : m_isRunning(false)

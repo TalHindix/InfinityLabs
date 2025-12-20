@@ -13,7 +13,7 @@
 #include <thread>               // std::thread
 #include <atomic>               // std::atomic
 
-#include "dispatcher.hpp"       // ilrd::Dispatcher
+#include "dispatcher.hpp"       // Dispatcher
 
 namespace ilrd
 {
@@ -28,7 +28,7 @@ public:
     void Register(BaseCallback<const std::string&>* cb);
     void Unregister(BaseCallback<const std::string&>* cb);
 
-    const std::string& GetDirPath() const // jUST FOR DEBUGGING
+    const std::string& GetDirPath() const
     {
         return m_dirPath;
     }

@@ -59,6 +59,7 @@ private:
     
     WaitableQueue<task, PriorityQueue<task,std::vector<task>, TaskComparator>> m_waitable_queue;
     timer_t m_timer;
+    std::mutex m_mutex;
     static void TimerCallback(union sigval sv);
     void SetTimer(TimePoint exec_time);
     

@@ -8,7 +8,6 @@
 
 #include "async_injection.hpp"
 #include "handleton.hpp" // Handleton
-
 namespace ilrd
 {
 
@@ -21,9 +20,10 @@ void AsyncInjection::AsyncTask::Execute()
 {
     bool reschedule = m_owner.m_func();
     
+    std::cout << "The value of reschedule is " << reschedule << std::endl;
     if (reschedule)
     {
-        delete this;
+        delete &m_owner;
     }
     else
     {
@@ -35,9 +35,9 @@ AsyncInjection::AsyncInjection(std::function<bool(void)> func,
                                std::chrono::milliseconds interval)
     : m_func(func)
     , m_interval(interval)
-    , m_task(new AsyncTask(*this))
     
 {
+    m_task = std::make_shared<AsyncTask>(*this);
     Schedule();
 }
 

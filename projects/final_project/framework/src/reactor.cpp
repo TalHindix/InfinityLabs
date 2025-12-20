@@ -12,8 +12,7 @@ namespace ilrd
 {
 
 Reactor::Reactor(std::shared_ptr<IListener> listener)
-    : m_callbacks()
-    , m_listener(listener)
+    : m_listener(listener)
     , m_is_running(false)
 {
 }
@@ -34,16 +33,16 @@ void Reactor::Run()
 {
     m_is_running = true;
 
-    while (m_is_running)
+    while (m_is_running && !m_callbacks.empty())
     {
         std::vector<FdPair> fds = GetMonitoredFds();
         if (fds.empty()) break;
 
-        std::vector<FdPair> ready = m_listener->Listen(fds);
+        m_listener->Listen(fds);
 
-        for (std::size_t i = 0; i < ready.size() && m_is_running; ++i)
+        for (std::size_t i = 0; i < fds.size() && m_is_running; ++i)
         {
-            InvokeCallback(ready[i]);
+            InvokeCallback(fds[i]);
         }
     }
 }
@@ -54,8 +53,7 @@ void Reactor::InvokeCallback(const FdPair& fdPair)
     
     if (it != m_callbacks.end())
     {
-        CallBack call_back = it->second; 
-        call_back(fdPair.first, fdPair.second);
+        it->second(fdPair.first, fdPair.second);
     }
 }
 
