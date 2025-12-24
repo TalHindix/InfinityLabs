@@ -1,6 +1,6 @@
 /*****************************************************************************
  * Exercise:    Framework
- * Date:        23/12/2025
+ * Date:        24/12/2025
  * Developer:   Tal Hindi
  * Reviewer:    
  * Status:      
@@ -8,46 +8,60 @@
 
 #include "framework.hpp"
 #include "logger.hpp"
+#include "thread_pool.hpp"
 
 namespace ilrd
 {
 
-Framework::Framework(const std::vector<InputMediator::FdEntry>& entries,
+Framework::Framework(const std::vector<FdEntry>& entries,
                      std::shared_ptr<Reactor::IListener> listener,
-                     const std::string& pluginDir,
-                     std::size_t numThreads)
-    : m_mediator(entries, listener)
-    , m_dirMonitor(pluginDir)
-    , m_pluginCallback(m_dllLoader, &DllLoader::LoadCallback)
+                     const std::vector<CommandCreator>& commands,
+                     const std::string& pluginDir)
+                    : m_mediator(entries, listener)      
+                    , m_dirMonitor(pluginDir)                              
+                    , m_pluginCallback(m_dllLoader, &DllLoader::LoadCallback) 
 {
-    Handleton<Logger>::GetInstance()->Log("Framework Ctor", Logger::DEBUGING);
+    FRAMEWORK_LOG(Logger::DEBUGING, "Ctor - pluginDir: " + pluginDir);
 
-    Handleton<ThreadPool>::GetInstance()->SetNumOfThreads(numThreads);
+    RegisterCommands(commands);
 
     m_dirMonitor.Register(&m_pluginCallback);
-    m_dirMonitor.Run();
 }
+
 
 Framework::~Framework()
 {
-    Handleton<Logger>::GetInstance()->Log("Framework Dtor", Logger::DEBUGING);
+    FRAMEWORK_LOG(Logger::DEBUGING, "Dtor Started..");
     
     m_dirMonitor.Unregister(&m_pluginCallback);
 }
 
 void Framework::Run()
 {
-    Handleton<Logger>::GetInstance()->Log("Framework Run", Logger::DEBUGING);
-
+    FRAMEWORK_LOG(Logger::DEBUGING, "Run() Starting...");
     Handleton<ThreadPool>::GetInstance()->Run();
+    m_dirMonitor.Run();
     m_mediator.Run();
 }
 
 void Framework::Stop()
 {
-    Handleton<Logger>::GetInstance()->Log("Framework Stop", Logger::DEBUGING);
+    FRAMEWORK_LOG(Logger::DEBUGING, "Stop() called");
+    
+    m_mediator.Stop();
+    Handleton<ThreadPool>::GetInstance()->Pause();
+}
 
-    Handleton<ThreadPool>::GetInstance()->Stop();
+void Framework::RegisterCommands(const std::vector<CommandCreator>& commands)
+{
+    auto factory = Handleton<Factory<ICommand, int>>::GetInstance();
+    
+    for (const CommandCreator& cmd : commands)
+    {
+        FRAMEWORK_LOG(Logger::DEBUGING, "Registering command key: " + 
+                      std::to_string(cmd.first));
+        factory->Add(cmd.first, cmd.second);
+    }
 }
 
 } // namespace ilrd

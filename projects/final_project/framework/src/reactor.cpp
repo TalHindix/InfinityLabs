@@ -8,7 +8,6 @@
 
 #include "reactor.hpp"
 #include "logger.hpp"
-#include "handleton.hpp"
 
 namespace ilrd
 {
@@ -17,27 +16,33 @@ Reactor::Reactor(std::shared_ptr<IListener> listener)
     : m_listener(listener)
     , m_is_running(false)
 {
-    Handleton<Logger>::GetInstance()->Log("Reactor Ctor", Logger::DEBUGING);
+    REACTOR_LOG(Logger::DEBUGING, "Ctor started...");
+}
+
+Reactor::~Reactor() noexcept
+{
+    REACTOR_LOG(Logger::DEBUGING, "Dtor");
 }
 
 void Reactor::Add(int fd, Mode mode, CallBack callback)
 {
-    Handleton<Logger>::GetInstance()->Log("Reactor Add", Logger::DEBUGING);
+    REACTOR_LOG(Logger::DEBUGING, "Add fd: " + std::to_string(fd));
     FdPair key(fd, mode);
     m_callbacks[key] = callback;
 }
 
 void Reactor::Remove(int fd, Mode mode)
 {
-    Handleton<Logger>::GetInstance()->Log(std::string("Reactor::Remove(fd: ") + std::to_string(fd) + ", mode: " + std::to_string(mode) + ") Started...", Logger::DEBUGING);
+    REACTOR_LOG(Logger::DEBUGING, "Remove fd: " + std::to_string(fd) + 
+                ", mode: " + std::to_string(mode));
     FdPair key(fd, mode);
     m_callbacks.erase(key);
 }
 
 void Reactor::Run()
 {
-    Handleton<Logger>::GetInstance()->Log("Reactor::Run() Started...", Logger::DEBUGING);
-
+    REACTOR_LOG(Logger::DEBUGING, "Run() started");
+    
     m_is_running = true;
 
     while (m_is_running && !m_callbacks.empty())
@@ -52,11 +57,16 @@ void Reactor::Run()
             InvokeCallback(fds[i]);
         }
     }
+
+    REACTOR_LOG(Logger::DEBUGING, "Run() finished");
 }
 
 void Reactor::InvokeCallback(const FdPair& fdPair)
 {
-    Handleton<Logger>::GetInstance()->Log("Reactor::InvokeCallback() Started...", Logger::DEBUGING);
+
+    REACTOR_LOG(Logger::DEBUGING,
+    std::string("InvokeCallback fd: ") + std::to_string(fdPair.first) +
+    " mode: " + ModeToString(fdPair.second));
 
     CallbackMap::iterator it = m_callbacks.find(fdPair);
     
@@ -68,14 +78,13 @@ void Reactor::InvokeCallback(const FdPair& fdPair)
 
 void Reactor::Stop()
 {
-    Handleton<Logger>::GetInstance()->Log("Reactor::Stop() Started...", Logger::DEBUGING);
+    REACTOR_LOG(Logger::DEBUGING, "Stop()");
     m_is_running = false;
 }
 
 std::vector<Reactor::FdPair> Reactor::GetMonitoredFds() const
 {
-    Handleton<Logger>::GetInstance()->Log("Reactor::GetMonitoredFds() Started...", Logger::DEBUGING);
-    
+    REACTOR_LOG(Logger::DEBUGING, "GetMonitoredFds()");
     std::vector<FdPair> fds;
     fds.reserve(m_callbacks.size());
 
@@ -85,6 +94,21 @@ std::vector<Reactor::FdPair> Reactor::GetMonitoredFds() const
     }
 
     return fds;
+}
+
+const char* Reactor::ModeToString(Reactor::Mode mode)
+{
+    switch (mode)
+    {
+        case Reactor::READ:
+            return "READ";
+
+        case Reactor::WRITE:
+            return "WRITE";
+
+        default:
+            return "UNKNOWN_MODE";
+    }
 }
 
 } // namespace ilrd

@@ -49,14 +49,14 @@ static void TestBasicLogging()
     std::cout << "\n=== Test: Basic Logging ===" << std::endl;
 
     Logger* logger = Handleton<Logger>::GetInstance();
-    logger->SetLevel(Logger::INFO);
+    logger->SetLevel(Logger::DEBUGING);
 
     int linesBefore = CountLinesInFile("./log_file");
 
     logger->Log("Error message", Logger::ERROR, __FILE__, __LINE__);
     logger->Log("Warning message", Logger::WARNING, __FILE__, __LINE__);
     logger->Log("Debuging message", Logger::DEBUGING, __FILE__, __LINE__);
-    logger->Log("Info message", Logger::INFO, __FILE__, __LINE__);
+    logger->Log("Info message", Logger::DEBUGING, __FILE__, __LINE__);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
@@ -81,14 +81,14 @@ static void TestLogLevelFiltering()
     logger->Log("Should appear - ERROR", Logger::ERROR);
     logger->Log("Should appear - WARNING", Logger::WARNING);
     logger->Log("Should NOT appear - DEBUGING", Logger::DEBUGING);
-    logger->Log("Should NOT appear - INFO", Logger::INFO);
+    logger->Log("Should NOT appear - INFO", Logger::DEBUGING);
     
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     
     int linesAfter = CountLinesInFile("./log_file");
     int newLines = linesAfter - linesBefore;
     
-    logger->SetLevel(Logger::INFO);
+    logger->SetLevel(Logger::DEBUGING);
     
     PrintResult(newLines == 2, "Only ERROR and WARNING logged (" + 
                 std::to_string(newLines) + "/2)");
@@ -99,7 +99,7 @@ static void TestMultiThreadedLogging()
     std::cout << "\n=== Test: Multi-Threaded Logging ===" << std::endl;
     
     Logger* logger = Handleton<Logger>::GetInstance();
-    logger->SetLevel(Logger::INFO);
+    logger->SetLevel(Logger::DEBUGING);
     
     int linesBefore = CountLinesInFile("./log_file");
     
@@ -115,7 +115,7 @@ static void TestMultiThreadedLogging()
             {
                 logger->Log("Thread " + std::to_string(i) + 
                            " - Message " + std::to_string(j), 
-                           Logger::INFO);
+                           Logger::DEBUGING);
             }
         });
     }

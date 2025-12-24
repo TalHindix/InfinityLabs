@@ -1,8 +1,25 @@
 #include <iostream>
+#include <memory>
+#include "icommand.hpp"
+#include "factory.hpp"
+#include "handleton.hpp"
 
-extern "C" void PluginInit() __attribute__((constructor));
-
-extern "C" void PluginInit()
+class HelloCommand : public ilrd::ICommand 
 {
-    std::cout << "Plugin loaded successfully!" << std::endl;
+public:
+    async_args Execute(std::shared_ptr<ilrd::IKeyArgs>) override 
+    {
+        std::cout << "!!! Hello from Dynamic Plugin !!!" << std::endl;
+        return {[](){ return true; }, std::chrono::milliseconds(0)};
+    }
+};
+
+
+__attribute__((constructor))
+void RegisterPlugin() 
+{
+    auto factory = ilrd::Handleton<ilrd::Factory<ilrd::ICommand, int>>::GetInstance();
+    factory->Add(100, []() { 
+        return std::make_shared<HelloCommand>(); 
+    });
 }

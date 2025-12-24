@@ -13,19 +13,26 @@
 #include <memory>         // std::shared_ptr 
 #include <stdexcept>      // std::out_of_range 
 #include <unordered_map>  // std::unordered_map
+#include <string>         // std::string
+#include <sstream>        // std::ostringstream
+
+#include "logger.hpp"     // FACTORY_LOG
 
 namespace ilrd
 {
-/*****************************************************************************
- * Factory - A creational pattern template that constructs objects from a 
- *           specific hierarchy according to their corresponding key values.
- * 
- * Template Parameters:
- *   BASE - The base class type of the hierarchy to be created
- *   KEY  - The key type used to identify which derived type to create
- *   ARGS - Variadic template parameters for constructor arguments
- * 
- *****************************************************************************/
+
+namespace detail
+{
+    // Helper to convert any key to string for logging
+    template<typename T>
+    std::string KeyToString(const T& key)
+    {
+        std::ostringstream oss;
+        oss << key;
+        return oss.str();
+    }
+} // namespace detail
+
 template<typename BASE, typename KEY, typename... ARGS>     
 class Factory
 {
@@ -34,32 +41,11 @@ public:
     using CTOR = std::function<BASE_PTR(ARGS...)>;
 
  
-    Factory() = default;
-    ~Factory() noexcept = default;
+    Factory();
+    ~Factory() noexcept;
 
-    /**************************************************************************
-     * Add - Registers a creator function for a specific key
-     * 
-     * Parameters:
-     *   key  - The key to associate with this creator
-     *   ctor - Function that creates and returns a shared_ptr to BASE
-     * 
-     * Note: If key already exists, the creator will be overwritten
-     * Complexity: O(1) average, O(n) worst case
-     *************************************************************************/
     void Add(const KEY& key, CTOR ctor) noexcept;
 
-    /**************************************************************************
-     * Create - Creates an object of the type associated with the given key
-     * 
-     * Parameters:
-     *   key  - The key identifying which type to create
-     *   args - Arguments to forward to the creator function
-     * 
-     * Returns: shared_ptr to the newly created object
-     * Throws: std::out_of_range if key is not found
-     * Complexity: O(1) average, O(n) worst case
-     *************************************************************************/
     BASE_PTR Create(const KEY& key, ARGS... args);
 
     Factory(const Factory& other) = delete;
@@ -73,8 +59,21 @@ private:
 
 
 template<typename BASE, typename KEY, typename... ARGS>
+Factory<BASE, KEY, ARGS...>::Factory()
+{
+    FACTORY_LOG(Logger::DEBUGING, "Ctor");
+}
+
+template<typename BASE, typename KEY, typename... ARGS>
+Factory<BASE, KEY, ARGS...>::~Factory() noexcept
+{
+    FACTORY_LOG(Logger::INFO, "Dtor");
+}
+
+template<typename BASE, typename KEY, typename... ARGS>
 void Factory<BASE, KEY, ARGS...>::Add(const KEY& key, CTOR ctor) noexcept
 {
+    FACTORY_LOG(Logger::DEBUGING, "Add key: " + detail::KeyToString(key));
     m_map[key] = ctor;
 }
 
@@ -82,10 +81,13 @@ template<typename BASE, typename KEY, typename... ARGS>
 typename Factory<BASE, KEY, ARGS...>::BASE_PTR 
 Factory<BASE, KEY, ARGS...>::Create(const KEY& key, ARGS... args)
 {
+    FACTORY_LOG(Logger::DEBUGING, "Create key: " + detail::KeyToString(key));
+    
     auto iter = m_map.find(key);
 
     if (iter == m_map.end())
     {
+        FACTORY_LOG(Logger::ERROR, "Key not found: " + detail::KeyToString(key));
         throw std::out_of_range("Factory::Create - key not found");
     }
 
@@ -93,5 +95,6 @@ Factory<BASE, KEY, ARGS...>::Create(const KEY& key, ARGS... args)
 }
 
 } // namespace ilrd
+
 
 #endif // _ILRD_FACTORY_

@@ -29,16 +29,19 @@ namespace ilrd
 class Framework
 {
 public:
-    Framework(const std::vector<InputMediator::FdEntry>& entries,
-              std::shared_ptr<Reactor::IListener> listener,
-              const std::string& pluginDir,
-              std::size_t numThreads = std::thread::hardware_concurrency());
+    using FdEntry = std::tuple<int, Reactor::Mode, std::shared_ptr<IInputProxy>>;
+    using CommandCreator = std::pair<int, std::function<std::shared_ptr<ICommand>()>>;
     
+    Framework(const std::vector<FdEntry>& entries, 
+              std::shared_ptr<Reactor::IListener> listener, 
+              const std::vector<CommandCreator>& commands,
+              const std::string& pluginDir);
+                
     ~Framework();
     
     void Run();
     void Stop();
-
+    
     Framework(const Framework&) = delete;
     Framework& operator=(const Framework&) = delete;
 
@@ -47,7 +50,9 @@ private:
     DirMonitor m_dirMonitor;
     DllLoader m_dllLoader;
     Callback<const std::string&, DllLoader> m_pluginCallback;
-
+    
+    void RegisterCommands(const std::vector<CommandCreator>& commands);
+    
 }; // class Framework
 
 } // namespace ilrd

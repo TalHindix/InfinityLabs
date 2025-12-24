@@ -33,6 +33,7 @@ public:
     ~InputMediator();
     
     void Run(); 
+    void Stop();
     
     InputMediator(const InputMediator&) = delete;
     InputMediator& operator=(const InputMediator&) = delete;

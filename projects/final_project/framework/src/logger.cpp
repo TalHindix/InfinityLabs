@@ -43,7 +43,7 @@ Logger::~Logger()
 }
 
 void Logger::Log(const std::string& msg, LogLevel level, 
-                 std::string file_name, int line)
+                 const std::string file_name, int line)
 {
     if (level > m_curr_level)
     {
@@ -83,9 +83,10 @@ Logger::index_t Logger::WriteToFile()
             continue;
         }
 
-        m_file << "[" << LevelToString(args.level) << "] "
-               << args.msg << " "
-               << args.file_name << ":" << args.line
+        m_file << LevelToColor(args.level)             
+               << "[" << LevelToString(args.level) << "]" 
+               << "\033[0m "                          
+               << args.msg       
                << std::endl;
         
         ++entriesWritten;
@@ -106,6 +107,20 @@ std::string Logger::LevelToString(LogLevel level) const
         case INFO:      return "INFO";
         default:        return "UNKNOWN";
     }
+}
+
+const char* Logger::LevelToColor(Logger::LogLevel level)
+{
+    switch (level)
+    {
+        case Logger::ERROR:     return "\033[31m"; // red
+        case Logger::WARNING:   return "\033[33m"; // yellow
+        case Logger::INFO:      return "\033[32m"; // green
+        case Logger::DEBUGING:  return "\033[36m"; // cyan
+        default:                      return "\033[0m";
+    }
+
+
 }
 
 }// ilrd

@@ -26,21 +26,22 @@ DirMonitor::DirMonitor(const std::string& dir)
     , m_watchFd(INVALID_FD)
     , m_isRunning(false)
 {
-    Handleton<Logger>::GetInstance()->Log("DirMonitor Ctor", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "Ctor - watching: " + m_dirPath);
 
     m_inotifyFd = inotify_init();
     
     if (INVALID_FD == m_inotifyFd)
     {
-        Handleton<Logger>::GetInstance()->Log("DirMonitor Error: Failed to init inotify", Logger::ERROR);
+        DIRMONITOR_LOG(Logger::ERROR, "Failed to init inotify");
         throw std::runtime_error("DirMonitor: Failed to init inotify");
     }
     
-    m_watchFd = inotify_add_watch(m_inotifyFd, m_dirPath.c_str(), IN_CREATE | IN_MOVED_TO);
+    m_watchFd = inotify_add_watch(m_inotifyFd, m_dirPath.c_str(), 
+                                   IN_CREATE | IN_MOVED_TO);
     
     if (INVALID_FD == m_watchFd)
     {
-        Handleton<Logger>::GetInstance()->Log("DirMonitor Error: Failed to watch directory: " + dir, Logger::ERROR);
+        DIRMONITOR_LOG(Logger::ERROR, "Failed to watch directory: " + dir);
         close(m_inotifyFd);
         throw std::runtime_error("DirMonitor: Failed to watch directory: " + dir);
     }
@@ -48,7 +49,7 @@ DirMonitor::DirMonitor(const std::string& dir)
 
 DirMonitor::~DirMonitor() noexcept
 {
-    Handleton<Logger>::GetInstance()->Log("DirMonitor Dtor", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "Dtor");
 
     m_isRunning.store(false);
     
@@ -70,7 +71,7 @@ DirMonitor::~DirMonitor() noexcept
 
 void DirMonitor::Run()
 {
-    Handleton<Logger>::GetInstance()->Log("DirMonitor::Run() Started..", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "Run()");
 
     if (m_isRunning.load())
     {
@@ -83,24 +84,25 @@ void DirMonitor::Run()
 
 void DirMonitor::Register(BaseCallback<const std::string&>* cb)
 {
-    Handleton<Logger>::GetInstance()->Log("DirMonitor::Register() Started...", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "Register callback");
     m_dispatcher.Subscribe(cb);
 }
 
 void DirMonitor::Unregister(BaseCallback<const std::string&>* cb)
 {
-    Handleton<Logger>::GetInstance()->Log("DirMonitor::Unregister() Started...", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "Unregister callback");
     m_dispatcher.UnSubscribe(cb);
 }
 
 void DirMonitor::ListeningLoop(DirMonitor* dir_monitor)
 {
-    Handleton<Logger>::GetInstance()->Log("DirMonitor::ListeningLoop() Started...", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "ListeningLoop started");
     char buffer[EVENT_BUFFER_SIZE];
     
     while (dir_monitor->m_isRunning.load())
     {
-        ssize_t bytesRead = read(dir_monitor->m_inotifyFd, buffer, EVENT_BUFFER_SIZE);
+        ssize_t bytesRead = read(dir_monitor->m_inotifyFd, buffer, 
+                                  EVENT_BUFFER_SIZE);
         
         if (bytesRead <= 0)
         {
@@ -118,6 +120,7 @@ void DirMonitor::ListeningLoop(DirMonitor* dir_monitor)
                 std::filesystem::path fullPath =
                     std::filesystem::path(dir_monitor->m_dirPath) / event->name;
 
+                DIRMONITOR_LOG(Logger::DEBUGING, "File detected: " + fullPath.string());
                 dir_monitor->m_dispatcher.Broadcast(fullPath.string());
             }
             
@@ -125,7 +128,7 @@ void DirMonitor::ListeningLoop(DirMonitor* dir_monitor)
         }
     }
 
-    Handleton<Logger>::GetInstance()->Log("DirMonitor::ListeningLoop() Finished...", Logger::DEBUGING);
+    DIRMONITOR_LOG(Logger::DEBUGING, "ListeningLoop finished");
 }
 
 } // namespace ilrd

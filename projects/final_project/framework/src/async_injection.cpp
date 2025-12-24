@@ -8,6 +8,7 @@
 
 #include "async_injection.hpp"
 #include "handleton.hpp" // Handleton
+#include "logger.hpp"
 namespace ilrd
 {
 
@@ -22,6 +23,7 @@ void AsyncInjection::AsyncTask::Execute()
     
     if (reschedule)
     {
+        LOG_DEBUG("Async Task is completed .");
         delete &m_owner;
     }
     else
@@ -36,6 +38,9 @@ AsyncInjection::AsyncInjection(std::function<bool(void)> func,
     , m_interval(interval)
     
 {
+    LOG_DEBUG("AsyncInjection Ctor - interval: " + 
+              std::to_string(interval.count()) + "ms");
+              
     m_task = std::make_shared<AsyncTask>(*this);
     Schedule();
 }

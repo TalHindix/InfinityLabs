@@ -10,6 +10,7 @@
 #include <chrono>       // std::chrono::milliseconds
 
 #include "thread_pool.hpp"
+#include "logger.hpp"
 
 namespace ilrd
 {
@@ -116,6 +117,7 @@ ThreadPool::Worker::~Worker()
 
 void ThreadPool::Worker::WorkLoop()
 {
+    
     while (!m_isStopped.load())
     {
         WaitWhilePaused();
@@ -141,6 +143,7 @@ void ThreadPool::Worker::WorkLoop()
             }
         }
     }
+    
 }
 
 void ThreadPool::Worker::WaitWhilePaused()
@@ -157,11 +160,14 @@ ThreadPool::ThreadPool(std::size_t numThreads)
     : m_isRunning(false)
     , m_isStopped(false)
 {
+    THREADPOOL_LOG(Logger::DEBUGING, "Ctor Started..");
     CreateWorkers(numThreads);
 }
 
 ThreadPool::~ThreadPool()
 {
+    THREADPOOL_LOG(Logger::DEBUGING, "Dtor Started..");
+    
     if (!m_isStopped.load())
     {
         Stop();
@@ -173,6 +179,7 @@ ThreadPool::Future ThreadPool::Add(TaskPtr task, Priority priority)
 {
     if (m_isStopped.load())
     {
+        THREADPOOL_LOG(Logger::ERROR, "Cannot add task to stopped ThreadPool");
         throw std::runtime_error("Cannot add task to stopped ThreadPool");
     }
 
@@ -186,17 +193,20 @@ ThreadPool::Future ThreadPool::Add(TaskPtr task, Priority priority)
 
 void ThreadPool::Run()
 {
+    THREADPOOL_LOG(Logger::DEBUGING, "Run()");
     m_isRunning.store(true);
     m_pauseCond.notify_all();
 }
 
 void ThreadPool::Pause()
 {
+    THREADPOOL_LOG(Logger::DEBUGING, "Pause()");
     m_isRunning.store(false);
 }
 
 void ThreadPool::Stop()
 {
+    THREADPOOL_LOG(Logger::DEBUGING, "Stop()");
     m_isStopped.store(true);
     m_isRunning.store(false);
     SendPoisonPills(m_workers.size());
@@ -207,10 +217,15 @@ void ThreadPool::SetNumOfThreads(std::size_t numThreads)
 {
     if (m_isStopped.load())
     {
+        THREADPOOL_LOG(Logger::ERROR, "Cannot resize stopped ThreadPool");
         throw std::runtime_error("Cannot change thread count on stopped ThreadPool");
     }
 
     std::size_t currentCount = m_workers.size();
+    
+    THREADPOOL_LOG(Logger::DEBUGING, "SetNumOfThreads: " + 
+                   std::to_string(currentCount) + " -> " + 
+                   std::to_string(numThreads));
 
     if (numThreads > currentCount)
     {
@@ -224,6 +239,7 @@ void ThreadPool::SetNumOfThreads(std::size_t numThreads)
 
 void ThreadPool::CreateWorkers(std::size_t count)
 {
+    THREADPOOL_LOG(Logger::DEBUGING, "Create:"+std::to_string(count)+" workers");
     for (std::size_t i = 0; i < count; ++i)
     {
         m_workers.push_back(WorkerPtr(new Worker(

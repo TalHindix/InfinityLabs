@@ -8,7 +8,7 @@ using namespace ilrd;
 
 int main()
 {
-    std::shared_ptr<SelectListener> listener = std::make_shared<SelectListener>();
+    std::shared_ptr<ListenSelect> listener = std::make_shared<ListenSelect>();
     Reactor r1(listener);
     r1.Add(fileno(stdin),Reactor::READ, 
     [&r1](int fd, Reactor::Mode mode)

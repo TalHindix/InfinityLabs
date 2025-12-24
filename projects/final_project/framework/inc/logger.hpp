@@ -38,7 +38,7 @@ public:
 
     void Log(const std::string& msg, 
              LogLevel level = DEBUGING, 
-             std::string file_name = __FILE__, 
+             const std::string file_name = __FILE__, 
              int line = __LINE__);
     
     Logger(const Logger& other) = delete;
@@ -60,7 +60,7 @@ private:
     ~Logger();
     
     index_t WriteToFile(); 
-    
+    const char* LevelToColor(Logger::LogLevel level);
     std::string LevelToString(LogLevel level) const;
     
     std::atomic<bool> m_is_alive;
@@ -74,5 +74,40 @@ private:
 static const std::string g_log_path = "./log_file";
 
 } // namespace ilrd
+
+
+#define LOG(level, msg) \
+    ilrd::Handleton<ilrd::Logger>::GetInstance()->Log(msg, level, __FILE__, __LINE__)
+
+// Basic logging macros
+#define LOG_ERROR(msg)   LOG(ilrd::Logger::ERROR, msg)
+#define LOG_WARNING(msg) LOG(ilrd::Logger::WARNING, msg)
+#define LOG_DEBUG(msg)   LOG(ilrd::Logger::DEBUGING, msg)
+#define LOG_INFO(msg)    LOG(ilrd::Logger::DEBUGING, msg)
+
+// Component-aware logging macro
+#define COMPONENT_LOG(component, level, msg) \
+    ilrd::Handleton<ilrd::Logger>::GetInstance()->Log( \
+        std::string("[" component "] ") + msg, level, __FILE__, __LINE__)
+
+// Framework component macros
+#define FACTORY_LOG(level,msg)        COMPONENT_LOG("Factory", level, msg)
+#define REACTOR_LOG(level, msg)       COMPONENT_LOG("Reactor", level, msg)
+#define THREADPOOL_LOG(level, msg)    COMPONENT_LOG("ThreadPool", level, msg)
+#define SCHEDULER_LOG(level, msg)     COMPONENT_LOG("Scheduler", level, msg)
+#define DISPATCHER_LOG(level, msg)    COMPONENT_LOG("Dispatcher", level, msg)
+#define DIRMONITOR_LOG(level, msg)    COMPONENT_LOG("DirMonitor", level, msg)
+#define DLLLOADER_LOG(level, msg)     COMPONENT_LOG("DllLoader", level, msg)
+#define MEDIATOR_LOG(level, msg)      COMPONENT_LOG("InputMediator", level, msg)
+#define FRAMEWORK_LOG(level, msg)     COMPONENT_LOG("Framework", level, msg)
+
+// Concrete component macros (for future use)
+
+
+// Disable debug logs in release build for performance
+#ifdef NDEBUG
+    #undef LOG_DEBUG
+    #define LOG_DEBUG(msg) ((void)0)
+#endif
 
 #endif // __ILRD_LOGGER__

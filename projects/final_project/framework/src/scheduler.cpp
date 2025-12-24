@@ -9,15 +9,17 @@
 #include <signal.h>    // sigevent
 #include <time.h>      // timer_create
 #include <cstring>     // memset
-#include <iostream>    // cout
 
 #include "scheduler.hpp"
+#include "logger.hpp"
 
 namespace ilrd
 {
 
 Scheduler::Scheduler()
 {
+    SCHEDULER_LOG(Logger::DEBUGING, "Ctor");
+    
     struct sigevent sev;
     std::memset(&sev, 0, sizeof(sev));
     
@@ -25,17 +27,25 @@ Scheduler::Scheduler()
     sev.sigev_notify_function = TimerCallback;
     sev.sigev_value.sival_ptr = this;
     
-    timer_create(CLOCK_MONOTONIC, &sev, &m_timer);
+    if (timer_create(CLOCK_MONOTONIC, &sev, &m_timer) == -1)
+    {
+        SCHEDULER_LOG(Logger::ERROR, "Failed to create timer");
+        throw std::runtime_error("Scheduler: Failed to create timer");
+    }
 }
 
 Scheduler::~Scheduler() noexcept
 {
+    SCHEDULER_LOG(Logger::DEBUGING, "Dtor");
     timer_delete(m_timer);
 }
 
 void Scheduler::Add(std::shared_ptr<ISTask> task, const Duration delay)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+
+    SCHEDULER_LOG(Logger::DEBUGING, "Add task with delay: " + 
+                  std::to_string(delay.count()) + "ms");
 
     TimePoint exec_time = std::chrono::steady_clock::now() + delay;
     m_waitable_queue.push({task, exec_time});
@@ -56,13 +66,13 @@ void Scheduler::SetTimer(TimePoint exec_time)
     struct itimerspec its;
     std::memset(&its, 0, sizeof(its));
     
-    its.it_value.tv_sec = delay.count() / 1000000000;
-    its.it_value.tv_nsec = delay.count() % 1000000000;
+    its.it_value.tv_sec = delay_ns.count() / 1000000000;
+    its.it_value.tv_nsec = delay_ns.count() % 1000000000;
     
-
     if (timer_settime(m_timer, 0, &its, nullptr) == -1)
     {
-        throw std::runtime_error("Failed to set timer");
+        SCHEDULER_LOG(Logger::ERROR, "Failed to set timer");
+        throw std::runtime_error("Scheduler: Failed to set timer");
     }
 }
 
@@ -87,6 +97,7 @@ void Scheduler::TimerCallback(union sigval sv)
     
     lock.unlock();
     
+    SCHEDULER_LOG(Logger::DEBUGING, "Executing task");
     currentTask.first->Execute();
     
     lock.lock();

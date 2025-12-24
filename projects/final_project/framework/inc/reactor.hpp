@@ -34,9 +34,10 @@ public:
         virtual ~IListener() = default;
         virtual std::vector<FdPair> Listen(const std::vector<FdPair>& set) = 0;
     };
+
     
     explicit Reactor(const std::shared_ptr<IListener> listener);
-    ~Reactor() noexcept = default;
+    ~Reactor() noexcept;
     
     Reactor(const Reactor& other) = delete;
     Reactor& operator=(const Reactor& other) = delete;
@@ -63,6 +64,9 @@ private:
     };
     
     using CallbackMap = std::unordered_map<FdPair, CallBack, Hasher>;
+
+    static const char* ModeToString(Reactor::Mode mode);
+    
 
     std::vector<FdPair> GetMonitoredFds() const;
     void InvokeCallback(const FdPair& fdPair);

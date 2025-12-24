@@ -45,8 +45,8 @@ public:
         ITask& operator=(const ITask&) = delete;
     };
 
-    typedef std::shared_ptr<ITask> TaskPtr;
-    typedef std::shared_future<void> Future;
+    using TaskPtr = std::shared_ptr<ITask>;
+    using Future = std::shared_future<void>;
 
     explicit ThreadPool(std::size_t numThreads = std::thread::hardware_concurrency());
     ~ThreadPool();
@@ -73,10 +73,11 @@ private:
         bool operator()(const WrappedTaskPtr& lhs, const WrappedTaskPtr& rhs) const;
     };
 
-    typedef PriorityQueue<WrappedTaskPtr, std::vector<WrappedTaskPtr>, ComparePriority> TaskPQ;
-    typedef WaitableQueue<WrappedTaskPtr, TaskPQ> TaskQueue;
-
+    
     std::vector<WorkerPtr> m_workers;
+
+    using TaskPQ =  PriorityQueue<WrappedTaskPtr, std::vector<WrappedTaskPtr>, ComparePriority>;
+    using TaskQueue = WaitableQueue<WrappedTaskPtr, TaskPQ>;
     TaskQueue m_taskQueue;
     
     std::atomic<bool> m_isRunning;

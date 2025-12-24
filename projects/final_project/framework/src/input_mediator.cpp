@@ -19,17 +19,18 @@ namespace ilrd
 InputMediator::TPTask::TPTask(std::shared_ptr<IKeyArgs> args) 
     : m_args(args)
 {
-    Handleton<Logger>::GetInstance()->Log("TPTask Ctor", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "TPTask Ctor");
 }
 
 InputMediator::TPTask::~TPTask()
 {
-    Handleton<Logger>::GetInstance()->Log("TPTask Dtor", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "TPTask Dtor");
 }
 
 void InputMediator::TPTask::Execute()
 {
-    Handleton<Logger>::GetInstance()->Log("TPTask Execute", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "TPTask Execute - key: " + 
+                 std::to_string(m_args->GetKey()));
 
     auto factory = Handleton<Factory<ICommand, int>>::GetInstance();
     auto command = factory->Create(m_args->GetKey());
@@ -41,12 +42,13 @@ void InputMediator::TPTask::Execute()
 InputMediator::ReactorCallback::ReactorCallback(Cb inputProxy) 
     : m_inputProxy(inputProxy)
 {
-    Handleton<Logger>::GetInstance()->Log("ReactorCallback Ctor", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "ReactorCallback Ctor");
 }
 
 void InputMediator::ReactorCallback::operator()(int fd, Reactor::Mode mode)
 {
-    Handleton<Logger>::GetInstance()->Log("ReactorCallback operator()", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "ReactorCallback invoked - fd: " + 
+                 std::to_string(fd));
 
     std::shared_ptr<IKeyArgs> args = m_inputProxy->GetKeyArgs(fd, mode);
     auto task = std::make_shared<TPTask>(args);
@@ -57,7 +59,8 @@ InputMediator::InputMediator(const std::vector<FdEntry>& entries,
                              std::shared_ptr<Reactor::IListener> listener)
     : m_reactor(listener)
 {
-    Handleton<Logger>::GetInstance()->Log("InputMediator Ctor", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "Ctor - registering " + 
+                 std::to_string(entries.size()) + " entries");
     
     for (const FdEntry& entry : entries)
     {
@@ -72,14 +75,20 @@ InputMediator::InputMediator(const std::vector<FdEntry>& entries,
 
 InputMediator::~InputMediator()
 {
+    MEDIATOR_LOG(Logger::DEBUGING, "Dtor");
     m_reactor.Stop();
-    Handleton<Logger>::GetInstance()->Log("InputMediator Dtor", Logger::DEBUGING);
 }
 
 void InputMediator::Run()
 {
-    Handleton<Logger>::GetInstance()->Log("InputMediator Run", Logger::DEBUGING);
+    MEDIATOR_LOG(Logger::DEBUGING, "Run()");
     m_reactor.Run();
+}
+
+void InputMediator::Stop()
+{
+    MEDIATOR_LOG(Logger::DEBUGING, "Stop()");
+    m_reactor.Stop();
 }
 
 } // namespace ilrd
