@@ -31,14 +31,14 @@ Framework::Framework(const std::vector<FdEntry>& entries,
 
 Framework::~Framework()
 {
-    FRAMEWORK_LOG(Logger::DEBUGING, "Dtor Started..");
+    FRAMEWORK_LOG(Logger::DEBUGING, "Dtor");
     
     m_dirMonitor.Unregister(&m_pluginCallback);
 }
 
 void Framework::Run()
 {
-    FRAMEWORK_LOG(Logger::DEBUGING, "Run() Starting...");
+    FRAMEWORK_LOG(Logger::DEBUGING, "Run()");
     Handleton<ThreadPool>::GetInstance()->Run();
     m_dirMonitor.Run();
     m_mediator.Run();
@@ -46,7 +46,7 @@ void Framework::Run()
 
 void Framework::Stop()
 {
-    FRAMEWORK_LOG(Logger::DEBUGING, "Stop() called");
+    FRAMEWORK_LOG(Logger::DEBUGING, "Stop()");
     
     m_mediator.Stop();
     Handleton<ThreadPool>::GetInstance()->Pause();

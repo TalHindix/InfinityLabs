@@ -84,19 +84,19 @@ void DirMonitor::Run()
 
 void DirMonitor::Register(BaseCallback<const std::string&>* cb)
 {
-    DIRMONITOR_LOG(Logger::DEBUGING, "Register callback");
+    DIRMONITOR_LOG(Logger::DEBUGING, "Register(BaseCallBack<> cb)");
     m_dispatcher.Subscribe(cb);
 }
 
 void DirMonitor::Unregister(BaseCallback<const std::string&>* cb)
 {
-    DIRMONITOR_LOG(Logger::DEBUGING, "Unregister callback");
+    DIRMONITOR_LOG(Logger::DEBUGING, "Unregister(BaseCallBack<> cb)");
     m_dispatcher.UnSubscribe(cb);
 }
 
 void DirMonitor::ListeningLoop(DirMonitor* dir_monitor)
 {
-    DIRMONITOR_LOG(Logger::DEBUGING, "ListeningLoop started");
+    DIRMONITOR_LOG(Logger::DEBUGING, "ListeningLoop()");
     char buffer[EVENT_BUFFER_SIZE];
     
     while (dir_monitor->m_isRunning.load())
@@ -127,8 +127,6 @@ void DirMonitor::ListeningLoop(DirMonitor* dir_monitor)
             offset += sizeof(struct inotify_event) + event->len;
         }
     }
-
-    DIRMONITOR_LOG(Logger::DEBUGING, "ListeningLoop finished");
 }
 
 } // namespace ilrd

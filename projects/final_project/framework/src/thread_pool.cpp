@@ -160,13 +160,13 @@ ThreadPool::ThreadPool(std::size_t numThreads)
     : m_isRunning(false)
     , m_isStopped(false)
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Ctor Started..");
+    THREADPOOL_LOG(Logger::DEBUGING, "Ctor");
     CreateWorkers(numThreads);
 }
 
 ThreadPool::~ThreadPool()
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Dtor Started..");
+    THREADPOOL_LOG(Logger::DEBUGING, "Dtor");
     
     if (!m_isStopped.load())
     {

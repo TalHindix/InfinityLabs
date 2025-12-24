@@ -16,7 +16,7 @@ Reactor::Reactor(std::shared_ptr<IListener> listener)
     : m_listener(listener)
     , m_is_running(false)
 {
-    REACTOR_LOG(Logger::DEBUGING, "Ctor started...");
+    REACTOR_LOG(Logger::DEBUGING, "Ctor");
 }
 
 Reactor::~Reactor() noexcept
@@ -41,7 +41,7 @@ void Reactor::Remove(int fd, Mode mode)
 
 void Reactor::Run()
 {
-    REACTOR_LOG(Logger::DEBUGING, "Run() started");
+    REACTOR_LOG(Logger::DEBUGING, "Run()");
     
     m_is_running = true;
 
@@ -57,8 +57,6 @@ void Reactor::Run()
             InvokeCallback(fds[i]);
         }
     }
-
-    REACTOR_LOG(Logger::DEBUGING, "Run() finished");
 }
 
 void Reactor::InvokeCallback(const FdPair& fdPair)

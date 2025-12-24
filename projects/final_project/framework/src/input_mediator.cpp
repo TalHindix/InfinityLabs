@@ -42,12 +42,12 @@ void InputMediator::TPTask::Execute()
 InputMediator::ReactorCallback::ReactorCallback(Cb inputProxy) 
     : m_inputProxy(inputProxy)
 {
-    MEDIATOR_LOG(Logger::DEBUGING, "ReactorCallback Ctor");
+    MEDIATOR_LOG(Logger::DEBUGING, "ReactorCallback() Ctor");
 }
 
 void InputMediator::ReactorCallback::operator()(int fd, Reactor::Mode mode)
 {
-    MEDIATOR_LOG(Logger::DEBUGING, "ReactorCallback invoked - fd: " + 
+    MEDIATOR_LOG(Logger::DEBUGING, "ReactorCallback::operator() invoked - fd: " + 
                  std::to_string(fd));
 
     std::shared_ptr<IKeyArgs> args = m_inputProxy->GetKeyArgs(fd, mode);

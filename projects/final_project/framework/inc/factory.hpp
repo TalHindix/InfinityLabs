@@ -81,15 +81,15 @@ template<typename BASE, typename KEY, typename... ARGS>
 typename Factory<BASE, KEY, ARGS...>::BASE_PTR 
 Factory<BASE, KEY, ARGS...>::Create(const KEY& key, ARGS... args)
 {
-    FACTORY_LOG(Logger::DEBUGING, "Create key: " + detail::KeyToString(key));
-    
     auto iter = m_map.find(key);
 
     if (iter == m_map.end())
     {
-        FACTORY_LOG(Logger::ERROR, "Key not found: " + detail::KeyToString(key));
+        FACTORY_LOG(Logger::DEBUGING, "Key : " + detail::KeyToString(key) + " not found!");
         throw std::out_of_range("Factory::Create - key not found");
     }
+
+    FACTORY_LOG(Logger::DEBUGING, "Create key: " + detail::KeyToString(key));
 
     return iter->second(args...);
 }

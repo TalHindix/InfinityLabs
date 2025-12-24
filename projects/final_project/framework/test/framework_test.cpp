@@ -95,7 +95,8 @@ int main()
 {
     std::cout << "=== Framework Test ===" << std::endl;
     LOG_DEBUG("================================ Framework Test ================================");
-    std::vector<Framework::CommandCreator> commands = {
+    std::vector<Framework::CommandCreator> commands = 
+    {
         {READ_CMD,  []() { return std::make_shared<StubReadCommand>(); }},
         {WRITE_CMD, []() { return std::make_shared<StubWriteCommand>(); }},
     };
