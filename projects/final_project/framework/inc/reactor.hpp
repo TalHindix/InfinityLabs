@@ -43,8 +43,8 @@ public:
     Reactor(const Reactor&& other) = delete;
     Reactor& operator=(const Reactor&& other) = delete;
     
-    void Add (int fd, Mode mode, CallBack callback);
-    void Remove (int fd, Mode mode);
+    void Add(int fd, Mode mode, CallBack callback);
+    void Remove(int fd, Mode mode);
 
     void Run();
     void Stop();

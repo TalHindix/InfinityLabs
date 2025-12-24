@@ -26,10 +26,7 @@ ThreadPool::TaskWrapper::TaskWrapper(TaskPtr task, Priority priority)
 }
 
 ThreadPool::TaskWrapper::TaskWrapper(Priority priority)
-    : m_task()
-    , m_priority(priority)
-    , m_promise()
-    , m_isPoisonPill(true)
+    : m_priority(priority), m_isPoisonPill(true)
 {
 }
 

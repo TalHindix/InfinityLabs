@@ -20,7 +20,6 @@ void AsyncInjection::AsyncTask::Execute()
 {
     bool reschedule = m_owner.m_func();
     
-    std::cout << "The value of reschedule is " << reschedule << std::endl;
     if (reschedule)
     {
         delete &m_owner;

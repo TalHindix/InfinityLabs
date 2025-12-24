@@ -11,8 +11,10 @@ int main()
     std::shared_ptr<SelectListener> listener = std::make_shared<SelectListener>();
     Reactor r1(listener);
     r1.Add(fileno(stdin),Reactor::READ, 
-    [&r1](int fd, Reactor::Mode Mode)
+    [&r1](int fd, Reactor::Mode mode)
     {
+        (void)fd;
+        (void)mode;
         std::string s1;
         std::cin >> s1;
         std::cout << "S1 value is " << s1 << std::endl;

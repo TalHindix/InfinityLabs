@@ -29,6 +29,10 @@ public:
 
         return iter->second;
     }
+
+    Multiton(const Multiton& other) = delete;
+    Multiton& operator=(const Multiton& other) = delete;
+
 private:
     Multiton();
     ~Multiton() = default;
