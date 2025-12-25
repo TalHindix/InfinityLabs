@@ -34,10 +34,13 @@ Scheduler::Scheduler()
     }
 }
 
-Scheduler::~Scheduler() noexcept
+Scheduler::~Scheduler() noexcept(false)
 {
     SCHEDULER_LOG(Logger::DEBUGING, "Dtor");
-    timer_delete(m_timer);
+    if(timer_delete(m_timer) == -1)
+    {
+        throw std::runtime_error("Scheduler: Failed to delete timer");
+    };
 }
 
 void Scheduler::Add(std::shared_ptr<ISTask> task, const Duration delay)

@@ -47,7 +47,7 @@ private:
     
     friend class Handleton<Scheduler>;
     explicit Scheduler();
-    ~Scheduler() noexcept;  
+    ~Scheduler() noexcept(false);  
 
     struct TaskComparator 
     {

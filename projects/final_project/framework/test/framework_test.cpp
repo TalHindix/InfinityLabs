@@ -48,7 +48,8 @@ public:
     std::shared_ptr<IKeyArgs> GetKeyArgs(int fd, Reactor::Mode mode) override 
     {
         char buf[256] = {0};
-        if (read(fd, buf, sizeof(buf) - 1) <= 0) {
+        if (read(fd, buf, sizeof(buf) - 1) <= 0)
+        {
             return std::make_shared<StubKeyArgs>(mode);
         }
 
