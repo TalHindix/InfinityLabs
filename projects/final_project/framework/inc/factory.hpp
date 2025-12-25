@@ -14,24 +14,11 @@
 #include <stdexcept>      // std::out_of_range 
 #include <unordered_map>  // std::unordered_map
 #include <string>         // std::string
-#include <sstream>        // std::ostringstream
 
 #include "logger.hpp"     // FACTORY_LOG
 
 namespace ilrd
 {
-
-namespace detail
-{
-    // Helper to convert any key to string for logging
-    template<typename T>
-    std::string KeyToString(const T& key)
-    {
-        std::ostringstream oss;
-        oss << key;
-        return oss.str();
-    }
-} // namespace detail
 
 template<typename BASE, typename KEY, typename... ARGS>     
 class Factory
@@ -73,7 +60,7 @@ Factory<BASE, KEY, ARGS...>::~Factory() noexcept
 template<typename BASE, typename KEY, typename... ARGS>
 void Factory<BASE, KEY, ARGS...>::Add(const KEY& key, CTOR ctor) noexcept
 {
-    FACTORY_LOG(Logger::DEBUGING, "Add key: " + detail::KeyToString(key));
+    FACTORY_LOG(Logger::DEBUGING, "Add()");
     m_map[key] = ctor;
 }
 
@@ -85,11 +72,11 @@ Factory<BASE, KEY, ARGS...>::Create(const KEY& key, ARGS... args)
 
     if (iter == m_map.end())
     {
-        FACTORY_LOG(Logger::DEBUGING, "Key : " + detail::KeyToString(key) + " not found!");
+        FACTORY_LOG(Logger::DEBUGING, "Key not found!");
         throw std::out_of_range("Factory::Create - key not found");
     }
 
-    FACTORY_LOG(Logger::DEBUGING, "Create key: " + detail::KeyToString(key));
+    FACTORY_LOG(Logger::DEBUGING, "Create()");
 
     return iter->second(args...);
 }
