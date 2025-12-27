@@ -28,6 +28,7 @@ int main()
     std::cout << "Running..." << std::endl;
 
     r1.Run();
+    r1.Run();
 
     std::cout << "Stopped..." << std::endl;
 

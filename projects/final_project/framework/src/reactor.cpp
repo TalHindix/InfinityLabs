@@ -42,19 +42,24 @@ void Reactor::Remove(int fd, Mode mode)
 void Reactor::Run()
 {
     REACTOR_LOG(Logger::DEBUGING, "Run()");
-    
+
+    if(m_is_running)
+    {
+        REACTOR_LOG(Logger::ERROR, "Reactor::Run() called while already running");
+        throw std::runtime_error("Reactor::Run() called while already running");
+    }
+
     m_is_running = true;
 
     while (m_is_running && !m_callbacks.empty())
     {
         std::vector<FdPair> fds = GetMonitoredFds();
-        if (fds.empty()) break;
 
-        m_listener->Listen(fds);
+        std::vector<FdPair> rdy_fds = m_listener->Listen(fds);
 
-        for (std::size_t i = 0; i < fds.size() && m_is_running; ++i)
+        for (std::size_t i = 0; i < rdy_fds.size() ; ++i)
         {
-            InvokeCallback(fds[i]);
+            InvokeCallback(rdy_fds[i]);
         }
     }
 }
