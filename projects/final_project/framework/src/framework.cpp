@@ -2,13 +2,13 @@
  * Exercise:    Framework
  * Date:        24/12/2025
  * Developer:   Tal Hindi
- * Reviewer:    
- * Status:      
+ * Reviewer:    Avi Tobar
+ * Status:      Approved
  *****************************************************************************/
 
-#include "framework.hpp"
-#include "logger.hpp"
-#include "thread_pool.hpp"
+#include "framework.hpp"    //FrameWork
+#include "logger.hpp"       //Logger
+#include "thread_pool.hpp"  //ThreadPool
 
 namespace ilrd
 {

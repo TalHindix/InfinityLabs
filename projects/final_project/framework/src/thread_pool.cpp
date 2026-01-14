@@ -1,265 +1,218 @@
-/*****************************************************************************
- Exercise:    ThreadPool
- Date:        03/12/2025
- Developer:   Tal Hindi
- Reviewer:    Shiran Swisa
- Status:      Approved
- *****************************************************************************/
+/*******************************************************************************
+ * Exercise: ThreadPool
+ * Date: 30/12/2024
+ * Developer: Tal Hindi
+ * Reviewer:
+ * Status: In Progress
+ ******************************************************************************/
 
-#include <stdexcept>    // std::runtime_error
-#include <chrono>       // std::chrono::milliseconds
+#include <stdexcept> // std::runtime_error
 
 #include "thread_pool.hpp"
-#include "logger.hpp"
 
 namespace ilrd
 {
 
-static const int POISON_PILL_PRIORITY = ThreadPool::HIGH + 1;
-static const std::chrono::milliseconds POP_TIMEOUT(100);
+thread_local bool t_isAlive = true;
 
+// ======================= WorkerThread =======================================
 
-ThreadPool::TaskWrapper::TaskWrapper(TaskPtr task, Priority priority)
-    : m_task(task)
-    , m_priority(priority)
-    , m_isPoisonPill(false)
-{
-}
-
-ThreadPool::TaskWrapper::TaskWrapper(Priority priority)
-    : m_priority(priority), m_isPoisonPill(true)
-{
-}
-
-void ThreadPool::TaskWrapper::Run()
-{
-    if (m_isPoisonPill)
-    {
-        return;
-    }
-
-    try
-    {
-        if (m_task)
-        {
-            m_task->Execute();
-        }
-        m_promise.set_value();
-    }
-    catch (...)
-    {
-        m_promise.set_exception(std::current_exception());
-    }
-}
-
-ThreadPool::Priority ThreadPool::TaskWrapper::GetPriority() const
-{
-    return m_priority;
-}
-
-bool ThreadPool::TaskWrapper::IsPoisonPill() const
-{
-    return m_isPoisonPill;
-}
-
-ThreadPool::Future ThreadPool::TaskWrapper::GetFuture()
-{
-    return m_promise.get_future().share();
-}
-
-class ThreadPool::Worker
+class ThreadPool::WorkerThread
 {
 public:
-    Worker(TaskQueue& taskQueue,
-           std::atomic<bool>& isRunning,
-           std::atomic<bool>& isStopped,
-           std::mutex& pauseMutex,
-           std::condition_variable& pauseCond);
-    ~Worker();
+    explicit WorkerThread(ThreadPool& pool)
+        : m_pool(pool)
+        , m_thread(&WorkerThread::Run, this)
+    {}
 
-    Worker(const Worker&) = delete;
-    Worker& operator=(const Worker&) = delete;
+    ~WorkerThread()
+    {
+        if (m_thread.joinable())
+        {
+            m_thread.join();
+        }
+    }
+
+    WorkerThread(const WorkerThread&) = delete;
+    WorkerThread& operator=(const WorkerThread&) = delete;
 
 private:
-    void WorkLoop();
-    void WaitWhilePaused();
+    void Run()
+    {
+        while (t_isAlive)
+        {
+            TaskWithPriority task;
+            m_pool.m_taskQueue.pop(&task);
+            task.m_task->Execute();
+        }
 
-    TaskQueue& m_taskQueue;
-    std::atomic<bool>& m_isRunning;
-    std::atomic<bool>& m_isStopped;
-    std::mutex& m_pauseMutex;
-    std::condition_variable& m_pauseCond;
+        m_pool.m_deadWorkers.push(this);
+    }
+
+    ThreadPool& m_pool;
     std::thread m_thread;
 };
 
+// ======================= BadApple ===========================================
 
-ThreadPool::Worker::Worker(TaskQueue& taskQueue,
-                           std::atomic<bool>& isRunning,
-                           std::atomic<bool>& isStopped,
-                           std::mutex& pauseMutex,
-                           std::condition_variable& pauseCond)
-    : m_taskQueue(taskQueue)
-    , m_isRunning(isRunning)
-    , m_isStopped(isStopped)
-    , m_pauseMutex(pauseMutex)
-    , m_pauseCond(pauseCond)
-    , m_thread(&Worker::WorkLoop, this)
+class ThreadPool::BadApple : public ITask
 {
-}
-
-ThreadPool::Worker::~Worker()
-{
-    if (m_thread.joinable())
+public:
+    void Execute() override
     {
-        m_thread.join();
+        t_isAlive = false;
     }
-}
+};
 
-void ThreadPool::Worker::WorkLoop()
+// ======================= PauseTask ==========================================
+
+class ThreadPool::PauseTask : public ITask
 {
-    
-    while (!m_isStopped.load())
+public:
+    explicit PauseTask(sem_t* sem) : m_sem(sem) {}
+
+    void Execute() override
     {
-        WaitWhilePaused();
-
-        if (m_isStopped.load())
-        {
-            break;
-        }
-
-        WrappedTaskPtr task;
-        bool hasTask = m_taskQueue.pop(&task, POP_TIMEOUT);
-
-        if (hasTask)
-        {
-            if (task->IsPoisonPill())
-            {
-                break;
-            }
-
-            if (m_isRunning.load())
-            {
-                task->Run();
-            }
-        }
+        sem_wait(m_sem);
     }
-    
-}
 
-void ThreadPool::Worker::WaitWhilePaused()
-{
-    std::unique_lock<std::mutex> lock(m_pauseMutex);
+private:
+    sem_t* m_sem;
+};
 
-    while (!m_isRunning.load() && !m_isStopped.load())
-    {
-        m_pauseCond.wait(lock);
-    }
-}
+// ======================= ThreadPool =========================================
 
 ThreadPool::ThreadPool(std::size_t numThreads)
     : m_isRunning(false)
     , m_isStopped(false)
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Ctor");
-    CreateWorkers(numThreads);
+    sem_init(&m_pauseSem, 0, 0);
+    SetNumOfThreads(numThreads);
 }
 
 ThreadPool::~ThreadPool()
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Dtor");
-    
-    if (!m_isStopped.load())
-    {
-        Stop();
-    }
-    m_workers.clear();
+    Stop();
+    sem_destroy(&m_pauseSem);
 }
 
-ThreadPool::Future ThreadPool::Add(TaskPtr task, Priority priority)
+void ThreadPool::Add(std::shared_ptr<ITask> task, Priority priority)
 {
     if (m_isStopped.load())
     {
-        THREADPOOL_LOG(Logger::ERROR, "Cannot add task to stopped ThreadPool");
-        throw std::runtime_error("Cannot add task to stopped ThreadPool");
+        throw std::runtime_error("Cannot add task: pool is stopped");
     }
 
-    WrappedTaskPtr wrappedTask(new TaskWrapper(task, priority));
-    Future future = wrappedTask->GetFuture();
-
-    m_taskQueue.push(wrappedTask);
-
-    return future;
+    m_taskQueue.push({task, priority});
 }
 
 void ThreadPool::Run()
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Run()");
+    if (m_isStopped.load() || m_isRunning.load())
+    {
+        return;
+    }
+
     m_isRunning.store(true);
-    m_pauseCond.notify_all();
+
+    for (std::size_t i = 0; i < m_workers.size(); ++i)
+    {
+        sem_post(&m_pauseSem);
+    }
 }
 
 void ThreadPool::Pause()
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Pause()");
+    if (!m_isRunning.load() || m_isStopped.load())
+    {
+        return;
+    }
+
     m_isRunning.store(false);
+
+    for (std::size_t i = 0; i < m_workers.size(); ++i)
+    {
+        m_taskQueue.push({std::make_shared<PauseTask>(&m_pauseSem), FIRST});
+    }
 }
 
 void ThreadPool::Stop()
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Stop()");
-    m_isStopped.store(true);
+    if (m_isStopped.exchange(true))
+    {
+        return;
+    }
+
     m_isRunning.store(false);
-    SendPoisonPills(m_workers.size());
-    m_pauseCond.notify_all();
+
+    Shrink(m_workers.size());
 }
 
 void ThreadPool::SetNumOfThreads(std::size_t numThreads)
 {
     if (m_isStopped.load())
     {
-        THREADPOOL_LOG(Logger::ERROR, "Cannot resize stopped ThreadPool");
-        throw std::runtime_error("Cannot change thread count on stopped ThreadPool");
+        throw std::runtime_error("Cannot resize: pool is stopped");
     }
 
-    std::size_t currentCount = m_workers.size();
-    
-    THREADPOOL_LOG(Logger::DEBUGING, "SetNumOfThreads: " + 
-                   std::to_string(currentCount) + " -> " + 
-                   std::to_string(numThreads));
+    std::size_t currentThreads = m_workers.size();
 
-    if (numThreads > currentCount)
+    if (numThreads > currentThreads)
     {
-        CreateWorkers(numThreads - currentCount);
+        Grow(numThreads - currentThreads);
     }
-    else if (numThreads < currentCount)
+    else if (numThreads < currentThreads)
     {
-        SendPoisonPills(currentCount - numThreads);
+        Shrink(currentThreads - numThreads);
     }
 }
 
-void ThreadPool::CreateWorkers(std::size_t count)
+void ThreadPool::Grow(std::size_t toAdd)
 {
-    THREADPOOL_LOG(Logger::DEBUGING, "Create:"+std::to_string(count)+" workers");
-    for (std::size_t i = 0; i < count; ++i)
+    for (std::size_t i = 0; i < toAdd; ++i)
     {
-        m_workers.push_back(WorkerPtr(new Worker(
-            m_taskQueue,
-            m_isRunning,
-            m_isStopped,
-            m_pauseMutex,
-            m_pauseCond
-        )));
+        m_workers.push_back(std::make_unique<WorkerThread>(*this));
+    }
+
+    if (!m_isRunning.load())
+    {
+        for (std::size_t i = 0; i < toAdd; ++i)
+        {
+            m_taskQueue.push({std::make_shared<PauseTask>(&m_pauseSem), FIRST});
+        }
     }
 }
 
-void ThreadPool::SendPoisonPills(std::size_t count)
+void ThreadPool::Shrink(std::size_t toRemove)
 {
-    Priority poisonPriority = static_cast<Priority>(POISON_PILL_PRIORITY);
-
-    for (std::size_t i = 0; i < count; ++i)
+    for (std::size_t i = 0; i < toRemove; ++i)
     {
-        WrappedTaskPtr pill(new TaskWrapper(poisonPriority));
-        m_taskQueue.push(pill);
+        m_taskQueue.push({std::make_shared<BadApple>(), FIRST});
+    }
+
+    if (!m_isRunning.load())
+    {
+        for (std::size_t i = 0; i < toRemove; ++i)
+        {
+            sem_post(&m_pauseSem);
+        }
+    }
+
+    for (std::size_t i = 0; i < toRemove; ++i)
+    {
+        WorkerThread* dead;
+        m_deadWorkers.pop(&dead);
+
+        auto it = std::find_if(m_workers.begin(), m_workers.end(),
+            [dead](const std::unique_ptr<WorkerThread>& w)
+            {
+                return w.get() == dead;
+            });
+
+        if (it != m_workers.end())
+        {
+            m_workers.erase(it);
+        }
     }
 }
 

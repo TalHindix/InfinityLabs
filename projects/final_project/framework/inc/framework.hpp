@@ -2,26 +2,26 @@
  * Exercise:    Framework
  * Date:        23/12/2025
  * Developer:   Tal Hindi
- * Reviewer:    
- * Status:      
+ * Reviewer:    Avi Tobar
+ * Status:      Approved
  *****************************************************************************/
 
 #ifndef __ILRD_FRAMEWORK__
 #define __ILRD_FRAMEWORK__
 
-#include <vector>
-#include <string>
-#include <memory>
-#include <cstddef>
+#include <vector>   //std::vector
+#include <string>   //std::string
+#include <memory>   //std::shared_ptr
+#include <cstddef>  
 
-#include "input_mediator.hpp"
-#include "dir_monitor.hpp"
-#include "dll_loader.hpp"
-#include "dispatcher.hpp"
-#include "thread_pool.hpp"
-#include "icommand.hpp"
-#include "factory.hpp"
-#include "handleton.hpp"
+#include "input_mediator.hpp" //InputMediator
+#include "dir_monitor.hpp"    //DirMonitor
+#include "dll_loader.hpp"     //DllLoader
+#include "dispatcher.hpp"     //Dispatcher
+#include "thread_pool.hpp"    //ThreadPool
+#include "icommand.hpp"       //ICommand
+#include "factory.hpp"        //Factory
+#include "handleton.hpp"      //Handleton
 
 namespace ilrd
 {

@@ -2,7 +2,7 @@
 
 #── Compiler ───────────────────────────────────────────────────────────────────
 CXX      := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -fPIC
+CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -fPIC
 LDFLAGS  := -pthread -ldl
 
 #── Directories ────────────────────────────────────────────────────────────────
