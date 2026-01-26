@@ -34,3 +34,40 @@ node_modules/
 
 # Sandbox directory
 sandbox/
+
+# =========================
+# Frontend (Vite / React)
+# =========================
+
+!*.ts
+!*.tsx
+!*.js
+!*.jsx
+!*.json
+!*.css
+!*.scss
+!*.svg
+!*.ico
+!*.html
+
+# Frontend config files
+!vite.config.*
+!tsconfig*.json
+!package.json
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+
+
+# Editor
+.vscode/
+
+# Node
+**/node_modules/
+
+# Build / tooling
+**/compile_commands.json
+
+# Sandboxes / experiments (optional)
+fs/
+
