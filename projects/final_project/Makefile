@@ -3,7 +3,7 @@
 #── Compiler ───────────────────────────────────────────────────────────────────
 CXX      := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -fPIC
-LDFLAGS  := -pthread -ldl
+LDFLAGS  := -lpthread -ldl
 
 #── Directories ────────────────────────────────────────────────────────────────
 FW_SRC    := framework/src

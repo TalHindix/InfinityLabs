@@ -1,93 +1,132 @@
-/*******************************************************************************
- * Exercise: ThreadPool
- * Date: 30/12/2024
- * Developer: Tal Hindi
- * Reviewer:
- * Status: In Progress
- ******************************************************************************/
+#ifndef __ILRD_THREAD_POOL__
+#define __ILRD_THREAD_POOL__
 
-#ifndef ILRD_THREADPOOL_
-#define ILRD_THREADPOOL_
+#include <cstddef> // std::size_t
+#include <utility> // std::pair
+#include <vector> // std::vector
+#include <thread> // std::thread
+#include <condition_variable> // std::condition_variable
+#include <mutex> // std::mutex
+#include <memory> // std::unique_ptr
+#include <atomic> // std::atomic
+#include <unordered_map>
+#include <semaphore>
+#include <climits> // INT_MAX
 
-#include <cstddef>     // std::size_t
-#include <memory>      // std::shared_ptr
-#include <thread>      // std::thread
-#include <atomic>      // std::atomic
-#include <vector>      // std::vector
-#include <algorithm>   // std::find_if
-#include <semaphore.h> // sem_t
 
-#include "waitablequeue.hpp" // WaitableQueue
-#include "pq.hpp"            // PriorityQueue
+#include "waitablequeue.hpp"
+#include "pq.hpp"
 
 namespace ilrd
 {
-
 class ThreadPool
-{
+{   
 public:
-    enum Priority { LOW = 1, MEDIUM, HIGH, FIRST };
 
-    class ITask
+    using Semaphore = std::counting_semaphore<INT_MAX>;
+    
+    ThreadPool(std::size_t num_threads = std::thread::hardware_concurrency());
+    ~ThreadPool() noexcept;
+    enum e_Priority
     {
-    public:
-        ITask() = default;
-        virtual ~ITask() = default;
-        virtual void Execute() = 0;
-
-        ITask(const ITask&) = delete;
-        ITask& operator=(const ITask&) = delete;
+        LOW = 1,
+        MEDIUM = 2,
+        HIGH = 3
     };
 
-    explicit ThreadPool(std::size_t numThreads = std::thread::hardware_concurrency());
-    ~ThreadPool();
+    class ITPTask;
 
-    void Add(std::shared_ptr<ITask> task, Priority priority = MEDIUM);
-    void Run();
-    void Pause();
-    void Stop();
-    void SetNumOfThreads(std::size_t numThreads);
-
-    ThreadPool(const ThreadPool&) = delete;
-    ThreadPool& operator=(const ThreadPool&) = delete;
-
-private:
-    class WorkerThread;
-    class BadApple;
-    class PauseTask;
-
-    struct TaskWithPriority
+    using task_pair = std::pair<std::shared_ptr<ITPTask>, int>;
+    struct Comp
     {
-        std::shared_ptr<ITask> m_task;
-        Priority m_priority;
-    };
-
-    struct ComparePriority
-    {
-        bool operator()(const TaskWithPriority& lhs,
-                        const TaskWithPriority& rhs) const
+        bool operator()(const task_pair& a, const task_pair& b) const
         {
-            return lhs.m_priority < rhs.m_priority;
+            return a.second < b.second;
         }
     };
 
-    using TaskPQ = PriorityQueue<TaskWithPriority,
-                                  std::vector<TaskWithPriority>,
-                                  ComparePriority>;
-    using TaskQueue = WaitableQueue<TaskWithPriority, TaskPQ>;
+    //adding tasks to queue
+    void Add(std::shared_ptr<ITPTask>, e_Priority priority = MEDIUM) noexcept;
+    //open a barrier
+    void Run() noexcept;
+    //close the barrier, ending running tasks
+    void Pause() noexcept;
+    // pause, SetNumOfThreads to 0, empty waiting queue
+    void Stop() noexcept; 
+    void SetNumOfThreads(std::size_t new_num_threads); // can throw std::bad_alloc  
 
-    void Grow(std::size_t toAdd);
-    void Shrink(std::size_t toRemove);
+    ThreadPool& operator=(const ThreadPool& other) = delete;
+    ThreadPool& operator=(const ThreadPool&& other) = delete;
+    ThreadPool(const ThreadPool& other) = delete;
+    ThreadPool(const ThreadPool&& other) = delete;    
+    
+    class ITPTask
+    {
+    public:
+        virtual ~ITPTask() = 0;
+        virtual void Execute() = 0;
+    };
 
-    TaskQueue m_taskQueue;
-    std::vector<std::unique_ptr<WorkerThread>> m_workers;
-    WaitableQueue<WorkerThread*> m_deadWorkers;
-    sem_t m_pauseSem;
-    std::atomic<bool> m_isRunning;
-    std::atomic<bool> m_isStopped;
-    std::atomic<std::size_t> m_numThreads;
-};
+private:
+    class WorkerThread
+    {
+    public:
+        WorkerThread(ThreadPool& thread_pool);
+        ~WorkerThread() noexcept;
+        void RunThread();
+        WorkerThread(const WorkerThread& other) = delete;
+        WorkerThread& operator=(const WorkerThread& other) noexcept = delete;
+        WorkerThread(WorkerThread&& other) = delete;
+        WorkerThread& operator=(WorkerThread&& other) noexcept = delete;
 
-} // namespace ilrd
+         class BadAppleTaskPause : public ThreadPool::ITPTask
+        {
+        public:
+            friend class ThreadPool;
+            BadAppleTaskPause(ThreadPool& thread_pool);
+            void Execute() override;
+        private:
+            ThreadPool& m_thread_pool;
+        }; // class BadAppleTaskPause	
 
-#endif // ILRD_THREADPOOL_
+        class BadAppleTaskStop : public ThreadPool::ITPTask
+        {
+        public:
+            friend class ThreadPool;
+            BadAppleTaskStop(ThreadPool& thread_pool);
+            void Execute() override;
+        private:
+            ThreadPool& m_thread_pool;
+        }; // class BadAppleTaskStop
+
+    private:    
+        friend class ThreadPool;
+
+        inline static thread_local bool m_is_alive = true;	
+
+        ThreadPool& m_thread_pool;
+        std::thread m_thread;
+        
+    }; //class WorkerThread
+
+    const int m_bad_apple_pause_priority = e_Priority::HIGH + 1;
+    const int m_bad_apple_stop_priority = e_Priority::LOW - 1;
+
+
+private:
+    WaitableQueue<WorkerThread*> m_threads_to_remove;
+    size_t m_num_threads;
+    bool m_is_paused;
+    WaitableQueue<task_pair, PriorityQueue<task_pair, std::vector<task_pair>, Comp>> m_tasks;
+    Semaphore m_sem_pause;
+
+
+    void StretchThreads(size_t new_num_threads);
+    void ShrinkThreads(size_t new_num_threads);
+
+    
+
+}; // class ThreadPool
+} // ilrd
+
+#endif //__ILRD_THREAD_POOL__

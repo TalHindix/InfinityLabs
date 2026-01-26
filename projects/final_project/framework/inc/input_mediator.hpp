@@ -40,7 +40,7 @@ public:
     
 private:
 
-    class TPTask : public ThreadPool::ITask
+    class TPTask : public ThreadPool::ITPTask
     {
     public:
         TPTask(std::shared_ptr<IKeyArgs> args);

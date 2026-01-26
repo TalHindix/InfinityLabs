@@ -1,219 +1,179 @@
-/*******************************************************************************
- * Exercise: ThreadPool
- * Date: 30/12/2024
- * Developer: Tal Hindi
- * Reviewer:
- * Status: In Progress
- ******************************************************************************/
-
-#include <stdexcept> // std::runtime_error
-
 #include "thread_pool.hpp"
+#include "logger.hpp"
 
 namespace ilrd
 {
 
-thread_local bool t_isAlive = true;
-
-// ======================= WorkerThread =======================================
-
-class ThreadPool::WorkerThread
+ThreadPool::ThreadPool(std::size_t num_threads) : m_num_threads(0), m_is_paused(true), m_sem_pause(0)
 {
-public:
-    explicit WorkerThread(ThreadPool& pool)
-        : m_pool(pool)
-        , m_thread(&WorkerThread::Run, this)
-    {}
+    LOG_DEBUG("[ThreadPool] ctor ENTER");    
 
-    ~WorkerThread()
-    {
-        if (m_thread.joinable())
-        {
-            m_thread.join();
-        }
-    }
+    SetNumOfThreads(num_threads);
 
-    WorkerThread(const WorkerThread&) = delete;
-    WorkerThread& operator=(const WorkerThread&) = delete;
-
-private:
-    void Run()
-    {
-        while (t_isAlive)
-        {
-            TaskWithPriority task;
-            m_pool.m_taskQueue.pop(&task);
-            task.m_task->Execute();
-        }
-
-        m_pool.m_deadWorkers.push(this);
-    }
-
-    ThreadPool& m_pool;
-    std::thread m_thread;
-};
-
-// ======================= BadApple ===========================================
-
-class ThreadPool::BadApple : public ITask
-{
-public:
-    void Execute() override
-    {
-        t_isAlive = false;
-    }
-};
-
-// ======================= PauseTask ==========================================
-
-class ThreadPool::PauseTask : public ITask
-{
-public:
-    explicit PauseTask(sem_t* sem) : m_sem(sem) {}
-
-    void Execute() override
-    {
-        sem_wait(m_sem);
-    }
-
-private:
-    sem_t* m_sem;
-};
-
-// ======================= ThreadPool =========================================
-
-ThreadPool::ThreadPool(std::size_t numThreads)
-    : m_isRunning(false)
-    , m_isStopped(false)
-{
-    sem_init(&m_pauseSem, 0, 0);
-    SetNumOfThreads(numThreads);
+    LOG_DEBUG("[ThreadPool] ctor EXIT");    
 }
 
-ThreadPool::~ThreadPool()
+ThreadPool::~ThreadPool() noexcept
 {
+    LOG_DEBUG("[ThreadPool] dtor ENTER");    
     Stop();
-    sem_destroy(&m_pauseSem);
+    LOG_DEBUG("[ThreadPool] dtor EXIT");    
 }
 
-void ThreadPool::Add(std::shared_ptr<ITask> task, Priority priority)
+void ThreadPool::Add(std::shared_ptr<ITPTask> task, e_Priority priority) noexcept
 {
-    if (m_isStopped.load())
-    {
-        throw std::runtime_error("Cannot add task: pool is stopped");
-    }
-
-    m_taskQueue.push({task, priority});
+    LOG_DEBUG("[ThreadPool] Add ENTER");    
+    m_tasks.push({std::move(task), priority});
+    LOG_DEBUG("[ThreadPool] Add EXIT");    
 }
 
-void ThreadPool::Run()
-{
-    if (m_isStopped.load() || m_isRunning.load())
+void ThreadPool::Run() noexcept
+{    
+    LOG_DEBUG("[ThreadPool] Run ENTER");
+    if(m_is_paused)
     {
-        return;
+        m_sem_pause.release(m_num_threads);
+        m_is_paused = false;
     }
-
-    m_isRunning.store(true);
-
-    for (std::size_t i = 0; i < m_workers.size(); ++i)
-    {
-        sem_post(&m_pauseSem);
-    }
+    LOG_DEBUG("[ThreadPool] Run EXIT");
 }
 
-void ThreadPool::Pause()
+void ThreadPool::Pause() noexcept
 {
-    if (!m_isRunning.load() || m_isStopped.load())
+    LOG_DEBUG("[ThreadPool] Pause ENTER");
+    if(!m_is_paused)
     {
-        return;
-    }
-
-    m_isRunning.store(false);
-
-    for (std::size_t i = 0; i < m_workers.size(); ++i)
-    {
-        m_taskQueue.push({std::make_shared<PauseTask>(&m_pauseSem), FIRST});
-    }
-}
-
-void ThreadPool::Stop()
-{
-    if (m_isStopped.exchange(true))
-    {
-        return;
-    }
-
-    m_isRunning.store(false);
-
-    Shrink(m_workers.size());
-}
-
-void ThreadPool::SetNumOfThreads(std::size_t numThreads)
-{
-    if (m_isStopped.load())
-    {
-        throw std::runtime_error("Cannot resize: pool is stopped");
-    }
-
-    std::size_t currentThreads = m_workers.size();
-
-    if (numThreads > currentThreads)
-    {
-        Grow(numThreads - currentThreads);
-    }
-    else if (numThreads < currentThreads)
-    {
-        Shrink(currentThreads - numThreads);
-    }
-}
-
-void ThreadPool::Grow(std::size_t toAdd)
-{
-    for (std::size_t i = 0; i < toAdd; ++i)
-    {
-        m_workers.push_back(std::make_unique<WorkerThread>(*this));
-    }
-
-    if (!m_isRunning.load())
-    {
-        for (std::size_t i = 0; i < toAdd; ++i)
+        m_is_paused = true;
+        for(size_t i = 0; i < m_num_threads; ++i)
         {
-            m_taskQueue.push({std::make_shared<PauseTask>(&m_pauseSem), FIRST});
+            Add(std::make_shared<WorkerThread::BadAppleTaskPause>(*this), static_cast<e_Priority>(m_bad_apple_pause_priority));
         }
     }
+    LOG_DEBUG("[ThreadPool] Pause EXIT");
 }
 
-void ThreadPool::Shrink(std::size_t toRemove)
+void ThreadPool::Stop() noexcept
 {
-    for (std::size_t i = 0; i < toRemove; ++i)
-    {
-        m_taskQueue.push({std::make_shared<BadApple>(), FIRST});
-    }
+    LOG_DEBUG("[ThreadPool] Stop ENTER");
 
-    if (!m_isRunning.load())
+    SetNumOfThreads(0);
+
+    LOG_DEBUG("[ThreadPool] Stop EXIT");
+}
+
+void ThreadPool::SetNumOfThreads(std::size_t new_num_threads) 
+{
+    LOG_DEBUG("[ThreadPool] SetNumOfThreads ENTER");
+    if(m_num_threads < new_num_threads)
     {
-        for (std::size_t i = 0; i < toRemove; ++i)
+        StretchThreads(new_num_threads - m_num_threads);
+    }
+    else
+    {
+        ShrinkThreads(m_num_threads - new_num_threads);
+    }
+    
+    m_num_threads = new_num_threads;
+    LOG_DEBUG("[ThreadPool] SetNumOfThreads EXIT");
+}
+
+void ThreadPool::StretchThreads(size_t num_to_add)
+{
+    if(m_is_paused)
+    {
+        for(size_t i = 0; i < num_to_add; ++i)
         {
-            sem_post(&m_pauseSem);
+            Add(std::make_shared<WorkerThread::BadAppleTaskPause>(*this), static_cast<e_Priority>(m_bad_apple_pause_priority));
         }
     }
-
-    for (std::size_t i = 0; i < toRemove; ++i)
+    for(size_t i = 0; i < num_to_add; ++i)
     {
-        WorkerThread* dead;
-        m_deadWorkers.pop(&dead);
+        new WorkerThread(*this);
+    }
+}
 
-        auto it = std::find_if(m_workers.begin(), m_workers.end(),
-            [dead](const std::unique_ptr<WorkerThread>& w)
+void ThreadPool::ShrinkThreads(size_t num_to_remove)
+{
+     for(size_t i = 0; i < num_to_remove; ++i)
+        {
+            Add(std::make_shared<WorkerThread::BadAppleTaskStop>(*this), static_cast<e_Priority>(m_bad_apple_stop_priority));
+        }
+        
+        if(m_is_paused)
+        {
+            m_sem_pause.release(num_to_remove);
+        } 
+
+        for(size_t i = 0; i < num_to_remove; i++)
+        {
+            WorkerThread* worker_thread;
+            m_threads_to_remove.pop(&worker_thread);
+
+            if(worker_thread->m_thread.joinable())
             {
-                return w.get() == dead;
-            });
-
-        if (it != m_workers.end())
-        {
-            m_workers.erase(it);
+                worker_thread->m_thread.join();
+            }
+            delete worker_thread;
         }
-    }
 }
 
-} // namespace ilrd
+ThreadPool::ITPTask::~ITPTask()
+{
+    LOG_DEBUG("[ThreadPool::ITPTask] dtor");
+}
+
+
+//================WorkerThread===================
+ThreadPool::WorkerThread::WorkerThread(ThreadPool& thread_pool) :   m_thread_pool(thread_pool),
+                                                                    m_thread(&WorkerThread::RunThread, this)
+                                                                   
+{
+    LOG_DEBUG("[ThreadPool::WorkerThread] ctor");
+}
+
+ThreadPool::WorkerThread::~WorkerThread()
+{
+    LOG_DEBUG("[ThreadPool::WorkerThread] ctor ENTER");
+    LOG_DEBUG("[WorkerThread] ctor EXIT");
+}
+
+void ThreadPool::WorkerThread::RunThread()
+{
+    LOG_DEBUG("[ThreadPool::WorkerThread] RunThread ENTER");
+    m_is_alive = true;
+
+    while(m_is_alive)
+    {
+        ThreadPool::task_pair task;
+        m_thread_pool.m_tasks.pop(&task);
+        
+        task.first->Execute();
+    }
+
+    m_thread_pool.m_threads_to_remove.push(this);
+    LOG_DEBUG("[ThreadPool::WorkerThread] RunThread EXIT");
+}
+//====================================
+
+ThreadPool::WorkerThread::BadAppleTaskPause::BadAppleTaskPause(ThreadPool& thread_pool) : m_thread_pool(thread_pool)
+{
+
+}
+
+void ThreadPool::WorkerThread::BadAppleTaskPause::Execute()
+{
+    m_thread_pool.m_sem_pause.acquire();
+}
+
+ThreadPool::WorkerThread::BadAppleTaskStop::BadAppleTaskStop(ThreadPool& thread_pool) : m_thread_pool(thread_pool)
+{
+
+}
+
+void ThreadPool::WorkerThread::BadAppleTaskStop::Execute()
+{
+    WorkerThread::m_is_alive = false;
+}
+
+
+} // ilrd
