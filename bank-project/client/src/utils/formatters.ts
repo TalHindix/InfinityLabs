@@ -1,32 +1,41 @@
+const LOCALE = 'en-AE';
+
 /**
- * Formats a number as AED currency with locale-aware separators.
+ * Converts a number to a readable money format (2 decimal digits).
+ * Example: 1234.5 → "1,234.50"
  */
-export const formatAmount = (amount: number): string => {
-  return amount.toLocaleString('en-AE', {
+export function formatAmount(amount: number): string {
+  return amount.toLocaleString(LOCALE, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-};
+}
 
 /**
- * Formats a date string to a localized date format.
+ * Converts a date string to a full readable date and time.
+ * Example: "2026-01-27T10:14:33Z" → "27 Jan 2026, 12:14"
  */
-export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-AE', {
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString(LOCALE, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
-};
+}
 
 /**
- * Formats a date string to a short date format (day + month only).
+ * Converts a date string to a short readable date (day + month).
+ * Example: "2026-01-27T10:14:33Z" → "27 Jan"
  */
-export const formatShortDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-AE', {
+export function formatShortDate(dateString: string): string {
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString(LOCALE, {
     day: 'numeric',
     month: 'short',
   });
-};
+}

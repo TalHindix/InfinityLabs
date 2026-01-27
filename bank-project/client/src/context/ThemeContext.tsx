@@ -4,16 +4,18 @@ export type ThemeMode = 'light' | 'dark';
 
 export type ThemeContextValue = {
   mode: ThemeMode;
-  toggleTheme: () => void;
   isDark: boolean;
+  toggleTheme: () => void;
 };
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-export const useThemeContext = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useThemeContext must be used within ThemeContextProvider');
+export function useThemeContext(): ThemeContextValue {
+  const value = useContext(ThemeContext);
+
+  if (value === null) {
+    throw new Error('useThemeContext must be used inside ThemeContextProvider');
   }
-  return context;
-};
+
+  return value;
+}

@@ -1,8 +1,18 @@
 
-export const getTimeBasedGreeting = (): string => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'Good morning';
-  if (hour >= 12 && hour < 17) return 'Good afternoon';
-  if (hour >= 17 && hour < 21) return 'Good evening';
+export function getTimeBasedGreeting(): string {
+  const currentHour = new Date().getHours();
+
+  if (currentHour >= 5 && currentHour < 12) {
+    return 'Good morning';
+  }
+
+  if (currentHour >= 12 && currentHour < 17) {
+    return 'Good afternoon';
+  }
+
+  if (currentHour >= 17 && currentHour < 21) {
+    return 'Good evening';
+  }
+
   return 'Welcome back';
-};
+}

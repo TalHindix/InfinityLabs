@@ -1,10 +1,15 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
+
 import { lightTheme, darkTheme } from '../theme';
 import { ThemeContext, type ThemeMode } from './ThemeContext';
 
-export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
+type Props = {
+  children: ReactNode;
+};
+
+export function ThemeContextProvider({ children }: Props) {
   const [mode, setMode] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' ? 'dark' : 'light';
@@ -14,18 +19,19 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('theme', mode);
   }, [mode]);
 
-  const toggleTheme = () => {
-    setMode((m) => (m === 'light' ? 'dark' : 'light'));
-  };
+  function toggleTheme() {
+    setMode(mode === 'light' ? 'dark' : 'light');
+  }
 
-  const theme = mode === 'dark' ? darkTheme : lightTheme;
+  const isDark = mode === 'dark';
+  const theme = isDark ? darkTheme : lightTheme;
 
   return (
-    <ThemeContext.Provider value={{ mode, toggleTheme, isDark: mode === 'dark' }}>
+    <ThemeContext.Provider value={{ mode, isDark, toggleTheme }}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         {children}
       </MuiThemeProvider>
     </ThemeContext.Provider>
   );
-};
+}

@@ -72,6 +72,8 @@ async function sendVerificationEmail(email, token) {
     htmlContent: buildEmailTemplate(token),
   };
 
+  logger.info(`Brevo key loaded: ${Boolean(config.email.brevoApiKey)} | from=${config.email.from}`);
+
   const res = await brevo.post('/smtp/email', payload);
   logger.info(`Verification email sent to ${email} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
 }
