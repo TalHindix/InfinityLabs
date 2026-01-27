@@ -72,17 +72,15 @@ const buildEmailTemplate = (token) => {
 };
 
 const sendVerificationEmail = async (email, token) => {
+  // Debug log - remove after fixing
+  logger.info(`Email config: user=${config.email.user}, pass=${config.email.pass ? '***SET***' : '***MISSING***'}`);
+  
   const transporter = createTransporter();
   const mailOptions = {
     from: `"Dubai-Bank" <${config.email.user}>`,
     to: email,
     subject: '🔐 Verify Your Email - Dubai-Bank',
     html: buildEmailTemplate(token),
-    // attachments: [{
-    //   filename: 'logo.png',
-    //   path: path.join(__dirname, 'logo.png'), 
-    //   cid: 'logo_bank_prank'
-    // }]
   };
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -92,6 +90,9 @@ const sendVerificationEmail = async (email, token) => {
       return;
     } catch (error) {
       const isLastAttempt = attempt === MAX_RETRIES - 1;
+      // Log the actual error message
+      logger.error(`Email error: ${error.message}`);
+      
       if (isLastAttempt) {
         logger.error(`Failed to send email to ${email}: ${error.message}`);
         throw error;
