@@ -1,8 +1,16 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import config from '../config/index.js';
 import logger from './logger.util.js';
 
-const resend = new Resend(config.email.resendApiKey);
+const createTransporter = () => nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: config.email.user,
+    pass: config.email.pass
+  }
+});
 
 const buildVerificationUrl = (token) => 
   `${config.serverUrl}/api/v1/auth/verify?token=${token}`;
@@ -54,20 +62,18 @@ const buildEmailTemplate = (token) => {
 };
 
 const sendVerificationEmail = async (email, token) => {
+  const transporter = createTransporter();
+  
+  const mailOptions = {
+    from: `"Dubai-Bank" <${config.email.user}>`,
+    to: email,
+    subject: '🔐 Verify Your Email - Dubai-Bank',
+    html: buildEmailTemplate(token),
+  };
+
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Dubai-Bank <onboarding@resend.dev>',
-      to: email,
-      subject: '🔐 Verify Your Email - Dubai-Bank',
-      html: buildEmailTemplate(token),
-    });
-
-    if (error) {
-      logger.error(`Resend error: ${error.message}`);
-      throw new Error(error.message);
-    }
-
-    logger.info(`Verification email sent to ${email} (id: ${data.id})`);
+    const info = await transporter.sendMail(mailOptions);
+    logger.info(`Verification email sent to ${email} (messageId: ${info.messageId})`);
   } catch (error) {
     logger.error(`Failed to send email to ${email}: ${error.message}`);
     throw error;
