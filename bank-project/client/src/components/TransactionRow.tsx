@@ -6,7 +6,8 @@ import {
 } from './ui';
 import { type Transaction } from '../services/transaction';
 import { formatAmount, formatShortDate } from '../utils/formatters';
-import { createTableRowSx, GOLD_COLOR } from '../styles/transactions.styles';
+import { createTableRowSx } from '../styles/transactions.styles';
+import { refNumberSx, viewButtonSx } from './TransactionRow.styles';
 
 interface TransactionRowProps {
   transaction: Transaction;
@@ -15,9 +16,6 @@ interface TransactionRowProps {
   onSelect: (id: string) => void;
 }
 
-/**
- * Single transaction row in the transactions table.
- */
 export const TransactionRow = ({
   transaction,
   userEmail,
@@ -32,7 +30,7 @@ export const TransactionRow = ({
       onClick={() => onSelect(String(transaction.id))}
     >
       <TableCell>
-        <Typography variant="body2" fontWeight={600} sx={{ color: GOLD_COLOR }}>
+        <Typography variant="body2" fontWeight={600} sx={refNumberSx}>
           #{transaction.id}
         </Typography>
       </TableCell>
@@ -55,11 +53,7 @@ export const TransactionRow = ({
         </Typography>
       </TableCell>
       <TableCell align="center">
-        <Button
-          size="small"
-          variant="text"
-          sx={{ color: GOLD_COLOR, minWidth: 'auto' }}
-        >
+        <Button size="small" variant="text" sx={viewButtonSx}>
           View
         </Button>
       </TableCell>

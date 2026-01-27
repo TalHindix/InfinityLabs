@@ -9,6 +9,7 @@ import {
 } from './ui';
 import { type Transaction } from '../services/transaction';
 import { TransactionRow } from './TransactionRow';
+import { tableContainerSx } from './TransactionTable.styles';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -17,9 +18,6 @@ interface TransactionTableProps {
   onSelectTransaction: (id: string) => void;
 }
 
-/**
- * Transactions table component with header and rows.
- */
 export const TransactionTable = ({
   transactions,
   userEmail,
@@ -27,7 +25,7 @@ export const TransactionTable = ({
   onSelectTransaction,
 }: TransactionTableProps) => {
   return (
-    <TableContainer component={Paper} sx={{ borderRadius: 3, mb: 2 }}>
+    <TableContainer component={Paper} sx={tableContainerSx}>
       <Table>
         <TableHead>
           <TableRow>

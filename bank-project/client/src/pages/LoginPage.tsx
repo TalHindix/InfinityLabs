@@ -21,6 +21,7 @@ import {
   createAuthCardSx,
   themeToggleSx,
 } from '../styles/login.styles';
+import { createDividerSx, createSignInTitleSx } from './LoginPage.styles';
 
 const LoginPage = () => {
   const { isDark, toggleTheme } = useThemeContext();
@@ -37,7 +38,6 @@ const LoginPage = () => {
 
   return (
     <Box sx={createPageBackgroundSx(isDark)}>
-      {/* Theme Toggle */}
       <IconButton
         onClick={toggleTheme}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -53,13 +53,10 @@ const LoginPage = () => {
               <BrandHeader isDark={isDark} greeting={greeting} />
               <SecurityIndicator isDark={isDark} />
 
-              <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(13,27,42,0.10)' }} />
+              <Divider sx={createDividerSx(isDark)} />
 
               <Box textAlign="center">
-                <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.92)' : '#0D1B2A' }}
-                >
+                <Typography variant="h5" sx={createSignInTitleSx(isDark)}>
                   Sign in
                 </Typography>
               </Box>

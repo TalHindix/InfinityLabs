@@ -25,6 +25,12 @@ import {
   createSignupCardSx,
   signupThemeToggleSx,
 } from '../styles/signup.styles';
+import {
+  logoContainerSx,
+  pageTitleSx,
+  pageSubtitleSx,
+  goldDividerSx,
+} from './SignupPage.styles';
 
 const STEPS = ['Account Details', 'Verify Email'];
 
@@ -42,7 +48,6 @@ const SignupPage = () => {
 
   return (
     <Box sx={createSignupBackgroundSx(isDark)}>
-      {/* Theme Toggle */}
       <IconButton onClick={toggleTheme} sx={signupThemeToggleSx}>
         {isDark ? <LightModeIcon /> : <DarkModeIcon />}
       </IconButton>
@@ -51,20 +56,19 @@ const SignupPage = () => {
         <Card sx={createSignupCardSx(isDark)}>
           <CardContent sx={{ p: 4 }}>
             <Stack spacing={3}>
-              {/* Logo/Branding */}
               <Box textAlign="center">
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                <Box sx={logoContainerSx}>
                   <DubaiBankLogo size={80} animated={true} />
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                <Typography variant="h4" sx={pageTitleSx}>
                   Dubai Bank
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography variant="body2" color="text.secondary" sx={pageSubtitleSx}>
                   Open your premium account today
                 </Typography>
               </Box>
 
-              <Divider sx={{ borderColor: 'rgba(201, 162, 39, 0.3)' }} />
+              <Divider sx={goldDividerSx} />
 
               <Stepper activeStep={activeStep} alternativeLabel>
                 {STEPS.map((label) => (

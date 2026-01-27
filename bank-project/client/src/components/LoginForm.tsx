@@ -9,6 +9,11 @@ import {
 } from './ui';
 import { useThemeContext } from '../context/ThemeContext';
 import { createFieldSx, primaryButtonSx } from '../styles/login.styles';
+import {
+  createSecurityNoteSx,
+  createForgotPasswordSx,
+  footerContainerSx,
+} from './LoginForm.styles';
 
 interface LoginFormProps {
   email: string;
@@ -90,27 +95,12 @@ export const LoginForm = ({
             {buttonText}
           </Button>
 
-          <Typography
-            variant="caption"
-            sx={{
-              textAlign: 'center',
-              color: isDark ? 'rgba(255,255,255,0.50)' : 'rgba(13,27,42,0.50)',
-              lineHeight: 1.5,
-              px: 1,
-            }}
-          >
+          <Typography variant="caption" sx={createSecurityNoteSx(isDark)}>
             Behavioral patterns and device signals are analyzed to protect your account
           </Typography>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
-            <Typography
-              variant="body2"
-              sx={{
-                color: isDark ? 'rgba(255,255,255,0.70)' : 'rgba(13,27,42,0.70)',
-                cursor: 'pointer',
-                '&:hover': { color: '#C9A227' },
-              }}
-            >
+          <Box sx={footerContainerSx}>
+            <Typography variant="body2" sx={createForgotPasswordSx(isDark)}>
               Forgot password? (TODO)
             </Typography>
             <Typography variant="body2">

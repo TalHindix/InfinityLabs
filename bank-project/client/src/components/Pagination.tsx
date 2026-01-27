@@ -1,5 +1,6 @@
 import { Stack, Button, Box, Typography } from './ui';
 import { paginationButtonSx } from '../styles/transactions.styles';
+import { pageIndicatorSx } from './Pagination.styles';
 
 interface PaginationProps {
   currentPage: number;
@@ -7,9 +8,6 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-/**
- * Pagination controls for transactions list.
- */
 export const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
   return (
     <Stack direction="row" justifyContent="center" spacing={1}>
@@ -22,16 +20,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
       >
         Previous
       </Button>
-      <Box
-        sx={{
-          px: 3,
-          py: 1,
-          borderRadius: 1,
-          bgcolor: 'rgba(13, 27, 42, 0.05)',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
+      <Box sx={pageIndicatorSx}>
         <Typography variant="body2">
           Page {currentPage} of {totalPages}
         </Typography>

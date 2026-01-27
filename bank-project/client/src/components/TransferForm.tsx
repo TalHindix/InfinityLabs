@@ -9,7 +9,8 @@ import {
   Divider,
   InputAdornment,
 } from './ui';
-import { primaryButtonSx, transferSummarySx, GOLD_COLOR } from '../styles/transactions.styles';
+import { primaryButtonSx, transferSummarySx } from '../styles/transactions.styles';
+import { amountAdornmentSx, cancelButtonSx } from './TransferForm.styles';
 
 interface TransferFormProps {
   receiverEmail: string;
@@ -22,9 +23,6 @@ interface TransferFormProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-/**
- * Money transfer form with amount summary.
- */
 export const TransferForm = ({
   receiverEmail,
   amount,
@@ -74,7 +72,7 @@ export const TransferForm = ({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <Typography sx={{ color: GOLD_COLOR, fontWeight: 600 }}>
+                    <Typography sx={amountAdornmentSx}>
                       AED
                     </Typography>
                   </InputAdornment>
@@ -131,7 +129,7 @@ export const TransferForm = ({
             fullWidth
             variant="text"
             onClick={() => navigate('/dashboard')}
-            sx={{ color: 'text.secondary' }}
+            sx={cancelButtonSx}
           >
             Cancel
           </Button>

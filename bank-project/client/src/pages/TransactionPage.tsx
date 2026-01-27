@@ -11,9 +11,16 @@ import { AppHeader } from '../components/AppHeader';
 import { useTransfer } from '../hooks/useTransfer';
 import { TransferForm } from '../components/TransferForm';
 import { transferDecorativeSx } from '../styles/transactions.styles';
+import {
+  decorativeSymbolSx,
+  pageTitleSx,
+  pageSubtitleSx,
+  goldDividerSx,
+  footerCaptionSx,
+} from './TransactionPage.styles';
 
 const TransferPage = () => {
-  const transfer  = useTransfer();
+  const transfer = useTransfer();
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -21,23 +28,22 @@ const TransferPage = () => {
 
       <Container maxWidth="sm" sx={{ py: 6 }}>
         <Card sx={{ overflow: 'visible', position: 'relative' }}>
-          {/* Decorative element */}
           <Box sx={transferDecorativeSx}>
-            <Typography variant="h5" sx={{ color: '#0D1B2A' }}>$</Typography>
+            <Typography variant="h5" sx={decorativeSymbolSx}>$</Typography>
           </Box>
 
           <CardContent sx={{ p: 4, pt: 6 }}>
             <Stack spacing={3}>
               <Box textAlign="center">
-                <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                <Typography variant="h4" sx={pageTitleSx}>
                   Transfer Money
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography variant="body2" color="text.secondary" sx={pageSubtitleSx}>
                   Send money securely to anyone
                 </Typography>
               </Box>
 
-              <Divider sx={{ borderColor: 'rgba(201, 162, 39, 0.2)' }} />
+              <Divider sx={goldDividerSx} />
 
               <TransferForm
                 receiverEmail={transfer.receiverEmail}
@@ -53,15 +59,7 @@ const TransferPage = () => {
           </CardContent>
         </Card>
 
-        <Typography
-          variant="caption"
-          sx={{
-            display: 'block',
-            textAlign: 'center',
-            mt: 3,
-            color: 'text.secondary',
-          }}
-        >
+        <Typography variant="caption" sx={footerCaptionSx}>
           Transfers are processed instantly and securely
         </Typography>
       </Container>

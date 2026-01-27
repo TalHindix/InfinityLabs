@@ -1,6 +1,6 @@
 import { keyframes } from '@emotion/react';
 import { Box, Typography } from './ui';
-import { createSecurityIndicatorSx } from '../styles/login.styles';
+import { createSecurityIndicatorSx } from './SecurityIndicator.styles';
 
 const aiPulse = keyframes`
   0%, 100% { opacity: 0.6; transform: scale(1); }
@@ -16,10 +16,6 @@ interface SecurityIndicatorProps {
   isDark: boolean;
 }
 
-/**
- * Intelligent security status indicator with animated pulse.
- * Shows "Adaptive risk analysis enabled" message with green status dot.
- */
 export const SecurityIndicator = ({ isDark }: SecurityIndicatorProps) => {
   const prefersReducedMotion =
     typeof window !== 'undefined' &&

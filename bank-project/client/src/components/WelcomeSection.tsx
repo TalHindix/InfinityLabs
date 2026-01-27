@@ -1,16 +1,14 @@
 import { Box, Typography } from './ui';
+import { welcomeTitleSx } from './WelcomeSection.styles';
 
 interface WelcomeSectionProps {
   firstName: string | undefined;
 }
 
-/**
- * Welcome section with personalized greeting.
- */
 export const WelcomeSection = ({ firstName }: WelcomeSectionProps) => {
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
+      <Typography variant="h4" sx={welcomeTitleSx}>
         Welcome back, {firstName || 'User'}
       </Typography>
       <Typography color="text.secondary">

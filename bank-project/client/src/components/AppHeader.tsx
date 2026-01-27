@@ -5,6 +5,12 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import { DubaiBankLogoFull } from './DubaiBankLogo';
 import { useThemeContext } from '../context/ThemeContext';
 import { authService } from '../services/auth';
+import {
+  headerContainerSx,
+  logoContainerSx,
+  themeToggleSx,
+  outlinedButtonSx,
+} from './AppHeader.styles';
 
 interface AppHeaderProps {
   showThemeToggle?: boolean;
@@ -13,10 +19,6 @@ interface AppHeaderProps {
   showLogout?: boolean;
 }
 
-/**
- * Reusable app header for authenticated pages.
- * Shows brand logo and navigation buttons.
- */
 export const AppHeader = ({
   showThemeToggle = false,
   showDashboardButton = false,
@@ -31,85 +33,35 @@ export const AppHeader = ({
     navigate('/login');
   };
 
-  const outlinedButtonSx = {
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    color: 'white',
-    '&:hover': {
-      borderColor: '#C9A227',
-      bgcolor: 'rgba(201, 162, 39, 0.1)',
-    },
-  };
-
   return (
-    <Box
-      sx={{
-        background: 'linear-gradient(135deg, #0D1B2A 0%, #1B3A4B 100%)',
-        color: 'white',
-        py: 3,
-        px: 2,
-      }}
-    >
+    <Box sx={headerContainerSx}>
       <Container maxWidth="lg">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          {/* Brand Logo */}
-          <Box
-            sx={{
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-            onClick={() => navigate('/dashboard')}
-          >
-            <DubaiBankLogoFull
-              size={44}
-              animated={false}
-              showTagline={true}
-            />
+          <Box sx={logoContainerSx} onClick={() => navigate('/dashboard')}>
+            <DubaiBankLogoFull size={44} animated={false} showTagline={true} />
           </Box>
 
-          {/* Actions */}
           <Stack direction="row" spacing={1} alignItems="center">
             {showThemeToggle && (
-              <IconButton
-                onClick={toggleTheme}
-                sx={{
-                  color: '#C9A227',
-                  '&:hover': {
-                    bgcolor: 'rgba(201, 162, 39, 0.1)',
-                  },
-                }}
-                aria-label="Toggle theme"
-              >
+              <IconButton onClick={toggleTheme} sx={themeToggleSx} aria-label="Toggle theme">
                 {isDark ? <LightModeIcon /> : <DarkModeIcon />}
               </IconButton>
             )}
 
             {showDashboardButton && (
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/dashboard')}
-                sx={outlinedButtonSx}
-              >
+              <Button variant="outlined" onClick={() => navigate('/dashboard')} sx={outlinedButtonSx}>
                 Dashboard
               </Button>
             )}
 
             {showTransactionsButton && (
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/transactions')}
-                sx={outlinedButtonSx}
-              >
+              <Button variant="outlined" onClick={() => navigate('/transactions')} sx={outlinedButtonSx}>
                 Transactions
               </Button>
             )}
 
             {showLogout && (
-              <Button
-                variant="outlined"
-                onClick={handleLogout}
-                sx={outlinedButtonSx}
-              >
+              <Button variant="outlined" onClick={handleLogout} sx={outlinedButtonSx}>
                 Sign Out
               </Button>
             )}

@@ -9,12 +9,16 @@ import {
 } from './ui';
 import { type Transaction } from '../services/transaction';
 import { formatAmount, formatDate } from '../utils/formatters';
+import { createDetailPanelSx, createAmountIconSx } from '../styles/transactions.styles';
 import {
-  createDetailPanelSx,
-  createAmountIconSx,
+  loadingContainerSx,
+  loadingSpinnerSx,
+  goldDividerSx,
+  refTextSx,
   statusBadgeSx,
-  GOLD_COLOR,
-} from '../styles/transactions.styles';
+  emptyStateSx,
+  emptyIconSx,
+} from './TransactionDetailPanel.styles';
 
 interface TransactionDetailPanelProps {
   transaction: Transaction | null;
@@ -22,9 +26,6 @@ interface TransactionDetailPanelProps {
   userEmail: string | undefined;
 }
 
-/**
- * Detailed view panel for a selected transaction.
- */
 export const TransactionDetailPanel = ({
   transaction,
   loading,
@@ -36,8 +37,8 @@ export const TransactionDetailPanel = ({
     <Card sx={createDetailPanelSx(!!transaction)}>
       <CardContent>
         {loading ? (
-          <Box sx={{ py: 4, textAlign: 'center' }}>
-            <CircularProgress size={32} sx={{ color: GOLD_COLOR }} />
+          <Box sx={loadingContainerSx}>
+            <CircularProgress size={32} sx={loadingSpinnerSx} />
           </Box>
         ) : transaction ? (
           <Stack spacing={3}>
@@ -65,14 +66,14 @@ export const TransactionDetailPanel = ({
               </Typography>
             </Box>
 
-            <Divider sx={{ borderColor: 'rgba(201, 162, 39, 0.2)' }} />
+            <Divider sx={goldDividerSx} />
 
             <Stack spacing={2}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Reference Number
                 </Typography>
-                <Typography fontWeight={600} sx={{ color: GOLD_COLOR }}>
+                <Typography fontWeight={600} sx={refTextSx}>
                   #{transaction.id}
                 </Typography>
               </Box>
@@ -100,7 +101,7 @@ export const TransactionDetailPanel = ({
                   Status
                 </Typography>
                 <Box sx={statusBadgeSx}>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={500}>
                     Completed
                   </Typography>
                 </Box>
@@ -108,11 +109,9 @@ export const TransactionDetailPanel = ({
             </Stack>
           </Stack>
         ) : (
-          <Box sx={{ py: 6, textAlign: 'center' }}>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-              Transaction Details
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Box sx={emptyStateSx}>
+            <Typography sx={emptyIconSx}>📋</Typography>
+            <Typography color="text.secondary">
               Select a transaction to view details
             </Typography>
           </Box>

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { TextField, Button, Typography, Stack } from './ui';
 import { useThemeContext } from '../context/ThemeContext';
-import { createFieldSx, primaryButtonSx } from '../styles/login.styles';
+import { createFieldSx } from '../styles/login.styles';
+import { submitButtonSx } from './SignupForm.styles';
 
 interface SignupFormData {
   firstName: string;
@@ -84,7 +85,7 @@ export const SignupForm = ({
           variant="contained"
           size="large"
           disabled={loading}
-          sx={{ ...primaryButtonSx, py: 1.5, mt: 1 }}
+          sx={submitButtonSx}
         >
           {loading ? 'Creating Account...' : 'Create Account'}
         </Button>

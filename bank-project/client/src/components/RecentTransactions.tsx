@@ -17,22 +17,25 @@ import {
 import { type Transaction } from '../services/transaction';
 import { formatAmount } from '../utils/formatters';
 import { viewAllButtonSx, emptyIconSx } from '../styles/dashboard.styles';
+import {
+  sectionTitleSx,
+  emptyCardContentSx,
+  emptyIconTextSx,
+  tableContainerSx,
+} from './RecentTransactions.styles';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
   userEmail: string | undefined;
 }
 
-/**
- * Recent transactions section with table or empty state.
- */
 export const RecentTransactions = ({ transactions, userEmail }: RecentTransactionsProps) => {
   const navigate = useNavigate();
 
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+        <Typography variant="h5" sx={sectionTitleSx}>
           Recent Transactions
         </Typography>
         <Button
@@ -46,9 +49,9 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
 
       {transactions.length === 0 ? (
         <Card>
-          <CardContent sx={{ py: 6, textAlign: 'center' }}>
+          <CardContent sx={emptyCardContentSx}>
             <Box sx={emptyIconSx}>
-              <Typography variant="h3" sx={{ opacity: 0.3 }}>$</Typography>
+              <Typography variant="h3" sx={emptyIconTextSx}>$</Typography>
             </Box>
             <Typography color="text.secondary">
               No transactions yet
@@ -59,7 +62,7 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
           </CardContent>
         </Card>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+        <TableContainer component={Paper} sx={tableContainerSx}>
           <Table>
             <TableHead>
               <TableRow>
@@ -84,7 +87,7 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {isSent ? `Sent to ${tx.toEmail}` : `Received from ${tx.fromEmail}`}
+                        {isSent ? `To: ${tx.toEmail}` : `From: ${tx.fromEmail}`}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
@@ -92,8 +95,7 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
                         fontWeight={600}
                         sx={{ color: isSent ? 'error.main' : 'success.main' }}
                       >
-                        {isSent ? '-' : '+'}
-                        {formatAmount(tx.amount)} AED
+                        {isSent ? '-' : '+'}{formatAmount(tx.amount)} AED
                       </Typography>
                     </TableCell>
                   </TableRow>
