@@ -1,18 +1,17 @@
-import nodemailer from 'nodemailer';
+import axios from 'axios';
 import config from '../config/index.js';
 import logger from './logger.util.js';
 
-const createTransporter = () => nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: config.email.user,
-    pass: config.email.pass
-  }
+const brevo = axios.create({
+  baseURL: 'https://api.brevo.com/v3',
+  timeout: 15_000,
+  headers: {
+    'Content-Type': 'application/json',
+    'api-key': config.email.brevoApiKey,
+  },
 });
 
-const buildVerificationUrl = (token) => 
+const buildVerificationUrl = (token) =>
   `${config.serverUrl}/api/v1/auth/verify?token=${token}`;
 
 const buildEmailTemplate = (token) => {
@@ -37,8 +36,8 @@ const buildEmailTemplate = (token) => {
             Welcome! Click the button below to verify your email and activate your account:
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationUrl}" 
-               style="background-color: #4CAF50; color: white; padding: 14px 28px; 
+            <a href="${verificationUrl}"
+               style="background-color: #4CAF50; color: white; padding: 14px 28px;
                       text-decoration: none; border-radius: 6px; font-size: 16px;
                       font-weight: bold; display: inline-block;">
               ✓ Verify Email Address
@@ -61,27 +60,27 @@ const buildEmailTemplate = (token) => {
   `;
 };
 
-const sendVerificationEmail = async (email, token) => {
-  const transporter = createTransporter();
-  
-  const mailOptions = {
-    from: `"Dubai-Bank" <${config.email.user}>`,
-    to: email,
+async function sendVerificationEmail(email, token) {
+  if (!config.email.brevoApiKey) throw new Error('Missing BREVO_API_KEY');
+  if (!config.email.from) throw new Error('Missing EMAIL_FROM');
+  if (!config.serverUrl) throw new Error('Missing SERVER_URL');
+
+  const payload = {
+    sender: { name: 'Dubai-Bank', email: config.email.from },
+    to: [{ email }],
     subject: '🔐 Verify Your Email - Dubai-Bank',
-    html: buildEmailTemplate(token),
+    htmlContent: buildEmailTemplate(token),
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    logger.info(`Verification email sent to ${email} (messageId: ${info.messageId})`);
-  } catch (error) {
-    logger.error(`Failed to send email to ${email}: ${error.message}`);
-    throw error;
-  }
-};
+  const res = await brevo.post('/smtp/email', payload);
+  logger.info(`Verification email sent to ${email} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
+}
 
 export const sendVerificationEmailAsync = (email, token) => {
+  // fire-and-forget כמו שהיה לך
   sendVerificationEmail(email, token).catch((err) => {
-    logger.error(`Async email failed for ${email}: ${err.message}`);
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+    logger.error(`Async email failed for ${email}: status=${status} data=${JSON.stringify(data)}`);
   });
 };

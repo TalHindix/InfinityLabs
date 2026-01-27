@@ -14,12 +14,18 @@ const config = {
   },
   
   email: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    brevoApiKey: process.env.BREVO_API_KEY,
+    from: process.env.EMAIL_FROM
   },
   
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   serverUrl: process.env.SERVER_URL || 'http://localhost:3000'
 };
+
+console.log({
+  hasBrevoKey: Boolean(config.email.brevoApiKey),
+  emailFrom: config.email.from,
+  serverUrl: config.serverUrl
+});
 
 export default config;
