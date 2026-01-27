@@ -3,9 +3,6 @@ import { userService } from '../services/user';
 import { transactionService, type Transaction } from '../services/transaction';
 import { type User, getErrorMessage } from '../types';
 
-/**
- * Hook for loading dashboard data (user profile and recent transactions).
- */
 export const useDashboardData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -37,7 +34,6 @@ export const useDashboardData = () => {
     user,
     transactions,
     loading,
-    error,
-    refresh: loadData,
+    error
   };
 };

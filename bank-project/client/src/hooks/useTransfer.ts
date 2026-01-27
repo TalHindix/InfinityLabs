@@ -30,13 +30,6 @@ export const useTransfer = () => {
     }
   };
 
-  const reset = () => {
-    setReceiverEmail('');
-    setAmount('');
-    setError('');
-    setSuccess(false);
-  };
-
   return {
     receiverEmail,
     amount,
@@ -45,7 +38,6 @@ export const useTransfer = () => {
     success,
     setReceiverEmail,
     setAmount,
-    handleSubmit,
-    reset,
+    handleSubmit
   };
 };

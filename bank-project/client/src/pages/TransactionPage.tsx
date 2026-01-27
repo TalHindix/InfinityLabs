@@ -13,7 +13,7 @@ import { TransferForm } from '../components/TransferForm';
 import { transferDecorativeSx } from '../styles/transactions.styles';
 
 const TransferPage = () => {
-  const transfer = useTransfer();
+  const transfer  = useTransfer();
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>

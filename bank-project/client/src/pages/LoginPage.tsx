@@ -1,5 +1,3 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import {
@@ -13,10 +11,7 @@ import {
   Divider,
 } from '../components/ui';
 import { useThemeContext } from '../context/ThemeContext';
-import { authService } from '../services/auth';
-import { getErrorMessage } from '../types';
-import { getTimeBasedGreeting } from '../utils/greetings';
-import { getIntelligentErrorMessage } from '../utils/messages';
+import { useLogin } from '../hooks/useLogin';
 import { BrandHeader } from '../components/BrandHeader';
 import { SecurityIndicator } from '../components/SecurityIndicator';
 import { LoginForm } from '../components/LoginForm';
@@ -28,51 +23,17 @@ import {
 } from '../styles/login.styles';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { isDark, toggleTheme } = useThemeContext();
-
-  // Form state
-  const [formData, setFormData] = useState({ email: '', password: '' });
-
-  // UI state
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showVerifiedMsg, setShowVerifiedMsg] = useState(false);
-
-  // Memoized greeting - calculated once per page load
-  const greeting = useMemo(() => getTimeBasedGreeting(), []);
-
-  // Handle verified query param
-  useEffect(() => {
-    if (searchParams.get('verified') === 'true') {
-      setShowVerifiedMsg(true);
-      navigate('/login', { replace: true });
-    }
-  }, [searchParams, navigate]);
-
-  const handleFieldChange = (field: 'email' | 'password', value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const data = await authService.login(formData.email, formData.password);
-      authService.setToken(data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/dashboard');
-    } catch (err: unknown) {
-      const originalError = getErrorMessage(err);
-      setError(getIntelligentErrorMessage(originalError));
-      setFormData(prev => ({ ...prev, password: '' }));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    email,
+    password,
+    loading,
+    error,
+    showVerifiedMsg,
+    greeting,
+    handleFieldChange,
+    handleSubmit,
+  } = useLogin();
 
   return (
     <Box sx={createPageBackgroundSx(isDark)}>
@@ -104,8 +65,8 @@ const LoginPage = () => {
               </Box>
 
               <LoginForm
-                email={formData.email}
-                password={formData.password}
+                email={email}
+                password={password}
                 error={error}
                 loading={loading}
                 showVerifiedMsg={showVerifiedMsg}

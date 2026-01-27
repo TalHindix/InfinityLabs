@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import {
@@ -16,8 +15,7 @@ import {
   StepLabel,
 } from '../components/ui';
 import { useThemeContext } from '../context/ThemeContext';
-import { authService } from '../services/auth';
-import { getErrorMessage } from '../types';
+import { useSignup } from '../hooks/useSignup';
 import { SignupForm } from '../components/SignupForm';
 import { VerificationSuccess } from '../components/VerificationSuccess';
 import { PageFooterCaption } from '../components/AuthPageFooter';
@@ -32,41 +30,15 @@ const STEPS = ['Account Details', 'Verify Email'];
 
 const SignupPage = () => {
   const { isDark, toggleTheme } = useThemeContext();
-
-  // Step state
-  const [activeStep, setActiveStep] = useState(0);
-
-  // UI state
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Form state - unified into single object
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    phone: '',
-  });
-
-  const handleFieldChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await authService.signup(formData);
-      setActiveStep(1);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    formData,
+    activeStep,
+    loading,
+    error,
+    handleFieldChange,
+    handleSubmit,
+    goBack,
+  } = useSignup();
 
   return (
     <Box sx={createSignupBackgroundSx(isDark)}>
@@ -109,12 +81,12 @@ const SignupPage = () => {
                   formData={formData}
                   loading={loading}
                   onFieldChange={handleFieldChange}
-                  onSubmit={handleSignup}
+                  onSubmit={handleSubmit}
                 />
               ) : (
                 <VerificationSuccess
                   email={formData.email}
-                  onBackClick={() => setActiveStep(0)}
+                  onBackClick={goBack}
                 />
               )}
             </Stack>

@@ -69,5 +69,5 @@ export interface ApiError {
 
 export function getErrorMessage(err: unknown): string {
   const error = err as ApiError;
-  return error.response?.data?.error || error.message || 'An error occurred';
+  return error.response?.data?.error || error.message || 'An error occurred'; 
 }
