@@ -8,6 +8,7 @@ const api = axios.create({
   },
 });
 
+// before every request. 
 api.interceptors.request.use((config) => {
   const token = getCookie('token');
   if (token) {
@@ -16,13 +17,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// after every response.
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const { status, config } = error.response || {};
     const url = config?.url ?? '';
 
-    const authPaths = ['/auth/login', '/auth/signup', '/auth/refresh'];
+    const authPaths = ['/auth/login', '/auth/signup'];
     const isAuthEndpoint = authPaths.some(path => url.includes(path));
 
     const shouldRedirect = status === 401 && !isAuthEndpoint && getCookie('token');
@@ -39,9 +41,8 @@ function handleUnauthorized() {
   deleteCookie('token');
   localStorage.removeItem('user');
 
-  if (!window.location.pathname.startsWith('/login')) {
-    const next = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.href = `/login?next=${next}`;
+  if (window.location.pathname !== '/login') {
+    window.location.replace('/login');
   }
 }
 

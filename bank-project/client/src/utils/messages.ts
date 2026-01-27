@@ -1,21 +1,42 @@
-export const getIntelligentErrorMessage = (originalError: string): string => {
-  const lowerError = originalError.toLowerCase();
+export function getIntelligentErrorMessage(errorMessage: string): string {
+  const message = errorMessage.toLowerCase();
 
-  if (lowerError.includes('invalid') || lowerError.includes('incorrect') || lowerError.includes('wrong')) {
+  if (
+    message.includes('invalid') ||
+    message.includes('incorrect') ||
+    message.includes('wrong')
+  ) {
     return 'Credentials could not be verified. Please check and try again.';
   }
-  if (lowerError.includes('not found') || lowerError.includes('no user')) {
+
+  if (
+    message.includes('not found') ||
+    message.includes('no user')
+  ) {
     return 'Account not recognized. Please verify your email address.';
   }
-  if (lowerError.includes('locked') || lowerError.includes('blocked') || lowerError.includes('suspended')) {
+
+  if (
+    message.includes('locked') ||
+    message.includes('blocked') ||
+    message.includes('suspended')
+  ) {
     return 'Access temporarily restricted — unusual activity detected.';
   }
-  if (lowerError.includes('too many') || lowerError.includes('rate limit')) {
+
+  if (
+    message.includes('too many') ||
+    message.includes('rate limit')
+  ) {
     return 'Sign-in paused — multiple attempts detected. Please wait.';
   }
-  if (lowerError.includes('network') || lowerError.includes('connection')) {
+
+  if (
+    message.includes('network') ||
+    message.includes('connection')
+  ) {
     return 'Secure connection interrupted. Please try again.';
   }
 
   return 'Authentication could not be completed. Please try again.';
-};
+}
