@@ -15,7 +15,8 @@ const config = {
   
   email: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS,
+    resendApiKey: process.env.RESEND_API_KEY
   },
   
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
