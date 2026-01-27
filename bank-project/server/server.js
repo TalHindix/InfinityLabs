@@ -7,7 +7,7 @@ const startServer = async () => {
   await connectDB();
   
   app.listen(config.port, () => {
-    logger.info(`Server running on http://localhost:${config.port}`);
+    logger.info(`Listening on ${config.port}`);
   });
 };
 

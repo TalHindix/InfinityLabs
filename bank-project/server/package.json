@@ -1,7 +1,7 @@
 {
-    "name": "bankprank-api",
+    "name": "dubai-bank-api",
     "version": "1.0.0",
-    "description": "Web (Bank Prank) Application API",
+    "description": "Web (dubai-bank) Application API",
     "type": "module",
     "main": "server.js",
     "scripts": {
