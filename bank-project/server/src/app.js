@@ -10,6 +10,9 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
 
 const app = express();
 
+// Trust proxy - required for Render/Vercel (fixes rate limiter X-Forwarded-For error)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
   origin: config.clientUrl || 'http://localhost:5173',
@@ -27,7 +30,7 @@ app.use('/api/v1', userRoutes);
 app.use('/api/v1/transactions', transactionRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get(['/','/health'], (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
