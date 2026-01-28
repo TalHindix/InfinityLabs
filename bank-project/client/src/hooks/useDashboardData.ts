@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { userService } from '../services/user';
-import { transactionService, type Transaction } from '../services/transaction';
-import { type User, getErrorMessage } from '../types';
+import { userService } from '../services/user.service';
+import { transactionsService } from '../services/transactions.service';
+import { type User, type Transaction, getErrorMessage } from '../types';
 
 export const useDashboardData = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -15,7 +15,7 @@ export const useDashboardData = () => {
     try {
       const [userData, transactionsData] = await Promise.all([
         userService.getMe(),
-        transactionService.getAll(),
+        transactionsService.getAll(),
       ]);
       setUser(userData.user);
       setTransactions(transactionsData.transactions || []);

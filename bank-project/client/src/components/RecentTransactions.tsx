@@ -1,32 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Box,
-} from '../utils/ui';
-import { type Transaction } from '../services/transaction';
+import {Card,CardContent,Typography,Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box,}
+from '../utils/ui';
+import { type Transaction } from '../types';
 import { formatAmount } from '../utils/formatters';
-import {
-  headerBarSx,
-  sectionTitleSx,
-  viewAllButtonSx,
-  emptyCardContentSx,
-  emptyIconSx,
-  emptyIconTextSx,
-  emptySubtextSx,
-  tableContainerSx,
-  amountCellSx,
-  createAmountTextSx,
-} from './RecentTransactions.styles';
+import { headerBarSx, sectionTitleSx, viewAllButtonSx, emptyCardContentSx, emptyIconSx, emptyIconTextSx,
+          emptySubtextSx, tableContainerSx, amountCellSx, createAmountTextSx,}
+from './RecentTransactions.styles';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];

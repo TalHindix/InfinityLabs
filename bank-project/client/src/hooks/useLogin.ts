@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authService } from '../services/auth';
+import { authStorage } from '../services/auth.storage';
+import { authService } from '../services/auth.service';
 import { getErrorMessage } from '../types';
 import { getTimeBasedGreeting } from '../utils/greetings';
 import { getIntelligentErrorMessage } from '../utils/messages';
@@ -40,7 +41,7 @@ export const useLogin = () => {
 
     try {
       const data = await authService.login(email, password);
-      authService.setToken(data.token);
+      authStorage.setToken(data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/dashboard');
     } catch (err: unknown) {

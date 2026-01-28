@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { transactionService, type Transaction } from '../services/transaction';
-import { authService } from '../services/auth';
-import { getErrorMessage } from '../types';
+import { transactionsService } from '../services/transactions.service';
+import { authStorage } from '../services/auth.storage';
+import { getErrorMessage , type Transaction} from '../types';
 
 export const useTransactions = (pageSize = 10) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,7 +13,7 @@ export const useTransactions = (pageSize = 10) => {
   const [totalPages, setTotalPages] = useState(1);
 
   const currentPage = Number(searchParams.get('page')) || 1;
-  const userEmail = authService.getUser()?.email;
+  const userEmail = authStorage.getUser()?.email;
 
   const handlePageChange = (page: number) => {
     const next = new URLSearchParams(searchParams);
@@ -27,7 +27,7 @@ export const useTransactions = (pageSize = 10) => {
     setError('');
 
     try {
-      const data = await transactionService.getAll(currentPage, pageSize);
+      const data = await transactionsService.getAll(currentPage, pageSize);
       setTransactions(data.transactions ?? []);
       setTotalPages(data.totalPages ?? 1);
     } catch (err: unknown) {

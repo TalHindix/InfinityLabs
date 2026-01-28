@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authService } from '../services/auth';
+import { authService } from '../services/auth.service';
 import { getErrorMessage } from '../types';
 
 interface SignupFormData {

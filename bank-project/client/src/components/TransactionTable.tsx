@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Box } from '../utils/ui';
-import { type Transaction } from '../services/transaction';
+import { type Transaction } from '../types';
 import { TransactionRow } from './TransactionRow';
 import { tableContainerSx, emptyStateSx } from './TransactionTable.styles';
 

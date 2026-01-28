@@ -1,5 +1,5 @@
 import { TableRow, TableCell, Typography, Button } from '../utils/ui';
-import { type Transaction } from '../services/transaction';
+import { type Transaction } from '../types';
 import { formatAmount, formatShortDate } from '../utils/formatters';
 import {
   rowSx,

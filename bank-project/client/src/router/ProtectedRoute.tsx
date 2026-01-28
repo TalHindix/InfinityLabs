@@ -1,13 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { authService } from '../services/auth';
+import { authStorage } from '../services/auth.storage';
 
-interface ProtectedRouteProps {
-  redirectTo?: string;
-}
+const ProtectedRoute = () => {
+  const isLoggedIn = authStorage.isAuthenticated();
 
-const ProtectedRoute = ({ redirectTo = '/login' }: ProtectedRouteProps) => {
-  const isAuthenticated = authService.isAuthenticated();
-  return isAuthenticated ? <Outlet /> : <Navigate to={redirectTo} replace />;
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography, Stack, Box, Divider, CircularProgress } from '../utils/ui';
-import { type Transaction } from '../services/transaction';
+import { type Transaction } from '../types';
 import { formatAmount, formatDate } from '../utils/formatters';
 import { createDetailPanelSx, createAmountIconSx, loadingContainerSx, loadingSpinnerSx, goldDividerSx, refTextSx, statusBadgeSx, emptyStateSx, emptyIconSx } from './TransactionDetailPanel.styles';
 

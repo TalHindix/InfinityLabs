@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { transactionService, type Transaction } from '../services/transaction';
+import { transactionService, type Transaction } from '../services/transactions.service';
 import { getErrorMessage } from '../types';
 
 export const useTransactionDetail = () => {
