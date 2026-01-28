@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { transactionService } from '../services/transactions.service';
+import { transactionsService } from '../services/transactions.service';
 import { getErrorMessage } from '../types';
 
 export const useTransfer = () => {
@@ -16,7 +16,7 @@ export const useTransfer = () => {
     setLoading(true);
 
     try {
-      await transactionService.create({
+      await transactionsService.create({
         receiverEmail,
         amount: Number(amount),
       });

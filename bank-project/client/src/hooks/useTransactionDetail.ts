@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { transactionService, type Transaction } from '../services/transactions.service';
+import { transactionsService } from '../services/transactions.service';
+import { type Transaction } from '../types';
 import { getErrorMessage } from '../types';
 
 export const useTransactionDetail = () => {
@@ -11,7 +12,7 @@ export const useTransactionDetail = () => {
     setLoading(true);
     setError('');
     try {
-      const data = await transactionService.getById(id);
+      const data = await transactionsService.getById(id);
       setSelectedTransaction(data.transaction);
     } catch (err: unknown) {
       setError(getErrorMessage(err));

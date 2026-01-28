@@ -8,6 +8,11 @@ export const transactionsService = {
     return res.data;
   },
 
+  async getById(id: string): Promise<TransactionResponse> {
+    const res = await httpClient.get(`/transactions/${id}`);
+    return res.data;
+  },
+  
   async create(data: TransferData): Promise<TransactionResponse> {
     const res = await httpClient.post('/transactions', data);
     return res.data;
