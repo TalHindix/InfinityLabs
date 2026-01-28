@@ -10,12 +10,13 @@ type Props = {
 };
 
 // children = <App/>
-
 export function ThemeContextProvider( { children } : Props) {
 
   const [mode, setMode] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem('theme');
-    return saved === 'dark' ? 'dark' : 'light';
+  const saved = localStorage.getItem('theme');
+  return saved === 'light' || saved === 'dark'
+    ? saved
+    : 'dark';
   });
 
   useEffect(() => {
