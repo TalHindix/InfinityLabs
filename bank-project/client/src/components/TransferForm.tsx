@@ -1,16 +1,15 @@
 import { useNavigate } from 'react-router-dom';
+import { TextField, Button, Typography, Alert, Stack, Box, Divider, InputAdornment,
+} from '../utils/ui';
 import {
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Stack,
-  Box,
-  Divider,
-  InputAdornment,
-} from './ui';
-import { primaryButtonSx, transferSummarySx } from '../styles/transactions.styles';
-import { amountAdornmentSx, cancelButtonSx } from './TransferForm.styles';
+  amountAdornmentSx,
+  cancelButtonSx,
+  transferSummarySx,
+  feeFreeTextSx,
+  summaryDividerSx,
+  totalAmountSx,
+  primaryButtonSx,
+} from './TransferForm.styles';
 
 interface TransferFormProps {
   receiverEmail: string;
@@ -21,6 +20,13 @@ interface TransferFormProps {
   onReceiverEmailChange: (value: string) => void;
   onAmountChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+}
+
+function formatAED(amount: string): string {
+  if (!amount) return '0.00';
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return '0.00';
+  return n.toLocaleString('en-AE', { minimumFractionDigits: 2 });
 }
 
 export const TransferForm = ({
@@ -35,9 +41,8 @@ export const TransferForm = ({
 }: TransferFormProps) => {
   const navigate = useNavigate();
 
-  const formattedAmount = amount
-    ? Number(amount).toLocaleString('en-AE', { minimumFractionDigits: 2 })
-    : '0.00';
+  const formattedAmount = formatAED(amount);
+  const amountText = `${formattedAmount} AED`;
 
   return (
     <>
@@ -60,6 +65,7 @@ export const TransferForm = ({
             placeholder="recipient@example.com"
             helperText="Enter the email address of the recipient"
           />
+
           <TextField
             fullWidth
             label="Amount"
@@ -72,9 +78,7 @@ export const TransferForm = ({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <Typography sx={amountAdornmentSx}>
-                      AED
-                    </Typography>
+                    <Typography sx={amountAdornmentSx}>AED</Typography>
                   </InputAdornment>
                 ),
               },
@@ -83,29 +87,34 @@ export const TransferForm = ({
           />
 
           <Box sx={transferSummarySx}>
-            <Stack direction="row" justifyContent="space-between" mb={1}>
-              <Typography variant="body2" color="text.secondary">
-                Transfer Amount
-              </Typography>
-              <Typography variant="body2" fontWeight={500}>
-                {formattedAmount} AED
-              </Typography>
+            <Stack spacing={1}>
+              <Stack direction="row" justifyContent="space-between">
+                <Typography variant="body2" color="text.secondary">
+                  Transfer Amount
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  {amountText}
+                </Typography>
+              </Stack>
+
+              <Stack direction="row" justifyContent="space-between">
+                <Typography variant="body2" color="text.secondary">
+                  Fee
+                </Typography>
+                <Typography variant="body2" fontWeight={500} sx={feeFreeTextSx}>
+                  Free
+                </Typography>
+              </Stack>
             </Stack>
-            <Stack direction="row" justifyContent="space-between">
-              <Typography variant="body2" color="text.secondary">
-                Fee
-              </Typography>
-              <Typography variant="body2" fontWeight={500} sx={{ color: 'success.main' }}>
-                Free
-              </Typography>
-            </Stack>
-            <Divider sx={{ my: 1.5 }} />
+
+            <Divider sx={summaryDividerSx} />
+
             <Stack direction="row" justifyContent="space-between">
               <Typography variant="body1" fontWeight={600}>
                 Total
               </Typography>
-              <Typography variant="body1" fontWeight={600} sx={{ color: 'primary.main' }}>
-                {formattedAmount} AED
+              <Typography variant="body1" fontWeight={600} sx={totalAmountSx}>
+                {amountText}
               </Typography>
             </Stack>
           </Box>
@@ -116,11 +125,7 @@ export const TransferForm = ({
             variant="contained"
             size="large"
             disabled={loading}
-            sx={{
-              ...primaryButtonSx,
-              py: 1.5,
-              fontSize: '1rem',
-            }}
+            sx={primaryButtonSx}
           >
             {loading ? 'Processing...' : 'Send Money'}
           </Button>

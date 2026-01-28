@@ -1,4 +1,4 @@
-import { Container, Box, Typography } from './ui';
+import { Container, Box, Typography } from '../utils/ui';
 import { footerContainerSx } from './PageFooter.styles';
 
 export const PageFooter = () => {

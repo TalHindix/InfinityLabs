@@ -1,4 +1,4 @@
-import { Box, Typography } from './ui';
+import { Box, Typography } from '../utils/ui';
 import {
   sessionNoticeContainerSx,
   lockEmojiSx,
@@ -29,9 +29,10 @@ interface PageFooterCaptionProps {
 }
 
 export const PageFooterCaption = ({ isDark, variant = 'login' }: PageFooterCaptionProps) => {
-  const text = variant === 'signup'
-    ? 'Secure banking powered by Dubai-Bank'
-    : 'Secure banking powered by Dubai Bank';
+  const text =
+    variant === 'signup'
+      ? 'Secure banking powered by Dubai-Bank'
+      : 'Secure banking powered by Dubai Bank';
 
   return (
     <Typography variant="caption" sx={createFooterCaptionSx(isDark)}>

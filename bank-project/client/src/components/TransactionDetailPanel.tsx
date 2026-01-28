@@ -1,24 +1,7 @@
-import {
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Box,
-  Divider,
-  CircularProgress,
-} from './ui';
+import { Card, CardContent, Typography, Stack, Box, Divider, CircularProgress } from '../utils/ui';
 import { type Transaction } from '../services/transaction';
 import { formatAmount, formatDate } from '../utils/formatters';
-import { createDetailPanelSx, createAmountIconSx } from '../styles/transactions.styles';
-import {
-  loadingContainerSx,
-  loadingSpinnerSx,
-  goldDividerSx,
-  refTextSx,
-  statusBadgeSx,
-  emptyStateSx,
-  emptyIconSx,
-} from './TransactionDetailPanel.styles';
+import { createDetailPanelSx, createAmountIconSx, loadingContainerSx, loadingSpinnerSx, goldDividerSx, refTextSx, statusBadgeSx, emptyStateSx, emptyIconSx } from './TransactionDetailPanel.styles';
 
 interface TransactionDetailPanelProps {
   transaction: Transaction | null;
@@ -26,11 +9,7 @@ interface TransactionDetailPanelProps {
   userEmail: string | undefined;
 }
 
-export const TransactionDetailPanel = ({
-  transaction,
-  loading,
-  userEmail,
-}: TransactionDetailPanelProps) => {
+export const TransactionDetailPanel = ({ transaction, loading, userEmail }: TransactionDetailPanelProps) => {
   const isSent = transaction?.fromEmail === userEmail;
 
   return (
@@ -44,24 +23,17 @@ export const TransactionDetailPanel = ({
           <Stack spacing={3}>
             <Box textAlign="center">
               <Box sx={createAmountIconSx(isSent)}>
-                <Typography
-                  variant="h5"
-                  sx={{ color: isSent ? 'error.main' : 'success.main' }}
-                >
+                <Typography variant="h5" sx={{ color: isSent ? 'error.main' : 'success.main' }}>
                   {isSent ? '↑' : '↓'}
                 </Typography>
               </Box>
+
               <Typography variant="h4" fontWeight={700} sx={{ color: 'primary.main' }}>
                 {isSent ? '-' : '+'}
                 {formatAmount(transaction.amount)} AED
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: isSent ? 'error.main' : 'success.main',
-                  fontWeight: 500,
-                }}
-              >
+
+              <Typography variant="body2" sx={{ color: isSent ? 'error.main' : 'success.main', fontWeight: 500 }}>
                 {isSent ? 'Money Sent' : 'Money Received'}
               </Typography>
             </Box>
@@ -70,21 +42,13 @@ export const TransactionDetailPanel = ({
 
             <Stack spacing={2}>
               <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Reference Number
-                </Typography>
-                <Typography fontWeight={600} sx={refTextSx}>
-                  #{transaction.id}
-                </Typography>
+                <Typography variant="caption" color="text.secondary">Reference Number</Typography>
+                <Typography sx={refTextSx}>#{transaction.id}</Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Date & Time
-                </Typography>
-                <Typography fontWeight={500}>
-                  {formatDate(transaction.createdAt)}
-                </Typography>
+                <Typography variant="caption" color="text.secondary">Date & Time</Typography>
+                <Typography fontWeight={500}>{formatDate(transaction.createdAt)}</Typography>
               </Box>
 
               <Box>
@@ -97,13 +61,9 @@ export const TransactionDetailPanel = ({
               </Box>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Status
-                </Typography>
+                <Typography variant="caption" color="text.secondary">Status</Typography>
                 <Box sx={statusBadgeSx}>
-                  <Typography variant="body2" fontWeight={500}>
-                    Completed
-                  </Typography>
+                  <Typography variant="body2" fontWeight={500}>Completed</Typography>
                 </Box>
               </Box>
             </Stack>
@@ -111,9 +71,7 @@ export const TransactionDetailPanel = ({
         ) : (
           <Box sx={emptyStateSx}>
             <Typography sx={emptyIconSx}>📋</Typography>
-            <Typography color="text.secondary">
-              Select a transaction to view details
-            </Typography>
+            <Typography color="text.secondary">Select a transaction to view details</Typography>
           </Box>
         )}
       </CardContent>

@@ -9,19 +9,14 @@ import {
   Stack,
   Box,
   Divider,
-} from '../components/ui';
+} from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
 import { useLogin } from '../hooks/useLogin';
 import { BrandHeader } from '../components/BrandHeader';
 import { SecurityIndicator } from '../components/SecurityIndicator';
 import { LoginForm } from '../components/LoginForm';
 import { PageFooterCaption } from '../components/AuthPageFooter';
-import {
-  createPageBackgroundSx,
-  createAuthCardSx,
-  themeToggleSx,
-} from '../styles/login.styles';
-import { createDividerSx, createSignInTitleSx } from './LoginPage.styles';
+import { createDividerSx, createSignInTitleSx , createPageBackgroundSx , createAuthCardSx , themeToggleSx } from './LoginPage.styles';
 
 const LoginPage = () => {
   const { isDark, toggleTheme } = useThemeContext();

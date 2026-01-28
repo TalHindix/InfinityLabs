@@ -1,8 +1,38 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export const amountAdornmentSx: SxProps<Theme> = {
+  fontWeight: 700,
+  letterSpacing: '0.02em',
   color: '#C9A227',
-  fontWeight: 600,
+};
+
+export const transferSummarySx: SxProps<Theme> = {
+  bgcolor: 'rgba(13, 27, 42, 0.03)',
+  borderRadius: 2,
+  p: 2,
+};
+
+export const feeFreeTextSx: SxProps<Theme> = {
+  color: 'success.main',
+};
+
+export const summaryDividerSx: SxProps<Theme> = {
+  my: 1.5,
+};
+
+export const totalAmountSx: SxProps<Theme> = {
+  color: 'primary.main',
+};
+
+export const primaryButtonSx: SxProps<Theme> = {
+  py: 1.5,
+  fontSize: '1rem',
+  fontWeight: 700,
+  background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
+  color: '#0D1B2A',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
+  },
 };
 
 export const cancelButtonSx: SxProps<Theme> = {

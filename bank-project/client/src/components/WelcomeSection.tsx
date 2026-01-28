@@ -1,5 +1,9 @@
-import { Box, Typography } from './ui';
-import { welcomeTitleSx } from './WelcomeSection.styles';
+import { Box, Typography } from '../utils/ui';
+import {
+  rootSx,
+  welcomeTitleSx,
+  subtitleSx,
+} from './WelcomeSection.styles';
 
 interface WelcomeSectionProps {
   firstName: string | undefined;
@@ -7,11 +11,12 @@ interface WelcomeSectionProps {
 
 export const WelcomeSection = ({ firstName }: WelcomeSectionProps) => {
   return (
-    <Box>
+    <Box sx={rootSx}>
       <Typography variant="h4" sx={welcomeTitleSx}>
         Welcome back, {firstName || 'User'}
       </Typography>
-      <Typography color="text.secondary">
+
+      <Typography sx={subtitleSx}>
         Here's your account overview
       </Typography>
     </Box>

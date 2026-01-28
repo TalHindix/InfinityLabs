@@ -1,4 +1,4 @@
-import { Box, Typography, Stack } from './ui';
+import { Box, Typography, Stack } from '../utils/ui';
 import { DubaiBankLogo } from './DubaiBankLogo';
 
 interface BrandLogoProps {

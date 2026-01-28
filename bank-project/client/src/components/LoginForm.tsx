@@ -1,18 +1,15 @@
 import { Link } from 'react-router-dom';
-import {
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Stack,
-  Box,
-} from './ui';
+import { TextField, Button, Typography, Alert, Stack, Box } from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
-import { createFieldSx, primaryButtonSx } from '../styles/login.styles';
 import {
+  createFieldSx,
+  primaryButtonSx,
   createSecurityNoteSx,
   createForgotPasswordSx,
   footerContainerSx,
+  errorAlertSx,
+  errorCaptionSx,
+  signUpLinkStyle,
 } from './LoginForm.styles';
 
 interface LoginFormProps {
@@ -45,14 +42,11 @@ export const LoginForm = ({
       )}
 
       {error && (
-        <Alert
-          severity="error"
-          sx={{ '& .MuiAlert-message': { width: '100%' } }}
-        >
+        <Alert severity="error" sx={errorAlertSx}>
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             {error}
           </Typography>
-          <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.85 }}>
+          <Typography variant="caption" sx={errorCaptionSx}>
             If this issue persists, contact support.
           </Typography>
         </Alert>
@@ -104,7 +98,7 @@ export const LoginForm = ({
               Forgot password? (TODO)
             </Typography>
             <Typography variant="body2">
-              <Link to="/signup" style={{ fontWeight: 700, color: '#C9A227', textDecoration: 'none' }}>
+              <Link to="/signup" style={signUpLinkStyle}>
                 Create account
               </Link>
             </Typography>

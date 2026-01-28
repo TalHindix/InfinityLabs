@@ -11,17 +11,21 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Stack,
   Box,
-} from './ui';
+} from '../utils/ui';
 import { type Transaction } from '../services/transaction';
 import { formatAmount } from '../utils/formatters';
-import { viewAllButtonSx, emptyIconSx } from '../styles/dashboard.styles';
 import {
+  headerBarSx,
   sectionTitleSx,
+  viewAllButtonSx,
   emptyCardContentSx,
+  emptyIconSx,
   emptyIconTextSx,
+  emptySubtextSx,
   tableContainerSx,
+  amountCellSx,
+  createAmountTextSx,
 } from './RecentTransactions.styles';
 
 interface RecentTransactionsProps {
@@ -34,29 +38,25 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box sx={headerBarSx}>
         <Typography variant="h5" sx={sectionTitleSx}>
           Recent Transactions
         </Typography>
-        <Button
-          variant="text"
-          onClick={() => navigate('/transactions')}
-          sx={viewAllButtonSx}
-        >
+        <Button variant="text" onClick={() => navigate('/transactions')} sx={viewAllButtonSx}>
           View All
         </Button>
-      </Stack>
+      </Box>
 
       {transactions.length === 0 ? (
         <Card>
           <CardContent sx={emptyCardContentSx}>
             <Box sx={emptyIconSx}>
-              <Typography variant="h3" sx={emptyIconTextSx}>$</Typography>
+              <Typography variant="h3" sx={emptyIconTextSx}>
+                $
+              </Typography>
             </Box>
-            <Typography color="text.secondary">
-              No transactions yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography color="text.secondary">No transactions yet</Typography>
+            <Typography variant="body2" color="text.secondary" sx={emptySubtextSx}>
               Make your first transfer to get started
             </Typography>
           </CardContent>
@@ -68,7 +68,7 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
               <TableRow>
                 <TableCell>Date</TableCell>
                 <TableCell>Description</TableCell>
-                <TableCell align="right">Amount</TableCell>
+                <TableCell sx={amountCellSx}>Amount</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -90,12 +90,10 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
                         {isSent ? `To: ${tx.toEmail}` : `From: ${tx.fromEmail}`}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">
-                      <Typography
-                        fontWeight={600}
-                        sx={{ color: isSent ? 'error.main' : 'success.main' }}
-                      >
-                        {isSent ? '-' : '+'}{formatAmount(tx.amount)} AED
+                    <TableCell sx={amountCellSx}>
+                      <Typography fontWeight={600} sx={createAmountTextSx(isSent)}>
+                        {isSent ? '-' : '+'}
+                        {formatAmount(tx.amount)} AED
                       </Typography>
                     </TableCell>
                   </TableRow>

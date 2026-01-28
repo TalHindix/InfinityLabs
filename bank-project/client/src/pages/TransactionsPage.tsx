@@ -1,12 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Typography,
-  Button,
-  Alert,
-  Stack,
-  Box,
-} from '../components/ui';
+import { Container, Typography, Button, Alert, Stack, Box } from '../utils/ui';
 import { AppHeader } from '../components/AppHeader';
 import { PageFooter } from '../components/PageFooter';
 import { useTransactions } from '../hooks/useTransactions';
@@ -15,7 +8,14 @@ import { TransactionTable } from '../components/TransactionTable';
 import { TransactionDetailPanel } from '../components/TransactionDetailPanel';
 import { TransactionEmptyState } from '../components/TransactionEmptyState';
 import { Pagination } from '../components/Pagination';
-import { primaryButtonSx } from '../styles/transactions.styles';
+import {
+  pageRootSx,
+  containerSx,
+  titleSx,
+  listColSx,
+  detailColSx,
+  primaryButtonSx,
+} from './TransactionsPage.styles';
 
 const TransactionsPage = () => {
   const navigate = useNavigate();
@@ -40,21 +40,20 @@ const TransactionsPage = () => {
   const error = listError || detailError;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={pageRootSx}>
       <AppHeader showDashboardButton />
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={containerSx}>
         <Stack spacing={4}>
           {/* Page Header */}
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
+              <Typography variant="h4" sx={titleSx}>
                 Transaction History
               </Typography>
-              <Typography color="text.secondary">
-                View all your transactions
-              </Typography>
+              <Typography color="text.secondary">View all your transactions</Typography>
             </Box>
+
             <Button
               variant="contained"
               onClick={() => navigate('/transfer')}
@@ -68,7 +67,7 @@ const TransactionsPage = () => {
 
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
             {/* Transactions List */}
-            <Box sx={{ flex: 2 }}>
+            <Box sx={listColSx}>
               {loading || transactions.length === 0 ? (
                 <TransactionEmptyState loading={loading} />
               ) : (
@@ -77,7 +76,7 @@ const TransactionsPage = () => {
                     transactions={transactions}
                     userEmail={userEmail}
                     selectedTransactionId={selectedTransaction?._id}
-                    onSelectTransaction={loadTransactionDetail}
+                    onSelect={loadTransactionDetail}
                   />
                   <Pagination
                     currentPage={currentPage}
@@ -89,7 +88,7 @@ const TransactionsPage = () => {
             </Box>
 
             {/* Transaction Detail Panel */}
-            <Box sx={{ flex: 1, minWidth: 300 }}>
+            <Box sx={detailColSx}>
               <TransactionDetailPanel
                 transaction={selectedTransaction}
                 loading={detailLoading}

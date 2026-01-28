@@ -5,7 +5,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import TransferPage from './pages/TransactionPage';
 import TransactionsPage from './pages/TransactionsPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './router/ProtectedRoute';
 
 export default function App() {
   return (

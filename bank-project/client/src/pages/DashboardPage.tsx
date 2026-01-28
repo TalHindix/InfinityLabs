@@ -4,14 +4,19 @@ import {
   Alert,
   Stack,
   Box,
-} from '../components/ui';
+} from '../utils/ui';
 import { AppHeader } from '../components/AppHeader';
 import { PageFooter } from '../components/PageFooter';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { WelcomeSection } from '../components/WelcomeSection';
 import { BalanceCard } from '../components/BalanceCard';
 import { RecentTransactions } from '../components/RecentTransactions';
-import { loadingScreenSx } from '../styles/dashboard.styles';
+import {
+  pageRootSx,
+  containerSx,
+  loadingScreenSx,
+  loadingSpinnerSx,
+} from './DashboardPage.styles';
 
 const DashboardPage = () => {
   const { user, transactions, loading, error } = useDashboardData();
@@ -19,16 +24,16 @@ const DashboardPage = () => {
   if (loading) {
     return (
       <Box sx={loadingScreenSx}>
-        <CircularProgress sx={{ color: '#C9A227' }} />
+        <CircularProgress sx={loadingSpinnerSx} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={pageRootSx}>
       <AppHeader showThemeToggle />
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={containerSx}>
         <Stack spacing={4}>
           <WelcomeSection firstName={user?.firstName} />
 

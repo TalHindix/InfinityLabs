@@ -1,6 +1,5 @@
-import { Stack, Button, Box, Typography } from './ui';
-import { paginationButtonSx } from '../styles/transactions.styles';
-import { pageIndicatorSx } from './Pagination.styles';
+import { Stack, Button, Box, Typography } from '../utils/ui';
+import { paginationButtonSx, pageIndicatorSx } from './Pagination.styles';
 
 interface PaginationProps {
   currentPage: number;
@@ -20,11 +19,13 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
       >
         Previous
       </Button>
+
       <Box sx={pageIndicatorSx}>
         <Typography variant="body2">
           Page {currentPage} of {totalPages}
         </Typography>
       </Box>
+
       <Button
         variant="outlined"
         size="small"

@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
-import { TextField, Button, Typography, Stack } from './ui';
+import { TextField, Button, Typography, Stack } from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
-import { createFieldSx } from '../styles/login.styles';
-import { submitButtonSx } from './SignupForm.styles';
+import { createFieldSx, submitButtonSx, signInLinkStyle } from './SignupForm.styles';
 
 interface SignupFormData {
   firstName: string;
@@ -49,6 +48,7 @@ export const SignupForm = ({
             sx={fieldSx}
           />
         </Stack>
+
         <TextField
           fullWidth
           label="Email Address"
@@ -59,6 +59,7 @@ export const SignupForm = ({
           placeholder="you@example.com"
           sx={fieldSx}
         />
+
         <TextField
           fullWidth
           label="Phone Number"
@@ -69,6 +70,7 @@ export const SignupForm = ({
           helperText="International format (e.g., +971...)"
           sx={fieldSx}
         />
+
         <TextField
           fullWidth
           label="Password"
@@ -79,6 +81,7 @@ export const SignupForm = ({
           helperText="At least 8 characters with uppercase, lowercase, and number"
           sx={fieldSx}
         />
+
         <Button
           fullWidth
           type="submit"
@@ -89,9 +92,10 @@ export const SignupForm = ({
         >
           {loading ? 'Creating Account...' : 'Create Account'}
         </Button>
+
         <Typography textAlign="center" variant="body2" color="text.secondary">
           Already have an account?{' '}
-          <Link to="/login" style={{ fontWeight: 600 }}>
+          <Link to="/login" style={signInLinkStyle}>
             Sign In
           </Link>
         </Typography>

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Container, Stack, Box, Button, IconButton } from './ui';
+import { Container, Stack, Box, Button, IconButton } from '../utils/ui';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { DubaiBankLogoFull } from './DubaiBankLogo';

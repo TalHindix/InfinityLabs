@@ -6,12 +6,16 @@ import {
   Stack,
   Box,
   Divider,
-} from '../components/ui';
+} from '../utils/ui';
 import { AppHeader } from '../components/AppHeader';
 import { useTransfer } from '../hooks/useTransfer';
 import { TransferForm } from '../components/TransferForm';
-import { transferDecorativeSx } from '../styles/transactions.styles';
 import {
+  pageRootSx,
+  containerSx,
+  cardSx,
+  cardContentSx,
+  transferDecorativeSx,
   decorativeSymbolSx,
   pageTitleSx,
   pageSubtitleSx,
@@ -23,16 +27,16 @@ const TransferPage = () => {
   const transfer = useTransfer();
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={pageRootSx}>
       <AppHeader showDashboardButton showLogout={false} />
 
-      <Container maxWidth="sm" sx={{ py: 6 }}>
-        <Card sx={{ overflow: 'visible', position: 'relative' }}>
+      <Container maxWidth="sm" sx={containerSx}>
+        <Card sx={cardSx}>
           <Box sx={transferDecorativeSx}>
             <Typography variant="h5" sx={decorativeSymbolSx}>$</Typography>
           </Box>
 
-          <CardContent sx={{ p: 4, pt: 6 }}>
+          <CardContent sx={cardContentSx}>
             <Stack spacing={3}>
               <Box textAlign="center">
                 <Typography variant="h4" sx={pageTitleSx}>

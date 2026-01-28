@@ -13,7 +13,7 @@ import {
   Stepper,
   Step,
   StepLabel,
-} from '../components/ui';
+} from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
 import { useSignup } from '../hooks/useSignup';
 import { SignupForm } from '../components/SignupForm';
@@ -24,8 +24,6 @@ import {
   createSignupBackgroundSx,
   createSignupCardSx,
   signupThemeToggleSx,
-} from '../styles/signup.styles';
-import {
   logoContainerSx,
   pageTitleSx,
   pageSubtitleSx,

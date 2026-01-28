@@ -1,20 +1,45 @@
 import type { SxProps, Theme } from '@mui/material';
 
+export const GOLD_COLOR = '#C9A227';
+export const GOLD_HOVER = '#A17F1A';
+
+export const createDetailPanelSx = (hasSelection: boolean): SxProps<Theme> => ({
+  position: 'sticky',
+  top: 20,
+  border: hasSelection ? '1px solid rgba(201, 162, 39, 0.3)' : undefined,
+});
+
+export const createAmountIconSx = (isSent: boolean): SxProps<Theme> => ({
+  width: 60,
+  height: 60,
+  mx: 'auto',
+  mb: 2,
+  borderRadius: '50%',
+  background: isSent
+    ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%)'
+    : 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
 export const loadingContainerSx: SxProps<Theme> = {
-  py: 4,
-  textAlign: 'center',
+  py: 6,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 };
 
 export const loadingSpinnerSx: SxProps<Theme> = {
-  color: '#C9A227',
+  color: GOLD_COLOR,
 };
 
 export const goldDividerSx: SxProps<Theme> = {
-  borderColor: 'rgba(201, 162, 39, 0.2)',
+  my: 1,
 };
 
 export const refTextSx: SxProps<Theme> = {
-  color: '#C9A227',
+  fontWeight: 600,
 };
 
 export const statusBadgeSx: SxProps<Theme> = {
@@ -27,12 +52,11 @@ export const statusBadgeSx: SxProps<Theme> = {
 };
 
 export const emptyStateSx: SxProps<Theme> = {
-  py: 8,
+  py: 6,
   textAlign: 'center',
 };
 
 export const emptyIconSx: SxProps<Theme> = {
-  fontSize: 48,
-  color: 'text.disabled',
-  mb: 2,
+  fontSize: 28,
+  opacity: 0.7,
 };

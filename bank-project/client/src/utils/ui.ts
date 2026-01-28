@@ -1,6 +1,3 @@
-// Re-export MUI components from one place
-// Usage: import { Button, Card, Stack } from '../components/ui';
-
 export {
   // Layout
   Container,

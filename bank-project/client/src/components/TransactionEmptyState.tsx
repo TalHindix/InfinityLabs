@@ -1,9 +1,10 @@
-import { Card, CardContent, Typography, CircularProgress, Box } from './ui';
+import { Card, CardContent, Typography, CircularProgress, Box } from '../utils/ui';
 import {
-  loadingContentSx,
-  loadingSpinnerSx,
+  contentSx,
+  spinnerSx,
   emptyIconContainerSx,
   emptyIconTextSx,
+  emptyTextSx,
 } from './TransactionEmptyState.styles';
 
 interface TransactionEmptyStateProps {
@@ -11,23 +12,24 @@ interface TransactionEmptyStateProps {
 }
 
 export const TransactionEmptyState = ({ loading }: TransactionEmptyStateProps) => {
-  if (loading) {
-    return (
-      <Card>
-        <CardContent sx={loadingContentSx}>
-          <CircularProgress sx={loadingSpinnerSx} />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
-      <CardContent sx={loadingContentSx}>
-        <Box sx={emptyIconContainerSx}>
-          <Typography variant="h3" sx={emptyIconTextSx}>$</Typography>
-        </Box>
-        <Typography color="text.secondary">No transactions found</Typography>
+      <CardContent sx={contentSx}>
+        {loading ? (
+          <CircularProgress sx={spinnerSx} />
+        ) : (
+          <>
+            <Box sx={emptyIconContainerSx}>
+              <Typography variant="h3" sx={emptyIconTextSx}>
+                $
+              </Typography>
+            </Box>
+
+            <Typography sx={emptyTextSx}>
+              No transactions found
+            </Typography>
+          </>
+        )}
       </CardContent>
     </Card>
   );

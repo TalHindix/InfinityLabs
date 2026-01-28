@@ -1,41 +1,50 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-} from './ui';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Box } from '../utils/ui';
 import { type Transaction } from '../services/transaction';
 import { TransactionRow } from './TransactionRow';
-import { tableContainerSx } from './TransactionTable.styles';
+import { tableContainerSx, emptyStateSx } from './TransactionTable.styles';
 
 interface TransactionTableProps {
   transactions: Transaction[];
-  userEmail: string | undefined;
-  selectedTransactionId: string | undefined;
-  onSelectTransaction: (id: string) => void;
+  userEmail?: string;
+  selectedTransactionId?: string;
+  onSelect: (id: string) => void;
 }
+
+const HEADERS = [
+  ['Ref #', 'left'],
+  ['Date', 'left'],
+  ['Description', 'left'],
+  ['Amount', 'right'],
+  ['Action', 'center'],
+] as const;
 
 export const TransactionTable = ({
   transactions,
   userEmail,
   selectedTransactionId,
-  onSelectTransaction,
+  onSelect,
 }: TransactionTableProps) => {
+  if (transactions.length === 0) {
+    return (
+      <Box sx={emptyStateSx}>
+        <Typography color="text.secondary">No transactions yet.</Typography>
+      </Box>
+    );
+  }
+
   return (
     <TableContainer component={Paper} sx={tableContainerSx}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Ref #</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell align="right">Amount</TableCell>
-            <TableCell align="center">Action</TableCell>
+            {HEADERS.map(([label, align]) => (
+              <TableCell key={label} align={align}>
+                {label}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
+
         <TableBody>
           {transactions.map((tx) => (
             <TransactionRow
@@ -43,7 +52,7 @@ export const TransactionTable = ({
               transaction={tx}
               userEmail={userEmail}
               isSelected={selectedTransactionId === tx._id}
-              onSelect={onSelectTransaction}
+              onSelect={onSelect}
             />
           ))}
         </TableBody>

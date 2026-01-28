@@ -1,4 +1,4 @@
-import { Box, Typography } from './ui';
+import { Box, Typography } from '../utils/ui';
 import { DubaiBankLogo } from './DubaiBankLogo';
 import { logoContainerSx, createTitleSx, createSubtitleSx } from './BrandHeader.styles';
 
