@@ -1,5 +1,18 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Typography, Alert, Stack, Box, Divider, InputAdornment,
+import {
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Stack,
+  Box,
+  Divider,
+  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '../utils/ui';
 import {
   amountAdornmentSx,
@@ -9,6 +22,13 @@ import {
   summaryDividerSx,
   totalAmountSx,
   primaryButtonSx,
+  dialogPaperSx,
+  dialogTitleSx,
+  dialogContentSx,
+  dialogRecipientSx,
+  dialogWarningTextSx,
+  dialogCancelButtonSx,
+  dialogConfirmButtonSx,
 } from './TransferForm.styles';
 
 interface TransferFormProps {
@@ -40,9 +60,20 @@ export const TransferForm = ({
   onSubmit,
 }: TransferFormProps) => {
   const navigate = useNavigate();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const formattedAmount = formatAED(amount);
   const amountText = `${formattedAmount} AED`;
+
+  const handleSubmitClick = (e: React.FormEvent) => {
+    e.preventDefault();
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    setConfirmOpen(false);
+    onSubmit({ preventDefault: () => {} } as React.FormEvent);
+  };
 
   return (
     <>
@@ -53,7 +84,7 @@ export const TransferForm = ({
         </Alert>
       )}
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmitClick}>
         <Stack spacing={3}>
           <TextField
             fullWidth
@@ -140,6 +171,35 @@ export const TransferForm = ({
           </Button>
         </Stack>
       </form>
+
+      <Dialog 
+        open={confirmOpen} 
+        onClose={() => setConfirmOpen(false)}
+        slotProps={{ paper: { sx: dialogPaperSx } }}
+      >
+        <DialogTitle sx={dialogTitleSx}>Confirm Transfer</DialogTitle>
+        <DialogContent sx={dialogContentSx}>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography>
+              You are about to send <strong>{amountText}</strong> to:
+            </Typography>
+            <Typography sx={dialogRecipientSx}>
+              {receiverEmail}
+            </Typography>
+            <Typography variant="body2" sx={dialogWarningTextSx}>
+              This action cannot be undone.
+            </Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} sx={dialogCancelButtonSx}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleConfirm} sx={dialogConfirmButtonSx}>
+            Confirm Transfer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

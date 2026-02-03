@@ -29,6 +29,21 @@ export const findUserById = async (id) => {
   return User.findOne({ id });
 };
 
+// for ChatBot
+export const getAccountSummary = async (userId) => {
+  const user = await User.findOne({ id: userId }).select('id balance');
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return {
+    userId: user.id,
+    balance: user.balance
+  };
+};
+
+
 
 export const createUser = async (userData) => {
   const { firstName, lastName, email, phone, password } = userData;
@@ -46,7 +61,6 @@ export const createUser = async (userData) => {
     status: USER_STATUS.PENDING,
     verificationToken: hashedVerificationToken
   });
-
 
   return {user,verificationToken};
 };

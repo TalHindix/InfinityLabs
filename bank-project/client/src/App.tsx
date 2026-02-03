@@ -18,6 +18,7 @@ export default function App() {
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
+          
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/transfer" element={<TransferPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />

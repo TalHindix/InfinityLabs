@@ -36,5 +36,11 @@ export {
   Step,
   StepLabel,
 
+  // Dialog
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+
   // Icons placeholder - icons imported separately
 } from '@mui/material';

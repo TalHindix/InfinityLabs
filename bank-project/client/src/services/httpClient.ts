@@ -1,4 +1,3 @@
-// httpClient.ts
 import axios from 'axios';
 import { authStorage } from './auth.storage.ts';
 

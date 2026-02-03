@@ -38,3 +38,40 @@ export const primaryButtonSx: SxProps<Theme> = {
 export const cancelButtonSx: SxProps<Theme> = {
   color: 'text.secondary',
 };
+
+export const dialogPaperSx: SxProps<Theme> = {
+  borderRadius: 3,
+  minWidth: 360,
+};
+
+export const dialogTitleSx: SxProps<Theme> = {
+  fontWeight: 700,
+  color: '#0D1B2A',
+  pb: 1,
+};
+
+export const dialogContentSx: SxProps<Theme> = {
+  pt: 1,
+};
+
+export const dialogRecipientSx: SxProps<Theme> = {
+  color: '#C9A227',
+  fontWeight: 600,
+};
+
+export const dialogWarningTextSx: SxProps<Theme> = {
+  color: 'text.secondary',
+};
+
+export const dialogCancelButtonSx: SxProps<Theme> = {
+  color: 'text.secondary',
+};
+
+export const dialogConfirmButtonSx: SxProps<Theme> = {
+  fontWeight: 600,
+  background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
+  color: '#0D1B2A',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
+  },
+};

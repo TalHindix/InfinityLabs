@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { authStorage } from '../services/auth.storage';
+import ChatWidget from '../components/Chatwidget';
 
 const ProtectedRoute = () => {
   const isLoggedIn = authStorage.isAuthenticated();
@@ -8,7 +9,12 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+    <ChatWidget/>
+    <Outlet />
+    </>
+  );
 };
 
 export default ProtectedRoute;

@@ -1,18 +1,6 @@
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import {
-  Container,
-  Card,
-  CardContent,
-  IconButton,
-  Typography,
-  Alert,
-  Stack,
-  Box,
-  Divider,
-  Stepper,
-  Step,
-  StepLabel,
+import {Container,Card,CardContent,IconButton,Typography,Alert,Stack,Box,Divider,Stepper,Step,StepLabel,
 } from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
 import { useSignup } from '../hooks/useSignup';
@@ -20,20 +8,14 @@ import { SignupForm } from '../components/SignupForm';
 import { VerificationSuccess } from '../components/VerificationSuccess';
 import { PageFooterCaption } from '../components/AuthPageFooter';
 import { DubaiBankLogo } from '../components/DubaiBankLogo';
-import {
-  createSignupBackgroundSx,
-  createSignupCardSx,
-  signupThemeToggleSx,
-  logoContainerSx,
-  pageTitleSx,
-  pageSubtitleSx,
-  goldDividerSx,
+import { createSignupBackgroundSx, createSignupCardSx, signupThemeToggleSx, logoContainerSx, pageTitleSx, pageSubtitleSx, goldDividerSx,
 } from './SignupPage.styles';
 
 const STEPS = ['Account Details', 'Verify Email'];
 
 const SignupPage = () => {
   const { isDark, toggleTheme } = useThemeContext();
+
   const {
     formData,
     activeStep,
