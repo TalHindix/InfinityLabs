@@ -17,6 +17,11 @@ export const useLogin = () => {
   const [loading, setLoading] = useState(false);
   const [showVerifiedMsg, setShowVerifiedMsg] = useState(false);
 
+  // Resend verification state
+  const [showResendOption, setShowResendOption] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+
   const greeting = useMemo(() => getTimeBasedGreeting(), []);
 
   useEffect(() => {
@@ -29,6 +34,9 @@ export const useLogin = () => {
   const handleFieldChange = (field: 'email' | 'password', value: string) => {
     if (field === 'email') {
       setEmail(value);
+      // Reset resend state when email changes
+      setShowResendOption(false);
+      setResendSuccess(false);
     } else {
       setPassword(value);
     }
@@ -38,6 +46,8 @@ export const useLogin = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setShowResendOption(false);
+    setResendSuccess(false);
 
     try {
       const data = await authService.login(email, password);
@@ -48,8 +58,33 @@ export const useLogin = () => {
       const originalError = getErrorMessage(err);
       setError(getIntelligentErrorMessage(originalError));
       setPassword('');
+      // Show resend option after failed login (could be unverified email)
+      setShowResendOption(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError('Please enter your email address first.');
+      return;
+    }
+
+    setResendLoading(true);
+    setError('');
+
+    try {
+      await authService.resendVerification(email);
+      setResendSuccess(true);
+      setShowResendOption(false);
+    } catch (err: unknown) {
+      // Security: Show generic success message even on error
+      // to prevent email enumeration
+      setResendSuccess(true);
+      setShowResendOption(false);
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -60,7 +95,11 @@ export const useLogin = () => {
     error,
     showVerifiedMsg,
     greeting,
+    showResendOption,
+    resendLoading,
+    resendSuccess,
     handleFieldChange,
-    handleSubmit
+    handleSubmit,
+    handleResendVerification,
   };
 };

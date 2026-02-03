@@ -18,8 +18,12 @@ interface LoginFormProps {
   error: string;
   loading: boolean;
   showVerifiedMsg: boolean;
+  showResendOption: boolean;
+  resendLoading: boolean;
+  resendSuccess: boolean;
   onFieldChange: (field: 'email' | 'password', value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onResendVerification: () => void;
 }
 
 export const LoginForm = ({
@@ -28,8 +32,12 @@ export const LoginForm = ({
   error,
   loading,
   showVerifiedMsg,
+  showResendOption,
+  resendLoading,
+  resendSuccess,
   onFieldChange,
   onSubmit,
+  onResendVerification,
 }: LoginFormProps) => {
   const { isDark } = useThemeContext();
   const fieldSx = createFieldSx(isDark);
@@ -39,6 +47,12 @@ export const LoginForm = ({
     <>
       {showVerifiedMsg && (
         <Alert severity="success">Email verified successfully! You can now sign in.</Alert>
+      )}
+
+      {resendSuccess && (
+        <Alert severity="info">
+          If this email exists and is not verified, a new verification link has been sent.
+        </Alert>
       )}
 
       {error && (
@@ -103,6 +117,29 @@ export const LoginForm = ({
               </Link>
             </Typography>
           </Box>
+
+          {showResendOption && !resendSuccess && (
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <Typography variant="body2" sx={{ color: isDark ? '#aaa' : '#666', mb: 1 }}>
+                Didn't receive a verification email?
+              </Typography>
+              <Button
+                variant="text"
+                size="small"
+                onClick={onResendVerification}
+                disabled={resendLoading || !email}
+                sx={{
+                  textTransform: 'none',
+                  color: isDark ? '#90caf9' : '#1976d2',
+                  '&:hover': {
+                    backgroundColor: isDark ? 'rgba(144, 202, 249, 0.08)' : 'rgba(25, 118, 210, 0.08)',
+                  },
+                }}
+              >
+                {resendLoading ? 'Sending...' : 'Resend verification email'}
+              </Button>
+            </Box>
+          )}
         </Stack>
       </form>
     </>

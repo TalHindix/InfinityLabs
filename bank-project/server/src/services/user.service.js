@@ -3,7 +3,6 @@ import User from '../models/user.model.js';
 import { SALT_ROUNDS, USER_STATUS } from '../constants/index.js';
 import { generateVerificationToken, hashToken } from '../utils/generate.util.js';
 
-
 export const findAndVerifyUserByToken = async (token) => {
   const hashedToken = hashToken(token);
 
@@ -29,7 +28,11 @@ export const findUserById = async (id) => {
   return User.findOne({ id });
 };
 
-// for ChatBot
+/**
+ * Get account summary for ChatBot
+ * @param {string} userId - User ID
+ * @returns {Promise<{userId: string, balance: number}>}
+ */
 export const getAccountSummary = async (userId) => {
   const user = await User.findOne({ id: userId }).select('id balance');
 
@@ -43,8 +46,11 @@ export const getAccountSummary = async (userId) => {
   };
 };
 
-
-
+/**
+ * Create a new user
+ * @param {Object} userData - User data
+ * @returns {Promise<{user: Object, verificationToken: string}>}
+ */
 export const createUser = async (userData) => {
   const { firstName, lastName, email, phone, password } = userData;
 
@@ -62,7 +68,31 @@ export const createUser = async (userData) => {
     verificationToken: hashedVerificationToken
   });
 
-  return {user,verificationToken};
+  return { user, verificationToken };
+};
+
+/**
+ * Regenerate verification token for resend functionality
+ * @param {string} email - User email
+ * @returns {Promise<{verificationToken: string}|null>}
+ */
+export const regenerateVerificationToken = async (email) => {
+  const user = await User.findOne({
+    email: email.toLowerCase(),
+    status: USER_STATUS.PENDING
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  const verificationToken = generateVerificationToken();
+  const hashedVerificationToken = hashToken(verificationToken);
+
+  user.verificationToken = hashedVerificationToken;
+  await user.save();
+
+  return { verificationToken };
 };
 
 export const validatePassword = async (inputPassword, hashedPassword) => {

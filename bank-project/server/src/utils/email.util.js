@@ -11,9 +11,18 @@ const brevo = axios.create({
   },
 });
 
+/* ============================================
+   Email Templates
+   ============================================ */
+
 const buildVerificationUrl = (token) =>
   `${config.serverUrl}/api/v1/auth/verify?token=${token}`;
 
+/**
+ * Builds HTML template for verification email
+ * @param {string} token - Verification token
+ * @returns {string} HTML content
+ */
 const buildEmailTemplate = (token) => {
   const verificationUrl = buildVerificationUrl(token);
   const year = new Date().getFullYear();
@@ -60,6 +69,64 @@ const buildEmailTemplate = (token) => {
   `;
 };
 
+/**
+ * Builds HTML page for verification result (success/failure)
+ * @param {boolean} success - Whether verification succeeded
+ * @param {string|null} errorMessage - Error message if failed
+ * @returns {string} HTML page content
+ */
+export const buildVerificationResultPage = (success, errorMessage = null) => {
+  const year = new Date().getFullYear();
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${success ? 'Email Verified' : 'Verification Failed'} - Dubai-Bank</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <div style="max-width: 500px; margin: 20px; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #2c3e50; margin: 0; font-size: 28px;">Dubai-Bank</h1>
+        </div>
+        <div style="font-size: 60px; margin-bottom: 20px;">
+          ${success ? '✅' : '❌'}
+        </div>
+        <h2 style="color: ${success ? '#4CAF50' : '#e74c3c'}; margin: 0 0 15px 0;">
+          ${success ? 'Email Verified!' : 'Verification Failed'}
+        </h2>
+        <p style="color: #666; font-size: 16px; margin: 0 0 30px 0;">
+          ${success
+            ? 'Your email has been successfully verified. You can now log in to your account.'
+            : errorMessage}
+        </p>
+        <a href="${config.clientUrl}/login${success ? '?verified=true' : ''}" 
+           style="display: inline-block; background-color: ${success ? '#4CAF50' : '#3498db'}; 
+                  color: white; padding: 14px 32px; text-decoration: none; 
+                  border-radius: 6px; font-size: 16px; font-weight: bold;">
+          ${success ? 'Go to Login' : 'Back to Login'}
+        </a>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        <p style="color: #bbb; text-align: center; font-size: 12px;">
+          © ${year} Dubai-Bank. All rights reserved.
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+/* ============================================
+   Email Sending Functions
+   ============================================ */
+
+/**
+ * Sends verification email
+ * @param {string} email - Recipient email
+ * @param {string} token - Verification token
+ */
 async function sendVerificationEmail(email, token) {
   if (!config.email.brevoApiKey) throw new Error('Missing BREVO_API_KEY');
   if (!config.email.from) throw new Error('Missing EMAIL_FROM');
@@ -78,8 +145,12 @@ async function sendVerificationEmail(email, token) {
   logger.info(`Verification email sent to ${email} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
 }
 
+/**
+ * Sends verification email asynchronously (fire-and-forget)
+ * @param {string} email - Recipient email
+ * @param {string} token - Verification token
+ */
 export const sendVerificationEmailAsync = (email, token) => {
-  // fire-and-forget כמו שהיה לך
   sendVerificationEmail(email, token).catch((err) => {
     const status = err?.response?.status;
     const data = err?.response?.data;

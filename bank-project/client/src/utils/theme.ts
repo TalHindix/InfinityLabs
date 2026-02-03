@@ -1,7 +1,5 @@
 import { createTheme, type Theme } from '@mui/material/styles';
 
-// Dubai-Bank Theme
-// Inspired by Dubai's iconic skyline, luxury, and modern architecture
 
 const baseTypography = {
   fontFamily: '"Inter", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -53,7 +51,7 @@ export const lightTheme: Theme = createTheme({
       contrastText: '#0D1B2A',
     },
     background: {
-      default: '#F8F9FA',
+      default: '#F5F5F0',
       paper: '#FFFFFF',
     },
     text: {

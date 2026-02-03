@@ -16,7 +16,7 @@ import { BrandHeader } from '../components/BrandHeader';
 import { SecurityIndicator } from '../components/SecurityIndicator';
 import { LoginForm } from '../components/LoginForm';
 import { PageFooterCaption } from '../components/AuthPageFooter';
-import { createDividerSx, createSignInTitleSx , createPageBackgroundSx , createAuthCardSx , themeToggleSx } from './LoginPage.styles';
+import { createDividerSx, createSignInTitleSx, createPageBackgroundSx, createAuthCardSx, themeToggleSx } from './LoginPage.styles';
 
 const LoginPage = () => {
   const { isDark, toggleTheme } = useThemeContext();
@@ -27,8 +27,12 @@ const LoginPage = () => {
     error,
     showVerifiedMsg,
     greeting,
+    showResendOption,
+    resendLoading,
+    resendSuccess,
     handleFieldChange,
     handleSubmit,
+    handleResendVerification,
   } = useLogin();
 
   return (
@@ -62,8 +66,12 @@ const LoginPage = () => {
                 error={error}
                 loading={loading}
                 showVerifiedMsg={showVerifiedMsg}
+                showResendOption={showResendOption}
+                resendLoading={resendLoading}
+                resendSuccess={resendSuccess}
                 onFieldChange={handleFieldChange}
                 onSubmit={handleSubmit}
+                onResendVerification={handleResendVerification}
               />
             </Stack>
           </CardContent>

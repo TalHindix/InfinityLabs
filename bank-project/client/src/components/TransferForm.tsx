@@ -29,6 +29,7 @@ import {
   dialogWarningTextSx,
   dialogCancelButtonSx,
   dialogConfirmButtonSx,
+  dialogActionsSx
 } from './TransferForm.styles';
 
 interface TransferFormProps {
@@ -103,9 +104,15 @@ export const TransferForm = ({
             type="number"
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
+            onBlur={(e) => {
+              const val = parseFloat(e.target.value);
+              if (Number.isFinite(val) && val > 0) {
+                onAmountChange(val.toFixed(2));
+              }
+            }}
             required
             slotProps={{
-              htmlInput: { min: 1, step: '0.01' },
+              htmlInput: { min: 1, step: '1' },
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
@@ -191,7 +198,7 @@ export const TransferForm = ({
             </Typography>
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={dialogActionsSx}>
           <Button onClick={() => setConfirmOpen(false)} sx={dialogCancelButtonSx}>
             Cancel
           </Button>

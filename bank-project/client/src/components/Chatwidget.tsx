@@ -33,6 +33,7 @@ const ChatWidget = () => {
   const [input, setInput] = useState('');
   const socketRef = useRef<Socket | null>(null);
   const hasGreeted = useRef(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const user = authStorage.getUser();
@@ -49,6 +50,12 @@ const ChatWidget = () => {
       socketRef.current?.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+  if (isOpen && messagesEndRef.current) {
+    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  }
+}, [messages, isOpen]);
 
   const handleOpen = () => {
     setIsOpen(true);
@@ -95,6 +102,7 @@ const ChatWidget = () => {
             )}
           </Box>
         ))}
+        <div ref={messagesEndRef} />
       </Box>
 
       <Box sx={inputContainerSx}>

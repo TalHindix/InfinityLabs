@@ -75,3 +75,7 @@ export const dialogConfirmButtonSx: SxProps<Theme> = {
     background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
   },
 };
+
+export const dialogActionsSx: SxProps<Theme> = {
+  justifyContent: 'center',
+};
