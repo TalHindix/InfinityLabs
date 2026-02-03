@@ -1,4 +1,5 @@
 import { getAccountSummary } from './user.service.js';
+import { detectIntentWithAI } from './openai-intent.service.js';
 
 const INTENTS = {
   GREETING: 'greeting',
@@ -8,15 +9,8 @@ const INTENTS = {
   UNKNOWN: 'unknown'
 };
 
-const PATTERNS = {
-  greeting: [/^(hello|hi|hey|good morning|good evening)/i],
-  balance: [/balance/i, /how much (do i have|money)/i, /my account/i],
-  help: [/help/i, /what can you do/i, /support/i],
-  goodbye: [/^(bye|goodbye|thanks|thank you)$/i]
-};
-
 const RESPONSES = {
-  greeting: 'How can I help you today?',
+  greeting: 'Hello! How can I help you today?',
   help: 'I can help you with:\n• Checking your balance\n• General account information\nJust ask!',
   goodbye: 'Goodbye! Have a great day 👋',
   unknown: 'I didn\'t understand that 🤔\nTry again or type "help"'
@@ -25,25 +19,45 @@ const RESPONSES = {
 const SENSITIVE_INTENTS = ['balance'];
 
 const sanitizeInput = (input) => {
-  if (typeof input !== 'string') return '';
-  
-  return input
-    .trim()
-    .slice(0, 500)
-    .replace(/<[^>]*>/g, '');
+  if (typeof input !== "string") {
+    return "";
+  }
+
+  let cleanText = input.trim();
+
+  if (cleanText.length > 250) {
+    cleanText = cleanText.slice(0, 250);
+  }
+
+  // Remove HTML tags
+  cleanText = cleanText.replace(/<[^>]*>/g, "");
+
+  return cleanText;
 };
+
 
 const detectIntent = (message) => {
   const text = message.toLowerCase();
 
-  for (const [intent, patterns] of Object.entries(PATTERNS)) {
-    if (patterns.some((pattern) => pattern.test(text))) {
-      return intent;
-    }
+  if (text.includes("hello") || text.includes("hi")) {
+    return "greeting";
   }
 
-  return INTENTS.UNKNOWN;
+  if (text.includes("balance") || text.includes("money")) {
+    return "balance";
+  }
+
+  if (text.includes("help")) {
+    return "help";
+  }
+
+  if (text.includes("bye") || text.includes("thank")) {
+    return "goodbye";
+  }
+
+  return "unknown";
 };
+
 
 const isSensitiveIntent = (intent) => {
   return SENSITIVE_INTENTS.includes(intent);
@@ -60,9 +74,18 @@ const formatBalance = (balance) => {
 
 export const processMessage = async (message, context) => {
   const { userId } = context;
-  
   const cleanMessage = sanitizeInput(message);
-  const intent = detectIntent(cleanMessage);
+  
+  let intent = detectIntent(cleanMessage);
+
+  if (intent === INTENTS.UNKNOWN) {
+    try {
+      intent = await detectIntentWithAI(cleanMessage);
+      console.log('[Chatbot] 🤖 AI detected intent:', intent);
+    } catch (error) {
+      intent = INTENTS.UNKNOWN;
+    }
+  }
 
   if (isSensitiveIntent(intent) && !userId) {
     return {
@@ -73,7 +96,6 @@ export const processMessage = async (message, context) => {
   }
 
   if (intent === INTENTS.BALANCE) {
-    console.log('[Chatbot] userId received:', userId);
     try {
       const account = await getAccountSummary(userId);
 
@@ -86,7 +108,6 @@ export const processMessage = async (message, context) => {
         }
       };
     } catch (error) {
-      console.log('[Chatbot] Error:', error.message);
       return {
         intent,
         message: 'Unable to load your information right now. Please try again later.'

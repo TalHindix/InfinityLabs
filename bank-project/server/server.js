@@ -17,7 +17,7 @@ const startServer = async () => {
       origin: config.clientUrl || 'http://localhost:5173',
       methods: ['GET', 'POST']
     }
-  });
+  }); 
 
   initChatbotSocket(io);
 };

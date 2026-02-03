@@ -1,36 +1,40 @@
 import { processMessage } from '../services/chatbot.service.js';
 
+const getTimestamp = () => new Date().toISOString();
+
 export const initChatbotSocket = (io) => {
-  console.log('[Chatbot] Socket.io initialized');
-  
   const chatNamespace = io.of('/chat');
   
   chatNamespace.on('connection', (socket) => {
-    const userId = socket.handshake.auth.userId || null;
+    const userId = socket.handshake.auth?.userId || null;
     
     socket.emit('bot-message', {
       response: 'Hello! I\'m your virtual banking assistant 🏦',
       intent: 'greeting',
-      timestamp: new Date().toISOString()
+      timestamp: getTimestamp()
     });
     
     socket.on('user-message', async (message) => {
-      console.log(`[Chatbot] Received: ${message}`);
-      
-      const context = { userId };
-      const result = await processMessage(message, context);
+      try {
+        const context = { userId };
+        const result = await processMessage(message, context);
 
-      socket.emit('bot-message', {
-        response: result.message,
-        intent: result.intent,
-        data: result.data,
-        requiresAuth: result.requiresAuth,
-        timestamp: new Date().toISOString()
-      });
+        socket.emit('bot-message', {
+          response: result.message,
+          intent: result.intent,
+          data: result.data || null,
+          requiresAuth: result.requiresAuth || false,
+          timestamp: getTimestamp()
+        });
+      } catch (error) {
+        socket.emit('bot-message', {
+          response: 'Sorry, something went wrong. Please try again.',
+          intent: 'error',
+          timestamp: getTimestamp()
+        });
+      }
     });
     
-    socket.on('disconnect', () => {
-      console.log(`[Chatbot] User disconnected: ${socket.id}`);
-    });
+    socket.on('disconnect', () => {});
   });
 };
