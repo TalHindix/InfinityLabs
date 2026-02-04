@@ -57,4 +57,3 @@ export const cardContentSx: SxProps<Theme> = {
   p: 4,
   pt: 6,
 };
-

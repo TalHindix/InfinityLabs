@@ -31,6 +31,7 @@ import {
   dialogConfirmButtonSx,
   dialogActionsSx
 } from './TransferForm.styles';
+import { formatAmount } from '../utils/formatters';
 
 interface TransferFormProps {
   receiverEmail: string;
@@ -41,13 +42,6 @@ interface TransferFormProps {
   onReceiverEmailChange: (value: string) => void;
   onAmountChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-}
-
-function formatAED(amount: string): string {
-  if (!amount) return '0.00';
-  const n = Number(amount);
-  if (!Number.isFinite(n)) return '0.00';
-  return n.toLocaleString('en-AE', { minimumFractionDigits: 2 });
 }
 
 export const TransferForm = ({
@@ -63,7 +57,8 @@ export const TransferForm = ({
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const formattedAmount = formatAED(amount);
+  const numAmount = Number(amount);
+  const formattedAmount = Number.isFinite(numAmount) ? formatAmount(numAmount) : '0.00';
   const amountText = `${formattedAmount} AED`;
 
   const handleSubmitClick = (e: React.FormEvent) => {

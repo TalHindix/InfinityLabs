@@ -1,15 +1,9 @@
-export const HTTP_STATUS = {
-  UNAUTHORIZED: 401
-};
+/** Shared application constants. */
 
-export const USER_STATUS = {
+export const USER_STATUS = Object.freeze({
   PENDING: 'PENDING',
-  ACTIVE: 'ACTIVE'
-};
-
-export const TRANSACTION_STATUS = {
-  COMPLETED: 'COMPLETED'
-};
+  ACTIVE: 'ACTIVE',
+});
 
 export const DEFAULT_BALANCE = 500;
 export const SALT_ROUNDS = 10;

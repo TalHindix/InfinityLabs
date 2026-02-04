@@ -100,7 +100,7 @@ export const buildVerificationResultPage = (success, errorMessage = null) => {
         <p style="color: #666; font-size: 16px; margin: 0 0 30px 0;">
           ${success
             ? 'Your email has been successfully verified. You can now log in to your account.'
-            : errorMessage}
+            : (errorMessage ?? 'Verification failed.')}
         </p>
         <a href="${config.clientUrl}/login${success ? '?verified=true' : ''}" 
            style="display: inline-block; background-color: ${success ? '#4CAF50' : '#3498db'}; 
@@ -139,21 +139,24 @@ async function sendVerificationEmail(email, token) {
     htmlContent: buildEmailTemplate(token),
   };
 
-  logger.info(`Brevo key loaded: ${Boolean(config.email.brevoApiKey)} | from=${config.email.from}`);
-
   const res = await brevo.post('/smtp/email', payload);
   logger.info(`Verification email sent to ${email} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
 }
 
 /**
- * Sends verification email asynchronously (fire-and-forget)
+ * Sends verification email asynchronously (fire-and-forget).
+ * Logs and ignores errors. Does nothing if email or token is missing.
  * @param {string} email - Recipient email
  * @param {string} token - Verification token
  */
 export const sendVerificationEmailAsync = (email, token) => {
+  if (!email || !token) {
+    logger.error('sendVerificationEmailAsync: email and token are required');
+    return;
+  }
   sendVerificationEmail(email, token).catch((err) => {
     const status = err?.response?.status;
     const data = err?.response?.data;
-    logger.error(`Async email failed for ${email}: status=${status} data=${JSON.stringify(data)}`);
+    logger.error(`Async email failed for ${email}: status=${status} data=${JSON.stringify(data)}`, { error: err });
   });
 };

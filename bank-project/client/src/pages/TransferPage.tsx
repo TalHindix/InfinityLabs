@@ -21,7 +21,7 @@ import {
   pageSubtitleSx,
   goldDividerSx,
   footerCaptionSx,
-} from './TransactionPage.styles';
+} from './TransferPage.styles';
 
 const TransferPage = () => {
   const transfer = useTransfer();

@@ -1,7 +1,6 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export const GOLD_COLOR = '#C9A227';
-export const GOLD_HOVER = '#A17F1A';
 
 export const createDetailPanelSx = (hasSelection: boolean): SxProps<Theme> => ({
   position: 'sticky',

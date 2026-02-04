@@ -4,7 +4,8 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { DubaiBankLogoFull } from './DubaiBankLogo';
 import { useThemeContext } from '../context/ThemeContext';
-import { authStorage } from '../services/auth.storage.ts';
+import { authStorage } from '../services/auth.storage';
+import { authService } from '../services/auth.service';
 import { headerContainerSx, logoContainerSx, themeToggleSx, outlinedButtonSx,}
 from './AppHeader.styles';
 
@@ -24,9 +25,13 @@ export const AppHeader = ({
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useThemeContext();
 
-  const handleLogout = () => {
-    authStorage.logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      authStorage.clearAuth();
+      navigate('/login');
+    }
   };
 
   return (

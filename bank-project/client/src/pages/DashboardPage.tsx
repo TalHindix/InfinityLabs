@@ -1,14 +1,7 @@
-import {
-  Container,
-  CircularProgress,
-  Alert,
-  Stack,
-  Box,
-} from '../utils/ui';
+import { Container, CircularProgress, Alert, Stack, Box, Typography } from '../utils/ui';
 import { AppHeader } from '../components/AppHeader';
 import { PageFooter } from '../components/PageFooter';
 import { useDashboardData } from '../hooks/useDashboardData';
-import { WelcomeSection } from '../components/WelcomeSection';
 import { BalanceCard } from '../components/BalanceCard';
 import { RecentTransactions } from '../components/RecentTransactions';
 import {
@@ -31,11 +24,18 @@ const DashboardPage = () => {
 
   return (
     <Box sx={pageRootSx}>
-      <AppHeader showThemeToggle />
+      <AppHeader showThemeToggle showTransactionsButton />
 
       <Container maxWidth="lg" sx={containerSx}>
         <Stack spacing={4}>
-          <WelcomeSection firstName={user?.firstName} />
+          <Box>
+            <Typography variant="h4">
+              Welcome back, {user?.firstName || 'User'}
+            </Typography>
+            <Typography color="text.secondary">
+              Here's your account overview
+            </Typography>
+          </Box>
 
           {error && <Alert severity="error">{error}</Alert>}
 

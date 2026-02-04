@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { authStorage } from '../services/auth.storage';
-import ChatWidget from '../components/Chatwidget';
+import ChatWidget from '../components/ChatWidget';
 
 const ProtectedRoute = () => {
   const isLoggedIn = authStorage.isAuthenticated();

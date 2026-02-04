@@ -3,17 +3,16 @@ import { findRecentTransactions } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../middleware/error.middleware.js';
 
+/**
+ * Returns the current authenticated user (from req.user) and their 10 most recent transactions.
+ */
 export const getCurrentUser = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const user = await findUserById(userId);
-
-    if (!user) {
-      throw new AppError('User not found', 404);
-    }
+    if (!user) throw new AppError('User not found', 404);
 
     const recentTransactions = await findRecentTransactions(user.email, 10);
-
     return response.ok(res, {
       user: {
         id: user.id,
@@ -22,9 +21,9 @@ export const getCurrentUser = async (req, res, next) => {
         email: user.email,
         phone: user.phone,
         balance: user.balance,
-        status: user.status
+        status: user.status,
       },
-      recentTransactions
+      recentTransactions,
     });
   } catch (error) {
     next(error);

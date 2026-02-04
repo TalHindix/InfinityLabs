@@ -1,13 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, Alert, Stack, Box } from '../utils/ui';
+import {
+  Container,
+  Typography,
+  Button,
+  Alert,
+  Stack,
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+} from '../utils/ui';
 import { AppHeader } from '../components/AppHeader';
 import { PageFooter } from '../components/PageFooter';
 import { useTransactions } from '../hooks/useTransactions';
 import { useTransactionDetail } from '../hooks/useTransactionDetail';
 import { TransactionTable } from '../components/TransactionTable';
 import { TransactionDetailPanel } from '../components/TransactionDetailPanel';
-import { TransactionEmptyState } from '../components/TransactionEmptyState';
-import { Pagination } from '../components/Pagination';
 import {
   pageRootSx,
   containerSx,
@@ -16,6 +24,17 @@ import {
   detailColSx,
   primaryButtonSx,
 } from './TransactionsPage.styles';
+import {
+  contentSx as emptyContentSx,
+  spinnerSx as emptySpinnerSx,
+  emptyIconContainerSx,
+  emptyIconTextSx,
+  emptyTextSx,
+} from '../components/TransactionEmptyState.styles';
+import {
+  paginationButtonSx,
+  pageIndicatorSx,
+} from '../components/Pagination.styles';
 
 const TransactionsPage = () => {
   const navigate = useNavigate();
@@ -69,7 +88,25 @@ const TransactionsPage = () => {
             {/* Transactions List */}
             <Box sx={listColSx}>
               {loading || transactions.length === 0 ? (
-                <TransactionEmptyState loading={loading} />
+                <Card>
+                  <CardContent sx={emptyContentSx}>
+                    {loading ? (
+                      <CircularProgress sx={emptySpinnerSx} />
+                    ) : (
+                      <>
+                        <Box sx={emptyIconContainerSx}>
+                          <Typography variant="h3" sx={emptyIconTextSx}>
+                            $
+                          </Typography>
+                        </Box>
+
+                        <Typography sx={emptyTextSx}>
+                          No transactions found
+                        </Typography>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
               ) : (
                 <>
                   <TransactionTable
@@ -78,11 +115,33 @@ const TransactionsPage = () => {
                     selectedTransactionId={selectedTransaction?._id}
                     onSelect={loadTransactionDetail}
                   />
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
+                  <Stack direction="row" justifyContent="center" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={currentPage <= 1}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      sx={paginationButtonSx}
+                    >
+                      Previous
+                    </Button>
+
+                    <Box sx={pageIndicatorSx}>
+                      <Typography variant="body2">
+                        Page {currentPage} of {totalPages}
+                      </Typography>
+                    </Box>
+
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      sx={paginationButtonSx}
+                    >
+                      Next
+                    </Button>
+                  </Stack>
                 </>
               )}
             </Box>

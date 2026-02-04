@@ -1,18 +1,10 @@
 import axios from 'axios';
-import { authStorage } from './auth.storage.ts';
+import { authStorage } from './auth.storage';
 
 export const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: { 'Content-Type': 'application/json' },
-});
-
-httpClient.interceptors.request.use((config) => {
-  const token = authStorage.getToken();
-  if (token) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  withCredentials: true,
 });
 
 httpClient.interceptors.response.use(

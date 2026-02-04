@@ -12,11 +12,18 @@ import {
 } from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
 import { useLogin } from '../hooks/useLogin';
-import { BrandHeader } from '../components/BrandHeader';
-import { SecurityIndicator } from '../components/SecurityIndicator';
+import { DubaiBankLogo } from '../components/DubaiBankLogo';
 import { LoginForm } from '../components/LoginForm';
-import { PageFooterCaption } from '../components/AuthPageFooter';
-import { createDividerSx, createSignInTitleSx, createPageBackgroundSx, createAuthCardSx, themeToggleSx } from './LoginPage.styles';
+import { PageFooterCaption } from '../components/PageFooterCaption';
+import {
+  createDividerSx,
+  createSignInTitleSx,
+  createPageBackgroundSx,
+  createAuthCardSx,
+  themeToggleSx,
+} from './LoginPage.styles';
+import { logoContainerSx, createTitleSx, createSubtitleSx } from '../components/BrandHeader.styles';
+import { createContainerSx, createDotSx, createTextSx } from '../components/SecurityIndicator.styles';
 
 const LoginPage = () => {
   const { isDark, toggleTheme } = useThemeContext();
@@ -49,8 +56,26 @@ const LoginPage = () => {
         <Card sx={createAuthCardSx(isDark)}>
           <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
             <Stack spacing={3}>
-              <BrandHeader isDark={isDark} greeting={greeting} />
-              <SecurityIndicator isDark={isDark} />
+              <Box textAlign="center">
+                <Box sx={logoContainerSx}>
+                  <DubaiBankLogo size={80} animated={true} />
+                </Box>
+
+                <Typography variant="h4" sx={createTitleSx(isDark)}>
+                  Dubai Bank
+                </Typography>
+
+                <Typography variant="body2" sx={createSubtitleSx(isDark)}>
+                  {greeting} — secure access to your account
+                </Typography>
+              </Box>
+
+              <Box sx={createContainerSx(isDark)}>
+                <Box sx={createDotSx(false)} />
+                <Typography variant="caption" sx={createTextSx(isDark)}>
+                  Adaptive risk analysis enabled
+                </Typography>
+              </Box>
 
               <Divider sx={createDividerSx(isDark)} />
 

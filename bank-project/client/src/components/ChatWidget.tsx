@@ -11,7 +11,7 @@ import {
   createMessageSx,
   inputContainerSx,
   textFieldSx,
-} from './Chatwidget.styles';
+} from './ChatWidget.styles';
 import { authStorage } from '../services/auth.storage';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
@@ -32,14 +32,26 @@ const ChatWidget = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const socketRef = useRef<Socket | null>(null);
-  const hasGreeted = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const user = authStorage.getUser();
+    if (!authStorage.isAuthenticated()) {
+      return;
+    }
 
     socketRef.current = io(`${SOCKET_URL}/chat`, {
-      auth: { userId: user?.id }
+      withCredentials: true,
+    });
+
+    socketRef.current.on('connect_error', () => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'bot',
+          text: 'Authentication failed. Please log in again to use the chat assistant.',
+        },
+      ]);
+      socketRef.current?.disconnect();
     });
 
     socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
@@ -52,17 +64,13 @@ const ChatWidget = () => {
   }, []);
 
   useEffect(() => {
-  if (isOpen && messagesEndRef.current) {
-    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-  }
-}, [messages, isOpen]);
+    if (isOpen && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isOpen]);
 
   const handleOpen = () => {
     setIsOpen(true);
-    if (!hasGreeted.current) {
-      socketRef.current?.emit('request-greeting');
-      hasGreeted.current = true;
-    }
   };
 
   const handleSend = () => {
@@ -75,7 +83,7 @@ const ChatWidget = () => {
 
   if (!isOpen) {
     return (
-      <Fab color="primary" onClick={handleOpen} sx={fabSx}>  {/* ← שינוי */}
+      <Fab color="primary" onClick={handleOpen} sx={fabSx}>
         <Chat />
       </Fab>
     );

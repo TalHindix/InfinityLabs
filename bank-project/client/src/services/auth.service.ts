@@ -21,4 +21,8 @@ export const authService = {
     const res = await httpClient.post('/auth/resend-verification', { email });
     return res.data;
   },
+
+  async logout(): Promise<void> {
+    await httpClient.post('/auth/logout');
+  },
 };

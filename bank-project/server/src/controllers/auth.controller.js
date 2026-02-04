@@ -1,3 +1,4 @@
+import config from '../config/index.js';
 import { USER_STATUS } from '../constants/index.js';
 import { createToken } from '../utils/jwt.util.js';
 import {
@@ -5,15 +6,16 @@ import {
   createUser,
   validatePassword,
   findAndVerifyUserByToken,
-  regenerateVerificationToken
+  regenerateVerificationToken,
 } from '../services/user.service.js';
 import {
   sendVerificationEmailAsync,
-  buildVerificationResultPage
+  buildVerificationResultPage,
 } from '../utils/email.util.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../middleware/error.middleware.js';
 
+/** Creates a new user (PENDING), sends verification email, returns 201. */
 export const signup = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
@@ -25,42 +27,34 @@ export const signup = async (req, res, next) => {
   }
 };
 
+/** Verifies email via query token; returns HTML success or failure page. */
 export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;
-
     if (!token) {
       return res.status(400).send(buildVerificationResultPage(false, 'Verification token is missing.'));
     }
 
     const user = await findAndVerifyUserByToken(token);
-
     if (!user) {
       return res.status(400).send(buildVerificationResultPage(false, 'Invalid or expired verification token.'));
     }
 
     return res.send(buildVerificationResultPage(true));
-  } catch (error) {
+  } catch {
     return res.status(500).send(buildVerificationResultPage(false, 'Something went wrong. Please try again later.'));
   }
 };
 
+/** Resends verification email if user exists and is PENDING; always returns same message (no user enumeration). */
 export const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      throw new AppError('Email is required', 400);
-    }
+    if (!email) throw new AppError('Email is required', 400);
 
     const result = await regenerateVerificationToken(email);
-
-    // Security: Always return the same message (don't reveal if email exists)
     const successMessage = 'If this email exists and is not verified, a new verification link has been sent.';
-
-    if (result) {
-      sendVerificationEmailAsync(email, result.verificationToken);
-    }
+    if (result) sendVerificationEmailAsync(email, result.verificationToken);
 
     return response.ok(res, { message: successMessage });
   } catch (error) {
@@ -68,41 +62,49 @@ export const resendVerification = async (req, res, next) => {
   }
 };
 
+/** Logs in with email/password, sets HTTP-only cookie with JWT, returns user summary. Fails with same message for wrong email, wrong password, or unverified account. */
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw new AppError('Email and password are required', 400);
-    }
+    if (!email || !password) throw new AppError('Email and password are required', 400);
 
     const user = await findUserByEmailWithPassword(email);
-
-    // Security: Same error message for all failure cases
-    // - User not found
-    // - Wrong password  
-    // - Account not verified (PENDING status)
     if (!user || user.status !== USER_STATUS.ACTIVE) {
       throw new AppError('Invalid credentials', 401);
     }
 
     const isValidPassword = await validatePassword(password, user.password);
-    if (!isValidPassword) {
-      throw new AppError('Invalid credentials', 401);
-    }
+    if (!isValidPassword) throw new AppError('Invalid credentials', 401);
+
+    const token = createToken(user);
+    res.cookie(config.cookie.tokenName, token, {
+      httpOnly: true,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      maxAge: config.cookie.maxAgeSeconds * 1000,
+      path: '/',
+    });
 
     return response.ok(res, {
-      token: createToken(user),
       user: {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const logout = (req, res) => response.ok(res, null);
+/** Clears the auth cookie and returns 200. */
+export const logout = (req, res) => {
+  res.clearCookie(config.cookie.tokenName, {
+    path: '/',
+    httpOnly: true,
+    secure: config.cookie.secure,
+    sameSite: config.cookie.sameSite,
+  });
+  return response.ok(res, null);
+};

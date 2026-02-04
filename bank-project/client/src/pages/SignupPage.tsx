@@ -1,15 +1,42 @@
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import {Container,Card,CardContent,IconButton,Typography,Alert,Stack,Box,Divider,Stepper,Step,StepLabel,
+import {
+  Container,
+  Card,
+  CardContent,
+  IconButton,
+  Typography,
+  Alert,
+  Stack,
+  Box,
+  Divider,
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
 } from '../utils/ui';
+import { Link } from 'react-router-dom';
 import { useThemeContext } from '../context/ThemeContext';
 import { useSignup } from '../hooks/useSignup';
 import { SignupForm } from '../components/SignupForm';
-import { VerificationSuccess } from '../components/VerificationSuccess';
-import { PageFooterCaption } from '../components/AuthPageFooter';
+import { PageFooterCaption } from '../components/PageFooterCaption';
 import { DubaiBankLogo } from '../components/DubaiBankLogo';
-import { createSignupBackgroundSx, createSignupCardSx, signupThemeToggleSx, logoContainerSx, pageTitleSx, pageSubtitleSx, goldDividerSx,
+import {
+  createSignupBackgroundSx,
+  createSignupCardSx,
+  signupThemeToggleSx,
+  logoContainerSx,
+  pageTitleSx,
+  pageSubtitleSx,
+  goldDividerSx,
 } from './SignupPage.styles';
+import {
+  rootSx as verificationRootSx,
+  verificationIconSx,
+  alertSx as verificationAlertSx,
+  descriptionSx as verificationDescriptionSx,
+  primaryButtonSx as verificationPrimaryButtonSx,
+} from '../components/VerificationSuccess.styles';
 
 const STEPS = ['Account Details', 'Verify Email'];
 
@@ -68,10 +95,32 @@ const SignupPage = () => {
                   onSubmit={handleSubmit}
                 />
               ) : (
-                <VerificationSuccess
-                  email={formData.email}
-                  onBackClick={goBack}
-                />
+                <Stack spacing={3} sx={verificationRootSx}>
+                  <Box sx={verificationIconSx}>
+                    <Typography variant="h3">✓</Typography>
+                  </Box>
+
+                  <Alert severity="success" sx={verificationAlertSx}>
+                    We sent a verification link to <strong>{formData.email}</strong>
+                  </Alert>
+
+                  <Typography sx={verificationDescriptionSx}>
+                    Please check your email and click the verification link to complete your registration.
+                  </Typography>
+
+                  <Button
+                    variant="contained"
+                    component={Link}
+                    to="/login"
+                    sx={verificationPrimaryButtonSx}
+                  >
+                    Go to Login
+                  </Button>
+
+                  <Button variant="text" onClick={goBack}>
+                    Back to registration
+                  </Button>
+                </Stack>
               )}
             </Stack>
           </CardContent>
