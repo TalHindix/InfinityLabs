@@ -29,7 +29,8 @@ const config = {
   cookie: {
     tokenName: 'token',
     maxAgeSeconds: 3600, // 1 hour, should match jwt.expiresIn
-    sameSite: 'lax',
+    // Use 'none' when frontend and API are on different origins (e.g. different Render URLs)
+    sameSite: process.env.COOKIE_SAME_SITE || 'lax',
     secure: process.env.NODE_ENV === 'production',
   },
 

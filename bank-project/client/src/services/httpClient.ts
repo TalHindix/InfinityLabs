@@ -7,6 +7,14 @@ export const httpClient = axios.create({
   withCredentials: true,
 });
 
+httpClient.interceptors.request.use((config) => {
+  const token = authStorage.getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 httpClient.interceptors.response.use(
   (res) => res,
   (err) => {

@@ -20,6 +20,8 @@ export interface SignupData {
 
 export interface LoginResponse {
   user: User;
+  /** JWT for Authorization header (used when cookie is not sent cross-origin) */
+  token?: string;
 }
 
 export interface SignupResponse {

@@ -39,8 +39,10 @@ const ChatWidget = () => {
       return;
     }
 
+    const token = authStorage.getToken();
     socketRef.current = io(`${SOCKET_URL}/chat`, {
       withCredentials: true,
+      auth: token ? { token } : undefined,
     });
 
     socketRef.current.on('connect_error', () => {

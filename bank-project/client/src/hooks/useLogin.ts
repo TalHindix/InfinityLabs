@@ -52,6 +52,7 @@ export const useLogin = () => {
     try {
       const data = await authService.login(email, password);
       authStorage.setUser(data.user);
+      if (data.token) authStorage.setToken(data.token);
       navigate('/dashboard');
     } catch (err: unknown) {
       const originalError = getErrorMessage(err);
