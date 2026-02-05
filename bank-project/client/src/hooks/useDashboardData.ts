@@ -1,29 +1,28 @@
 import { useState, useEffect } from 'react';
 import { userService } from '../services/user.service';
 import { transactionsService } from '../services/transactions.service';
-import { type User, type Transaction, getErrorMessage } from '../types';
+import { type User, type Transaction } from '../types';
+import { useAsyncOperation } from './useAsyncOperation';
 
 export const useDashboardData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { loading, error, execute } = useAsyncOperation(true);
 
   const loadData = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [userData, transactionsData] = await Promise.all([
-        userService.getMe(),
-        transactionsService.getAll(),
-      ]);
-      setUser(userData.user);
-      setTransactions(transactionsData.transactions || []);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
+    await execute(
+      async () => {
+        const [userData, transactionsData] = await Promise.all([
+          userService.getMe(),
+          transactionsService.getAll(),
+        ]);
+        return { userData, transactionsData };
+      },
+      ({ userData, transactionsData }) => {
+        setUser(userData.user);
+        setTransactions(transactionsData.transactions || []);
+      }
+    );
   };
 
   useEffect(() => {

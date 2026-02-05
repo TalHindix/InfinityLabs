@@ -51,7 +51,7 @@ const TransactionsPage = () => {
 
   const {
     selectedTransaction,
-    detailLoading,
+    loading: detailLoading,
     error: detailError,
     loadTransactionDetail,
   } = useTransactionDetail();

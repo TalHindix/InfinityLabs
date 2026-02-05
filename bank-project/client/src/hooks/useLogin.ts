@@ -2,24 +2,27 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authStorage } from '../services/auth.storage';
 import { authService } from '../services/auth.service';
-import { getErrorMessage } from '../types';
-import { getTimeBasedGreeting } from '../utils/greetings';
 import { getIntelligentErrorMessage } from '../utils/messages';
+import { getTimeBasedGreeting } from '../utils/greetings';
+import { useAsyncOperation } from './useAsyncOperation';
 
 export const useLogin = () => {
+
+  // for navigate between pages after login.
   const navigate = useNavigate();
+
+  // for reading parameters ?verified=true
   const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { loading, error, execute, setError } = useAsyncOperation();
+  
+  const resendAsync = useAsyncOperation();
+  
   const [showVerifiedMsg, setShowVerifiedMsg] = useState(false);
-
-  // Resend verification state
   const [showResendOption, setShowResendOption] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
   const greeting = useMemo(() => getTimeBasedGreeting(), []);
@@ -34,7 +37,6 @@ export const useLogin = () => {
   const handleFieldChange = (field: 'email' | 'password', value: string) => {
     if (field === 'email') {
       setEmail(value);
-      // Reset resend state when email changes
       setShowResendOption(false);
       setResendSuccess(false);
     } else {
@@ -44,24 +46,22 @@ export const useLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
     setShowResendOption(false);
     setResendSuccess(false);
 
-    try {
-      const data = await authService.login(email, password);
-      authStorage.setUser(data.user);
-      if (data.token) authStorage.setToken(data.token);
-      navigate('/dashboard');
-    } catch (err: unknown) {
-      const originalError = getErrorMessage(err);
-      setError(getIntelligentErrorMessage(originalError));
+    const { result, error: loginError } = await execute(
+      () => authService.login(email, password),
+      (data) => {
+        authStorage.setUser(data.user);
+        navigate('/dashboard');
+      }
+    );
+
+    if (!result && loginError) {
+      const intelligentError = getIntelligentErrorMessage(loginError);
+      setError(intelligentError);
       setPassword('');
-      // Show resend option after failed login (could be unverified email)
       setShowResendOption(true);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -71,20 +71,15 @@ export const useLogin = () => {
       return;
     }
 
-    setResendLoading(true);
-    setError('');
+    setResendSuccess(false);
+    
+    const { result, error: resendError } = await resendAsync.execute(
+      () => authService.resendVerification(email)
+    );
 
-    try {
-      await authService.resendVerification(email);
+    if (result && !resendError) {
       setResendSuccess(true);
       setShowResendOption(false);
-    } catch (err: unknown) {
-      // Security: Show generic success message even on error
-      // to prevent email enumeration
-      setResendSuccess(true);
-      setShowResendOption(false);
-    } finally {
-      setResendLoading(false);
     }
   };
 
@@ -96,7 +91,7 @@ export const useLogin = () => {
     showVerifiedMsg,
     greeting,
     showResendOption,
-    resendLoading,
+    resendLoading: resendAsync.loading,
     resendSuccess,
     handleFieldChange,
     handleSubmit,

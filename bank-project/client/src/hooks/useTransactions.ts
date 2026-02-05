@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { transactionsService } from '../services/transactions.service';
 import { authStorage } from '../services/auth.storage';
-import { getErrorMessage , type Transaction} from '../types';
+import { type Transaction } from '../types';
+import { useAsyncOperation } from './useAsyncOperation';
 
 export const useTransactions = (pageSize = 10) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [totalPages, setTotalPages] = useState(1);
+  const { loading, error, execute } = useAsyncOperation();
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const userEmail = authStorage.getUser()?.email;
@@ -22,25 +22,23 @@ export const useTransactions = (pageSize = 10) => {
   };
 
   useEffect(() => {
-  const loadTransactions = async () => {
-    setLoading(true);
-    setError('');
+    const loadTransactions = async () => {
+      const { result } = await execute(
+        () => transactionsService.getAll(currentPage, pageSize),
+        (data) => {
+          setTransactions(data.transactions ?? []);
+          setTotalPages(data.totalPages ?? 1);
+        }
+      );
+      
+      if (!result) {
+        setTransactions([]);
+        setTotalPages(1);
+      }
+    };
 
-    try {
-      const data = await transactionsService.getAll(currentPage, pageSize);
-      setTransactions(data.transactions ?? []);
-      setTotalPages(data.totalPages ?? 1);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-      setTransactions([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadTransactions();
-  }, [currentPage, pageSize]);
+    loadTransactions();
+  }, [currentPage, pageSize, execute]);
 
   return {
     transactions,

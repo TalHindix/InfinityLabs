@@ -39,10 +39,8 @@ const ChatWidget = () => {
       return;
     }
 
-    const token = authStorage.getToken();
     socketRef.current = io(`${SOCKET_URL}/chat`, {
       withCredentials: true,
-      auth: token ? { token } : undefined,
     });
 
     socketRef.current.on('connect_error', () => {
@@ -61,18 +59,25 @@ const ChatWidget = () => {
     });
 
     return () => {
-      socketRef.current?.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (isOpen && messagesEndRef.current) {
+    if (isOpen && messages.length > 0 && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
 
   const handleOpen = () => {
     setIsOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
   };
 
   const handleSend = () => {
@@ -95,14 +100,14 @@ const ChatWidget = () => {
     <Paper elevation={4} sx={windowSx}>
       <Box sx={headerSx}>
         <Typography>Virtual Assistant 🏦</Typography>
-        <IconButton size="small" onClick={() => setIsOpen(false)} sx={closeButtonSx}>
+        <IconButton size="small" onClick={handleClose} sx={closeButtonSx}>
           <Close />
         </IconButton>
       </Box>
 
       <Box sx={messagesContainerSx}>
-        {messages.map((msg, i) => (
-          <Box key={i} sx={createMessageSx(msg.type === 'user')}>
+        {messages.map((msg, index) => (
+          <Box key={`${msg.type}-${index}`} sx={createMessageSx(msg.type === 'user')}>
             {msg.text}
             {msg.data && (
               <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 1 }}>

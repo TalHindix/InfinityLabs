@@ -2,14 +2,7 @@ import { Link } from 'react-router-dom';
 import { TextField, Button, Typography, Stack } from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
 import { createFieldSx, submitButtonSx, signInLinkStyle } from './SignupForm.styles';
-
-interface SignupFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone: string;
-}
+import type { SignupFormData } from '../types';
 
 interface SignupFormProps {
   formData: SignupFormData;

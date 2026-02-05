@@ -1,19 +1,11 @@
 import { useState } from 'react';
 import { authService } from '../services/auth.service';
-import { getErrorMessage } from '../types';
-
-interface SignupFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone: string;
-}
+import { useAsyncOperation } from './useAsyncOperation';
+import type { SignupFormData } from '../types';
 
 export const useSignup = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { loading, error, execute } = useAsyncOperation();
 
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: '',
@@ -29,17 +21,10 @@ export const useSignup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await authService.signup(formData);
-      setActiveStep(1);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
+    await execute(
+      () => authService.signup(formData),
+      () => setActiveStep(1)
+    );
   };
 
   const goBack = () => {

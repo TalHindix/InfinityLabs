@@ -18,6 +18,9 @@ export interface SignupData {
   phone: string;
 }
 
+// Form data type (same as SignupData, but kept separate for clarity)
+export type SignupFormData = SignupData;
+
 export interface LoginResponse {
   user: User;
   /** JWT for Authorization header (used when cookie is not sent cross-origin) */

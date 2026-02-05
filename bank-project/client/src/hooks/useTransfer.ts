@@ -1,33 +1,28 @@
 import { useState } from 'react';
 import { transactionsService } from '../services/transactions.service';
-import { getErrorMessage } from '../types';
+import { useAsyncOperation } from './useAsyncOperation';
 
 export const useTransfer = () => {
   const [receiverEmail, setReceiverEmail] = useState('');
   const [amount, setAmount] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const { loading, error, execute } = useAsyncOperation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setSuccess(false);
-    setLoading(true);
-
-    try {
-      await transactionsService.create({
+    
+    await execute(
+      () => transactionsService.create({
         receiverEmail,
         amount: Number(amount),
-      });
-      setSuccess(true);
-      setReceiverEmail('');
-      setAmount('');
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
+      }),
+      () => {
+        setSuccess(true);
+        setReceiverEmail('');
+        setAmount('');
+      }
+    );
   };
 
   return {
