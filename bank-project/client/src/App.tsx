@@ -2,22 +2,22 @@ import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import { ROUTES } from './constants/routes';
-import ChatWidget from './components/ChatWidget';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import DashboardPage from './pages/DashboardPage';
-import TransferPage from './pages/TransferPage';
-import TransactionsPage from './pages/TransactionsPage';
-import { authStorage } from './services/auth.storage';
+import ChatAssistant from './components/ChatAssistant';
+import LoginPage from './screens/login-signup/LoginPage';
+import SignupPage from './screens/login-signup/SignupPage';
+import DashboardPage from './screens/dashboard/DashboardPage';
+import TransferPage from './screens/transfer-money/TransferPage';
+import TransactionsPage from './screens/transaction-history/TransactionsPage';
+import { authStorage } from './api/auth.storage';
 
-/** If not logged in, redirects to login; otherwise renders ChatWidget and the page (children). */
+/** If not logged in, redirects to login; otherwise renders ChatAssistant and the page (children). */
 function RequireAuth({ children }: { children: ReactNode }) {
   if (!authStorage.isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
   return (
     <>
-      <ChatWidget />
+      <ChatAssistant />
       {children}
     </>
   );

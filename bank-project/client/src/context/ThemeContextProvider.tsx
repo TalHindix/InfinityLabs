@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 
-import { lightTheme, darkTheme } from '../utils/theme';
+import { lightTheme, darkTheme } from '../shared/theme';
 import { ThemeContext, type ThemeMode } from './ThemeContext';
 
 type Props = {
