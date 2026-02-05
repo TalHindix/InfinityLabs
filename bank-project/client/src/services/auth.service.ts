@@ -1,10 +1,7 @@
-// auth.service.ts
+// Auth API: login, signup, resend verification, logout.
 import { httpClient } from './httpClient';
-import type { LoginResponse, SignupData, SignupResponse } from '../types';
+import type { LoginResponse, SignupData, SignupResponse , ResendVerificationResponse} from '../types';
 
-interface ResendVerificationResponse {
-  message: string;
-}
 
 export const authService = {
   async login(email: string, password: string): Promise<LoginResponse> {

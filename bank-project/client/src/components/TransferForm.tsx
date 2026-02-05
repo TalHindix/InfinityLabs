@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import {
   TextField,
   Button,
@@ -166,7 +167,7 @@ export const TransferForm = ({
           <Button
             fullWidth
             variant="text"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate(ROUTES.DASHBOARD)}
             sx={cancelButtonSx}
           >
             Cancel

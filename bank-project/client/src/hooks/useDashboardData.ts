@@ -1,3 +1,4 @@
+// Fetches current user and recent transactions for the dashboard.
 import { useState, useEffect } from 'react';
 import { userService } from '../services/user.service';
 import { transactionsService } from '../services/transactions.service';

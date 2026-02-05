@@ -1,3 +1,4 @@
+// Signup form state and submit; manages stepper and success step.
 import { useState } from 'react';
 import { authService } from '../services/auth.service';
 import { useAsyncOperation } from './useAsyncOperation';

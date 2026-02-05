@@ -4,7 +4,7 @@ import { ThemeContextProvider } from './context/ThemeContextProvider';
 import App from './App';
 import './index.css';
 
-// '!' - trust me path 'root'  not null )
+// Root element is guaranteed in index.html.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeContextProvider>

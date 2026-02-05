@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import {
   Container,
   Typography,
@@ -39,6 +40,7 @@ import {
 const TransactionsPage = () => {
   const navigate = useNavigate();
 
+  // Data: paginated list and selected transaction detail
   const {
     transactions,
     loading,
@@ -75,7 +77,7 @@ const TransactionsPage = () => {
 
             <Button
               variant="contained"
-              onClick={() => navigate('/transfer')}
+              onClick={() => navigate(ROUTES.TRANSFER)}
               sx={primaryButtonSx}
             >
               New Transfer

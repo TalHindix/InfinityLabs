@@ -1,3 +1,4 @@
+// Wraps async calls with loading and error state; optional onSuccess callback.
 import { useState } from 'react';
 import { getErrorMessage } from '../types';
 
@@ -33,15 +34,10 @@ export const useAsyncOperation = (initialLoading = false) => {
     setError(message);
   };
 
-  const clearError = () => {
-    setError('');
-  };
-
   return {
     loading,
     error,
     execute,
     setError: setErrorManually,
-    clearError,
   };
 };

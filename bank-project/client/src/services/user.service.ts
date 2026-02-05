@@ -1,4 +1,4 @@
-// user.service.ts
+// User API: get current user (e.g. /me).
 import { httpClient } from './httpClient';
 import type { UserResponse } from '../types';
 

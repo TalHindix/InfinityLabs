@@ -16,6 +16,7 @@ import {
   Button,
 } from '../utils/ui';
 import { Link } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import { useThemeContext } from '../context/ThemeContext';
 import { useSignup } from '../hooks/useSignup';
 import { SignupForm } from '../components/SignupForm';
@@ -111,7 +112,7 @@ const SignupPage = () => {
                   <Button
                     variant="contained"
                     component={Link}
-                    to="/login"
+                    to={ROUTES.LOGIN}
                     sx={verificationPrimaryButtonSx}
                   >
                     Go to Login

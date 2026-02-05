@@ -1,3 +1,4 @@
+// Amount and date formatting for display (en-AE).
 const LOCALE = 'en-AE';
 
 /**

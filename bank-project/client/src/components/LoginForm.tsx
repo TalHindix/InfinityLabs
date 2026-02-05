@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import { TextField, Button, Typography, Alert, Stack, Box } from '../utils/ui';
 import { useThemeContext } from '../context/ThemeContext';
 import {
@@ -45,6 +46,7 @@ export const LoginForm = ({
 
   return (
     <>
+      {/* Alerts: verified, resend success, error */}
       {showVerifiedMsg && (
         <Alert severity="success">Email verified successfully! You can now sign in.</Alert>
       )}
@@ -66,6 +68,7 @@ export const LoginForm = ({
         </Alert>
       )}
 
+      {/* Form fields and actions */}
       <form onSubmit={onSubmit}>
         <Stack spacing={2.5}>
           <TextField
@@ -112,7 +115,7 @@ export const LoginForm = ({
               Forgot password? (TODO)
             </Typography>
             <Typography variant="body2">
-              <Link to="/signup" style={signUpLinkStyle}>
+              <Link to={ROUTES.SIGNUP} style={signUpLinkStyle}>
                 Create account
               </Link>
             </Typography>

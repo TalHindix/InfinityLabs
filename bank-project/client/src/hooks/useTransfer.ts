@@ -1,3 +1,4 @@
+// Transfer form state and submit; handles success and reset.
 import { useState } from 'react';
 import { transactionsService } from '../services/transactions.service';
 import { useAsyncOperation } from './useAsyncOperation';

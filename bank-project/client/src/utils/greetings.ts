@@ -1,4 +1,6 @@
-
+/**
+ * Returns a greeting string based on time of day (morning / afternoon / evening).
+ */
 export function getTimeBasedGreeting(): string {
   const currentHour = new Date().getHours();
 

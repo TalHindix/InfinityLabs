@@ -338,6 +338,3 @@ export const darkTheme: Theme = createTheme({
     },
   },
 });
-
-// Default export for backward compatibility
-export default lightTheme;

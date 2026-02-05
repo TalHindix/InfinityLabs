@@ -1,5 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+// Login form state, submit, and resend-verification flow.
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import { authStorage } from '../services/auth.storage';
 import { authService } from '../services/auth.service';
 import { getIntelligentErrorMessage } from '../utils/messages';
@@ -7,30 +9,24 @@ import { getTimeBasedGreeting } from '../utils/greetings';
 import { useAsyncOperation } from './useAsyncOperation';
 
 export const useLogin = () => {
-
-  // for navigate between pages after login.
   const navigate = useNavigate();
-
-  // for reading parameters ?verified=true
   const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const { loading, error, execute, setError } = useAsyncOperation();
-  
-  const resendAsync = useAsyncOperation();
-  
   const [showVerifiedMsg, setShowVerifiedMsg] = useState(false);
   const [showResendOption, setShowResendOption] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
-  const greeting = useMemo(() => getTimeBasedGreeting(), []);
+  const { loading, error, execute, setError } = useAsyncOperation();
+  const resendAsync = useAsyncOperation();
+
+  const greeting = getTimeBasedGreeting();
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
       setShowVerifiedMsg(true);
-      navigate('/login', { replace: true });
+      navigate(ROUTES.LOGIN, { replace: true });
     }
   }, [searchParams, navigate]);
 
@@ -53,7 +49,7 @@ export const useLogin = () => {
       () => authService.login(email, password),
       (data) => {
         authStorage.setUser(data.user);
-        navigate('/dashboard');
+        navigate(ROUTES.DASHBOARD);
       }
     );
 
@@ -71,15 +67,17 @@ export const useLogin = () => {
       return;
     }
 
+    setShowResendOption(false);
     setResendSuccess(false);
-    
+
     const { result, error: resendError } = await resendAsync.execute(
       () => authService.resendVerification(email)
     );
 
     if (result && !resendError) {
       setResendSuccess(true);
-      setShowResendOption(false);
+    } else if (resendError) {
+      setError(getIntelligentErrorMessage(resendError));
     }
   };
 

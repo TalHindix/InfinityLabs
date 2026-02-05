@@ -1,3 +1,4 @@
+// Theme context: mode, isDark, toggleTheme; useThemeContext() for consumption.
 import { createContext, useContext } from 'react';
 
 export type ThemeMode = 'light' | 'dark';

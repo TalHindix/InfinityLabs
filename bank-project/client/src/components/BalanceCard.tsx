@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import { Card, CardContent, Typography, Button, Box } from '../utils/ui';
 import { formatAmount } from '../utils/formatters';
 import {
@@ -39,7 +40,7 @@ export const BalanceCard = ({ balance }: BalanceCardProps) => {
           </Typography>
         </Typography>
 
-        <Button variant="contained" onClick={() => navigate('/transfer')} sx={primaryButtonSx}>
+        <Button variant="contained" onClick={() => navigate(ROUTES.TRANSFER)} sx={primaryButtonSx}>
           Transfer Money
         </Button>
       </CardContent>

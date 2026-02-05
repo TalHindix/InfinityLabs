@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import {Card,CardContent,Typography,Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box,}
 from '../utils/ui';
 import { type Transaction } from '../types';
@@ -21,7 +22,7 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
         <Typography variant="h5" sx={sectionTitleSx}>
           Recent Transactions
         </Typography>
-        <Button variant="text" onClick={() => navigate('/transactions')} sx={viewAllButtonSx}>
+        <Button variant="text" onClick={() => navigate(ROUTES.TRANSACTIONS)} sx={viewAllButtonSx}>
           View All
         </Button>
       </Box>

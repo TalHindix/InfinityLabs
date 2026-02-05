@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import { Container, Stack, Box, Button, IconButton } from '../utils/ui';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -30,7 +31,7 @@ export const AppHeader = ({
       await authService.logout();
     } finally {
       authStorage.clearAuth();
-      navigate('/login');
+      navigate(ROUTES.LOGIN);
     }
   };
 
@@ -38,7 +39,7 @@ export const AppHeader = ({
     <Box sx={headerContainerSx}>
       <Container maxWidth="lg">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Box sx={logoContainerSx} onClick={() => navigate('/dashboard')}>
+          <Box sx={logoContainerSx} onClick={() => navigate(ROUTES.DASHBOARD)}>
             <DubaiBankLogoFull size={44} animated={false} showTagline={true} />
           </Box>
 
@@ -50,13 +51,13 @@ export const AppHeader = ({
             )}
 
             {showDashboardButton && (
-              <Button variant="outlined" onClick={() => navigate('/dashboard')} sx={outlinedButtonSx}>
+              <Button variant="outlined" onClick={() => navigate(ROUTES.DASHBOARD)} sx={outlinedButtonSx}>
                 Dashboard
               </Button>
             )}
 
             {showTransactionsButton && (
-              <Button variant="outlined" onClick={() => navigate('/transactions')} sx={outlinedButtonSx}>
+              <Button variant="outlined" onClick={() => navigate(ROUTES.TRANSACTIONS)} sx={outlinedButtonSx}>
                 Transactions
               </Button>
             )}

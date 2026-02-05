@@ -36,6 +36,10 @@ export interface UserResponse {
   user: User;
 }
 
+export interface ResendVerificationResponse {
+  message: string;
+}
+
 // Transaction types
 export interface Transaction {
   _id: string;

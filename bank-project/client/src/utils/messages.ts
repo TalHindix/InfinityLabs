@@ -1,3 +1,6 @@
+/**
+ * Maps server or network error strings to user-friendly login messages.
+ */
 export function getIntelligentErrorMessage(errorMessage: string): string {
   const message = errorMessage.toLowerCase();
 

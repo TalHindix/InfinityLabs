@@ -1,3 +1,4 @@
+// In-memory auth: user in localStorage, isAuthenticated, clearAuth.
 import type { User } from '../types';
 
 export const authStorage = {

@@ -1,3 +1,4 @@
+// Provides theme context and MUI theme; persists mode in localStorage.
 import { useEffect, useState, type ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
@@ -9,14 +10,10 @@ type Props = {
   children: ReactNode;
 };
 
-// children = <App/>
-export function ThemeContextProvider( { children } : Props) {
-
+export function ThemeContextProvider({ children }: Props) {
   const [mode, setMode] = useState<ThemeMode>(() => {
-  const saved = localStorage.getItem('theme');
-  return saved === 'light' || saved === 'dark'
-    ? saved
-    : 'dark';
+    const saved = localStorage.getItem('theme');
+    return saved === 'light' || saved === 'dark' ? saved : 'dark';
   });
 
   useEffect(() => {
@@ -24,7 +21,7 @@ export function ThemeContextProvider( { children } : Props) {
   }, [mode]);
 
   function toggleTheme() {
-    setMode( mode => (mode === 'light') ? 'dark' : 'light');
+    setMode((m) => (m === 'light' ? 'dark' : 'light'));
   }
 
   const isDark = mode === 'dark';

@@ -1,3 +1,4 @@
+// Loads and holds a single transaction by id for the detail panel.
 import { useState } from 'react';
 import { transactionsService } from '../services/transactions.service';
 import { type Transaction } from '../types';

@@ -1,3 +1,4 @@
+// Axios instance with base URL, credentials, and 401 → clearAuth handling.
 import axios, { type AxiosError } from 'axios';
 import { authStorage } from './auth.storage';
 

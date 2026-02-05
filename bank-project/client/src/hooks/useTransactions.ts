@@ -1,3 +1,4 @@
+// Paginated transaction list from URL search params and auth.
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { transactionsService } from '../services/transactions.service';

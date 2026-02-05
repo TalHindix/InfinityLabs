@@ -1,4 +1,4 @@
-// transactions.service.ts
+// Transactions API: list (paginated), get by id, create transfer.
 import { httpClient } from './httpClient';
 import type { TransactionsResponse, TransactionResponse, TransferData } from '../types';
 
