@@ -3,37 +3,49 @@ import { useState, useEffect } from 'react';
 import { userService } from '../../api/user.service';
 import { transactionService } from '../../api/transaction.service';
 import { type User, type Transaction } from '../../types';
-import { useAsyncOperation } from '../../shared/useAsyncOperation';
+import { getErrorMessage } from '../../types';
 
 export const useDashboardData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const { loading, error, execute } = useAsyncOperation(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const loadData = async () => {
-    await execute(
-      async () => {
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadData = async () => {
+      setError('');
+      setLoading(true);
+
+      try {
         const [userData, transactionsData] = await Promise.all([
           userService.getMe(),
           transactionService.getAll(),
         ]);
-        return { userData, transactionsData };
-      },
-      ({ userData, transactionsData }) => {
-        setUser(userData.user);
-        setTransactions(transactionsData.transactions || []);
+        if (!cancelled) {
+          setUser(userData.user);
+          setTransactions(transactionsData.transactions ?? []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(getErrorMessage(err));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    );
-  };
+    };
 
-  useEffect(() => {
     loadData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return {
     user,
     transactions,
     loading,
-    error
+    error,
   };
 };

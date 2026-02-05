@@ -1,4 +1,4 @@
-// In-memory auth: user in localStorage, isAuthenticated, clearAuth.
+// Auth persistence: user in localStorage only; JWT lives in httpOnly cookie (server-set).
 import type { User } from '../types';
 
 export const authStorage = {

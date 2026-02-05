@@ -85,7 +85,6 @@ export const login = async (req, res, next) => {
       path: '/',
     });
 
-    // Return token so client can send Authorization header when cookie isn't sent (e.g. cross-origin)
     return response.ok(res, {
       user: {
         id: user.id,
@@ -93,7 +92,6 @@ export const login = async (req, res, next) => {
         lastName: user.lastName,
         email: user.email,
       },
-      token,
     });
   } catch (error) {
     next(error);
