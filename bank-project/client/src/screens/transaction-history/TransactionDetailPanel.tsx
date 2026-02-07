@@ -61,6 +61,13 @@ export const TransactionDetailPanel = ({ transaction, loading, userEmail }: Tran
               </Box>
 
               <Box>
+                <Typography variant="caption" color="text.secondary">Transfer reason</Typography>
+                <Typography fontWeight={500}>
+                  {transaction.description?.trim() || '—'}
+                </Typography>
+              </Box>
+
+              <Box>
                 <Typography variant="caption" color="text.secondary">Status</Typography>
                 <Box sx={statusBadgeSx}>
                   <Typography variant="body2" fontWeight={500}>Completed</Typography>
