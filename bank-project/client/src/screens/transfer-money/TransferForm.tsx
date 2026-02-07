@@ -37,22 +37,26 @@ import { formatAmount } from '../../shared/formatters';
 interface TransferFormProps {
   receiverEmail: string;
   amount: string;
+  description: string;
   loading: boolean;
   error: string;
   success: boolean;
   onReceiverEmailChange: (value: string) => void;
   onAmountChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
 export const TransferForm = ({
   receiverEmail,
   amount,
+  description,
   loading,
   error,
   success,
   onReceiverEmailChange,
   onAmountChange,
+  onDescriptionChange,
   onSubmit,
 }: TransferFormProps) => {
   const navigate = useNavigate();
@@ -118,6 +122,22 @@ export const TransferForm = ({
               },
             }}
             helperText="Minimum transfer amount: 1 AED"
+          />
+
+          <TextField
+            fullWidth
+            label="Transfer reason"
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            required
+            multiline
+            minRows={2}
+            maxRows={4}
+            placeholder="e.g. Payment for services"
+            slotProps={{
+              htmlInput: { maxLength: 500 },
+            }}
+            helperText="Required. Max 500 characters."
           />
 
           <Box sx={transferSummarySx}>
@@ -188,6 +208,9 @@ export const TransferForm = ({
             </Typography>
             <Typography sx={dialogRecipientSx}>
               {receiverEmail}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Reason:</strong> {description.trim() || '—'}
             </Typography>
             <Typography variant="body2" sx={dialogWarningTextSx}>
               This action cannot be undone.

@@ -1,27 +1,27 @@
 ---
 name: Bank Project Code Review Guide
-overview: A comprehensive guide explaining all 5 processes (signup, login, verifyMail, transferMoney, transaction), client-server architecture, MongoDB interactions, middleware, and React hooks with interview-ready explanations.
+overview: A comprehensive guide explaining all 5 processes (signup, login, verifyMail, transferMoney, transaction), plus resend verification and logout; client-server architecture (client api/ layer, server routes mounted at /api/v1); MongoDB interactions; middleware; and React hooks with interview-ready explanations.
 todos:
   - id: explain-signup
-    content: "Explain signup process: client hook → service → server route → controller → service → MongoDB → email"
+    content: "Explain signup process: client hook → api service → server route → controller → service → MongoDB → email"
     status: pending
   - id: explain-login
-    content: "Explain login process: client hook → service → server route → controller → JWT creation → cookie setting"
+    content: "Explain login process: client hook → api service → server route → controller → JWT → HTTP-only cookie; client stores user in localStorage only"
     status: pending
   - id: explain-verify
     content: "Explain email verification: email link → server route → token validation → status update → HTML response"
     status: pending
   - id: explain-transfer
-    content: "Explain transfer money: client hook → service → server route → MongoDB transaction → atomic balance update"
+    content: "Explain transfer money: client hook → transactionService → server route → MongoDB transaction → atomic balance update"
     status: pending
   - id: explain-transactions
-    content: "Explain transaction listing: client hook → service → server route → MongoDB query with pagination"
+    content: "Explain transaction listing: client hook → transactionService → server route → MongoDB query with pagination; GET /me returns user + recentTransactions"
     status: pending
   - id: explain-middleware
     content: "Explain all middleware: protect (auth), rateLimit (abuse prevention), error (centralized handling), logger (monitoring)"
     status: pending
   - id: explain-hooks
-    content: "Explain React hooks: useState (state management), useEffect (side effects), useContext (avoid prop drilling)"
+    content: "Explain React hooks: useState, useEffect, useContext; useAsyncOperation for loading/error; hooks live in screens/*"
     status: pending
   - id: explain-mongodb
     content: "Explain MongoDB interactions: models, transactions, queries, indexes, validation"
@@ -70,17 +70,9 @@ This guide explains the complete architecture and flow of your Dubai-Bank projec
 **What are Interceptors?**
 Interceptors are functions that Axios calls automatically before sending a request (request interceptor) or after receiving a response (response interceptor). They allow you to modify requests/responses globally without changing each API call.
 
-**Request Interceptor** (`httpClient.interceptors.request.use`):
+**Request interceptor** (current project: none):
 
-- **When**: Runs BEFORE every HTTP request is sent
-- **What it does**: 
-  - Reads token from `authStorage.getToken()` (checks localStorage/cookies)
-  - If token exists, adds `Authorization: Bearer <token>` header to the request
-  - Returns modified config
-- **Why**: 
-  - DRY principle - don't manually add token to every API call
-  - Automatic - token added to ALL requests without remembering to do it
-  - Fallback mechanism - if cookie isn't sent (cross-origin), Bearer header works
+- The current client does **not** use a request interceptor. Authentication relies on the **HTTP-only cookie** set by the server at login. With `withCredentials: true`, the browser sends the cookie automatically on same-origin requests (and on cross-origin when CORS credentials are allowed). The server `protect` middleware reads the token from the cookie first, then from the `Authorization: Bearer` header if present (for environments where cookies are not sent).
 
 **Response Interceptor** (`httpClient.interceptors.response.use`):
 
@@ -88,25 +80,25 @@ Interceptors are functions that Axios calls automatically before sending a reque
 - **What it does**:
   - Success case: Returns response as-is (no modification)
   - Error case: Checks if status is 401 (Unauthorized)
-  - If 401: Clears authentication (removes token and user from storage)
+  - If 401: Calls `authStorage.clearAuth()` (removes user from localStorage; cookie is cleared by server on logout or ignored when expired)
+  - Logs network errors when no response is received
   - Returns rejected promise (so error handling in components works)
 - **Why**:
   - Automatic logout when token expires or is invalid
-  - User doesn't see confusing errors - automatically redirected to login
-  - Centralized error handling for authentication failures
+  - Centralized handling for authentication failures; components can show errors or redirect
 
 **Example Flow**:
 
 ```
-Component calls: transactionsService.getAll()
+Component calls: transactionService.getAll(page, limit)
   ↓
-Axios request interceptor runs → Adds Authorization header
+Axios sends GET with credentials (cookie sent automatically)
   ↓
-Request sent to server with token
+Server protect middleware reads token from cookie (or Authorization header)
   ↓
 Server responds (200 OK or 401 Unauthorized)
   ↓
-Axios response interceptor runs → If 401, clears auth
+Axios response interceptor runs → If 401, clears auth (localStorage user)
   ↓
 Response/Error returned to component
 ```
@@ -116,28 +108,28 @@ Response/Error returned to component
 This diagram shows the **complete request lifecycle** - how data flows from user interaction in the browser all the way to the database and back. It demonstrates the **layered architecture** and **separation of concerns** in the application.
 
 ```
-Browser → React Component → Custom Hook → Service → HTTP Client (Axios) 
+Browser → React Component → Custom Hook → API Service → HTTP Client (Axios) 
   → Express Route → Middleware → Controller → Service → MongoDB
   → Response flows back up
 ```
 
 **What this shows:**
 
-- **Request Path (Down)**: User action → UI layer → Business logic → Network → Server routing → Authentication → Controller → Database operations
+- **Request Path (Down)**: User action → UI layer → Hook (state + side effects) → API layer → Network → Server routing → Authentication → Controller → Database operations
 - **Response Path (Up)**: Database → Service → Controller → Middleware → HTTP response → Client → UI update
 
 **Layer Breakdown:**
 
 1. **Browser**: User clicks button, fills form, etc.
-2. **React Component**: UI layer - displays form, handles user input
-3. **Custom Hook**: React logic layer - manages state, calls services (e.g., `useSignup`, `useLogin`)
-4. **Service**: API abstraction layer - defines API endpoints (e.g., `authService.signup()`)
-5. **HTTP Client (Axios)**: Network layer - makes HTTP request, adds interceptors (token headers)
-6. **Express Route**: Server routing layer - matches URL to handler (e.g., `POST /api/v1/auth/signup`)
-7. **Middleware**: Server processing layer - runs before controller (auth, rate limiting, logging)
-8. **Controller**: Request handler layer - extracts data, calls service, returns response
-9. **Service**: Business logic layer - contains core logic (e.g., `createUser()`, `executeTransfer()`)
-10. **MongoDB**: Database layer - stores/retrieves data
+2. **React Component**: UI layer - displays form, handles user input (e.g., SignupForm, LoginForm)
+3. **Custom Hook**: React logic layer - manages state, calls API services; lives in screens (e.g., `screens/login-signup/useSignup.ts`, `useLogin.ts`); often uses shared `useAsyncOperation` for loading/error
+4. **API Service**: Client API abstraction - defines endpoints (e.g., `client/src/api/auth.service.ts`, `transaction.service.ts`, `user.service.ts`)
+5. **HTTP Client (Axios)**: Network layer - `client/src/api/http-client.ts`; baseURL from `VITE_API_URL`; `withCredentials: true`; response interceptor on 401 clears auth
+6. **Express Route**: Server routing - routes mounted at `/api/v1/auth`, `/api/v1`, `/api/v1/transactions` (see app.js)
+7. **Middleware**: Server processing - protect (auth), rate limit, request logger; error and notFound after routes
+8. **Controller**: Request handler - extracts data, validates, calls service, returns response via `response.util`
+9. **Service**: Business logic - e.g. `user.service.js` (`createUser`, `findAndVerifyUserByToken`), `transaction.service.js` (`executeTransfer`, `findTransactionsByUserEmail`)
+10. **MongoDB**: Database layer - User, Transaction, Counter collections
 
 **Why this architecture?**
 
@@ -152,34 +144,34 @@ Browser → React Component → Custom Hook → Service → HTTP Client (Axios)
 
 ### Client-Side Flow
 
-**File**: `client/src/hooks/useSignup.ts`
+**File**: `client/src/screens/login-signup/useSignup.ts`
 
 1. **useState** - Why?
-  - `formData`: Stores form input (firstName, lastName, email, password, phone)
+  - `formData`: Stores form input (firstName, lastName, email, password, phone) via `SignupFormData` type
   - `activeStep`: Tracks UI state (0 = form, 1 = success message)
-  - `error`: Stores error messages
-  - `loading`: Tracks async operation state
   - **Interview Answer**: useState manages component state that changes over time. When user types, formData updates, triggering re-render with new values.
-2. **handleSubmit**:
-  - Calls `authService.signup(formData)` 
-  - On success: `setActiveStep(1)` shows success message
-  - On error: `setError()` displays error
+2. **useAsyncOperation** (shared hook): Provides `loading`, `error`, and `execute(operation, onSuccess)`. Wraps async calls and sets error on failure.
+3. **handleSubmit**:
+  - Calls `execute(() => authService.signup(formData), () => setActiveStep(1))`
+  - On success: `onSuccess` callback sets `activeStep(1)` to show success message
+  - On error: `useAsyncOperation` sets error; component displays it
+4. **goBack**: Resets `activeStep` to 0 to return to the form from the success step.
 
-**File**: `client/src/services/auth.service.ts`
+**File**: `client/src/api/auth.service.ts`
 
-- Makes POST request to `/api/v1/auth/signup` via `httpClient`
+- `signup(data)`: POST to `/auth/signup` via `httpClient` (baseURL from `VITE_API_URL` includes `/api/v1`, so full path is `/api/v1/auth/signup`)
 
-**File**: `client/src/services/httpClient.ts`
+**File**: `client/src/api/http-client.ts`
 
-- Axios instance with `baseURL`, `withCredentials: true` (sends cookies)
-- Request interceptor: Adds `Authorization: Bearer <token>` if token exists
-- Response interceptor: On 401, clears auth and redirects
+- Axios instance with `baseURL` from `VITE_API_URL`, `withCredentials: true` (sends cookies)
+- No request interceptor in current implementation; auth relies on HTTP-only cookie when sent by browser
+- Response interceptor: On 401, calls `authStorage.clearAuth()`; logs network errorss
 
 ### Server-Side Flow
 
 **File**: `server/src/routes/auth.routes.js`
 
-- Route: `POST /api/v1/auth/signup`
+- Auth routes are mounted at `/api/v1/auth`. Route: `POST /signup` (full path: `POST /api/v1/auth/signup`)
 - Middleware: `authLimiter` (rate limiting - 5 requests per 15 min)
 
 **File**: `server/src/middleware/rateLimit.middleware.js`
@@ -233,54 +225,64 @@ Browser → React Component → Custom Hook → Service → HTTP Client (Axios)
 
 ### Client-Side Flow
 
-**File**: `client/src/hooks/useLogin.ts`
+**File**: `client/src/screens/login-signup/useLogin.ts`
 
 1. **useState**:
   - `email`, `password`: Form inputs
-  - `error`, `loading`: UI state
   - `showVerifiedMsg`: Shows success message if redirected from verification
-  - `showResendOption`: Shows resend verification link after failed login
-2. **useEffect** - Why?
+  - `showResendOption`: Shows resend verification option after failed login
+  - `resendSuccess`: Tracks success of resend verification
+2. **useAsyncOperation**: Provides `loading`, `error`, `execute`, `setError`. A second instance (`resendAsync`) is used for the resend-verification flow.
+3. **useEffect** - Why?
   ```typescript
    useEffect(() => {
      if (searchParams.get('verified') === 'true') {
        setShowVerifiedMsg(true);
-       navigate('/login', { replace: true });
+       navigate(ROUTES.LOGIN, { replace: true });
      }
    }, [searchParams, navigate]);
   ```
   - **Interview Answer**: useEffect runs after render. Checks URL params for `?verified=true` (from email verification). When found, shows success message. Dependency array ensures it only runs when searchParams/navigate change.
-3. **useMemo** - Why?
-  ```typescript
-   const greeting = useMemo(() => getTimeBasedGreeting(), []);
-  ```
-  - **Interview Answer**: Memoizes greeting calculation. Empty deps means it runs once on mount. Prevents recalculating on every render.
 4. **handleSubmit**:
-  - Calls `authService.login(email, password)`
-  - On success: Stores user + token in localStorage/cookies, navigates to `/dashboard`
-  - On error: Shows error, enables resend verification option
+  - Calls `execute(() => authService.login(email, password), (data) => { authStorage.setUser(data.user); navigate(ROUTES.DASHBOARD); })`
+  - On success: Stores only **user** in localStorage via `authStorage.setUser(data.user)`; server sets HTTP-only cookie with JWT; navigates to dashboard
+  - On error: Uses `getIntelligentErrorMessage(error)` for user-facing message; clears password; sets `showResendOption(true)`
+5. **handleResendVerification**: Calls `authService.resendVerification(email)` via `resendAsync.execute`; on success sets `resendSuccess`, on error sets error via `getIntelligentErrorMessage`.
+6. **greeting**: `getTimeBasedGreeting()` from `shared/greetings` (called once per render; no useMemo in current code).
 
-**File**: `client/src/services/auth.storage.ts`
+**File**: `client/src/api/auth.storage.ts`
 
-- `setUser()`: Stores user object in localStorage
-- `setToken()`: Stores token in cookie (1 hour expiry)
-- `isAuthenticated()`: Checks if user exists in localStorage
+- **User only** in localStorage (token is **not** stored on client; server sets HTTP-only cookie at login).
+- `setUser(user)`: Stores user object in localStorage
+- `getUser()`: Returns parsed user or null
+- `clearAuth()`: Removes user from localStorage (called on 401 by response interceptor)
+- `logout()`: Alias for `clearAuth()`; server clears cookie via `POST /auth/logout`
+- `isAuthenticated()`: Returns `!!getUser()`
 
 ### Server-Side Flow
 
+**File**: `server/src/routes/auth.routes.js`
+
+- `POST /login` with `authLimiter`. Also: `POST /logout`, `POST /resend-verification` (see below).
+
 **File**: `server/src/controllers/auth.controller.js` → `login()`
 
-1. Validates email + password exist
-2. Calls `findUserByEmailWithPassword()` - `.select('+password')` includes password field
-3. Checks `user.status === ACTIVE` (rejects PENDING users)
-4. Validates password with `bcrypt.compare()`
-5. Creates JWT token with `createToken(user)`
-6. Sets HTTP-only cookie with token:
-  - `httpOnly: true` (JavaScript can't access - XSS protection)
-  - `secure: true` in production (HTTPS only)
-  - `sameSite: 'strict'` (CSRF protection)
-  - `maxAge: 1 hour`
-7. Returns user data + token (for Authorization header fallback)
+1. Validates email + password exist; throws `AppError` 400 if missing
+2. Calls `findUserByEmailWithPassword(email)` - `.select('+password')` includes password field
+3. Checks `user` exists and `user.status === USER_STATUS.ACTIVE` (rejects PENDING users with same 401 message)
+4. Validates password with `validatePassword(password, user.password)` (bcrypt.compare)
+5. Creates JWT with `createToken(user)`
+6. Sets HTTP-only cookie via `res.cookie(config.cookie.tokenName, token, ...)`:
+  - Cookie name from config (e.g. `token`)
+  - `httpOnly: true` (XSS protection)
+  - `secure`: true in production
+  - `sameSite`: from env (e.g. `lax` for cross-origin)
+  - `maxAge`: from config (e.g. 1 hour), `path: '/'`
+7. Returns **user data only** (no token in body): `response.ok(res, { user: { id, firstName, lastName, email } })`
+
+**Logout** (`logout()`): Clears the auth cookie with `res.clearCookie(config.cookie.tokenName, { path: '/', httpOnly, secure, sameSite })` and returns 200. Client calls `authService.logout()` then typically clears localStorage (or relies on 401/clearAuth elsewhere).
+
+**Resend verification** (`resendVerification()`): `POST /resend-verification` with `authLimiter`. Reads `email` from body; calls `regenerateVerificationToken(email)`; if user exists and PENDING, sends new verification email; always returns same success message (no user enumeration).
 
 **File**: `server/src/utils/jwt.util.js`
 
@@ -303,11 +305,11 @@ Browser → React Component → Custom Hook → Service → HTTP Client (Axios)
 
 ### Flow
 
-**User clicks email link**: `/api/v1/auth/verify?token=<plainToken>`
+**User clicks email link**: `${SERVER_URL}/api/v1/auth/verify?token=<plainToken>`
 
 **File**: `server/src/routes/auth.routes.js`
 
-- Route: `GET /api/v1/auth/verify`
+- Route: `GET /verify` (mounted at `/api/v1/auth`, so full path: `GET /api/v1/auth/verify`)
 - Middleware: `verifyLimiter` (10 requests per hour)
 
 **File**: `server/src/controllers/auth.controller.js` → `verifyEmail()`
@@ -344,26 +346,29 @@ Browser → React Component → Custom Hook → Service → HTTP Client (Axios)
 
 ### Client-Side Flow
 
-**File**: `client/src/hooks/useTransfer.ts`
+**File**: `client/src/screens/transfer-money/useTransfer.ts`
 
 1. **useState**:
-  - `receiverEmail`, `amount`: Form inputs
-  - `loading`, `error`, `success`: UI state
-2. **handleSubmit**:
-  - Calls `transactionsService.create({ receiverEmail, amount })`
-  - On success: Clears form, shows success message
-  - On error: Shows error message
+  - `receiverEmail`, `amount`: Form inputs (amount as string for input; converted to number on submit)
+  - `success`: UI state for success message
+2. **useAsyncOperation**: Provides `loading`, `error`, `execute`.
+3. **handleSubmit**:
+  - Calls `execute(() => transactionService.create({ receiverEmail, amount: Number(amount) }), () => { setSuccess(true); setReceiverEmail(''); setAmount(''); })`
+  - On success: Clears form, sets success to true
+  - On error: useAsyncOperation sets error; component displays it
+4. **setReceiverEmail**, **setAmount**: Exposed for controlled inputs.
 
-**File**: `client/src/services/transactions.service.ts`
+**File**: `client/src/api/transaction.service.ts`
 
-- POST `/api/v1/transactions` with `{ receiverEmail, amount, description? }`
+- `create(data)`: POST to `/transactions` with `{ receiverEmail, amount, description? }` (baseURL includes `/api/v1`, so full path: `POST /api/v1/transactions`)
 
 ### Server-Side Flow
 
 **File**: `server/src/routes/transaction.routes.js`
 
-- Route: `POST /api/v1/transactions`
-- Middleware: `protect` (requires auth), `transactionLimiter` (10 per minute)
+- Transaction routes mounted at `/api/v1/transactions`. All routes use `router.use(protect)`.
+- `POST /` (create transfer): Middleware `transactionLimiter` (10 per minute)
+- `GET /`: List transactions (paginated). `GET /:transactionId`: Get one transaction by id (must belong to user)
 
 **File**: `server/src/middleware/rateLimit.middleware.js`
 
@@ -371,12 +376,12 @@ Browser → React Component → Custom Hook → Service → HTTP Client (Axios)
 
 **File**: `server/src/controllers/transaction.controller.js` → `createTransaction()`
 
-1. Extracts `receiverEmail`, `amount`, `description` from body
+1. Extracts `receiverEmail`, `amount`, `description` from body; throws if `receiverEmail` missing
 2. Gets `senderEmail` from `req.user.email` (set by protect middleware)
-3. Validates amount with `validateTransactionAmount()`:
-  - Must be number, 0.01 - 1,000,000
-  - Max 2 decimal places
-4. Calls `executeTransfer()` service
+3. Validates amount with `validateTransactionAmount(amount)` from `utils/validation.util.js`:
+  - Must be number, finite, not NaN; 0.01 - 1,000,000; max 2 decimal places
+  - Returns `{ isValid, error, sanitized }`; throws AppError 400 if invalid
+4. Calls `executeTransfer(senderEmail, receiverEmail, amountValidation.sanitized, description)`
 
 **File**: `server/src/services/transaction.service.js` → `executeTransfer()`
 
@@ -423,26 +428,37 @@ try {
 
 ### Client-Side Flow
 
-**File**: `client/src/hooks/useTransactions.ts`
+**File**: `client/src/screens/transaction-history/useTransactions.ts`
 
 1. **useState**:
   - `transactions`: Array of transaction objects
-  - `loading`, `error`: UI state
-  - `totalPages`: For pagination
-2. **useSearchParams** (React Router):
-  - Reads `?page=1` from URL
-  - `handlePageChange()`: Updates URL params
-3. **useEffect** - Why?
+  - `totalPages`, `loading`, `error`: UI state
+2. **useSearchParams** (React Router): Reads `?page=` from URL; `currentPage = Number(searchParams.get('page')) || 1`; `handlePageChange(page)` updates URL via `setSearchParams`
+3. **URL normalization**: A first `useEffect` ensures `?page=` is set so `currentPage` is stable and the fetch effect does not re-run unnecessarily
+4. **useEffect** - Why?
   ```typescript
    useEffect(() => {
+     let cancelled = false;
+     const loadTransactions = async () => { ... };
      loadTransactions();
+     return () => { cancelled = true; };
    }, [currentPage, pageSize]);
   ```
-  - **Interview Answer**: Runs when component mounts AND when currentPage/pageSize change. Fetches new data when user navigates pages. Dependency array ensures it re-runs when pagination changes.
+  - **Interview Answer**: Runs when component mounts AND when currentPage/pageSize change. Fetches data via `transactionService.getAll(currentPage, pageSize)`; cancellation flag avoids updating state after unmount. Dependency array ensures it re-runs when pagination changes.
+5. **userEmail**: From `authStorage.getUser()?.email` for display (e.g. "Incoming/Outgoing" per row)
+6. **loadingRef**: Used to avoid double-setting loading in edge cases
 
-**File**: `client/src/services/transactions.service.ts`
+**File**: `client/src/screens/transaction-history/useTransactionDetail.ts`
 
-- GET `/api/v1/transactions?page=1&limit=10`
+- **useState**: `selectedTransaction` (single transaction or null)
+- **useAsyncOperation**: Wraps `transactionService.getById(id)`; on success sets `selectedTransaction` from `data.transaction`; on failure sets `selectedTransaction` to null
+- **loadTransactionDetail(id)**: Called when user selects a row; fetches one transaction by id
+
+**File**: `client/src/api/transaction.service.ts`
+
+- `getAll(page = 1, limit = 10)`: GET `/transactions?page=&limit=` (full path: `/api/v1/transactions?page=1&limit=10`)
+- `getById(id)`: GET `/transactions/:id`
+- Used by dashboard (first page) and transaction-history page (paginated)
 
 ### Server-Side Flow
 
@@ -467,9 +483,14 @@ try {
 
 **File**: `server/src/controllers/transaction.controller.js` → `getTransactionById()`
 
-- GET `/api/v1/transactions/:transactionId`
-- Finds transaction by ID AND verifies user owns it (fromEmail OR toEmail matches)
-- Returns 404 if not found or not owned
+- Route: `GET /:transactionId` (full path: `GET /api/v1/transactions/:transactionId`)
+- Calls `findTransactionById(transactionId, req.user.email)`; returns `{ status: 'SUCCESS', data }` or `{ status: 'NOT_FOUND', data: null }`
+- If NOT_FOUND, throws AppError 404 "Transaction not found"; otherwise returns 200 with `{ transaction }`
+
+**Dashboard and GET /me**
+
+- **Server**: `GET /api/v1/me` (user routes mounted at `/api/v1`) is protected; `getCurrentUser` returns `{ user: { id, firstName, lastName, email, phone, balance, status }, recentTransactions }` (user from `findUserById`, recent from `findRecentTransactions(user.email, 10)`).
+- **Client**: `client/src/api/user.service.ts` exposes `getMe()` (GET `/me`). Dashboard uses `useDashboardData` in `client/src/screens/dashboard/useDashboardData.ts`: fetches in parallel `userService.getMe()` and `transactionService.getAll()` (first page), then sets `user` from userData.user and `transactions` from transactionsData.transactions; cancellation pattern in useEffect; runs once on mount.
 
 ---
 
@@ -479,12 +500,13 @@ try {
 
 **Why?** Validates JWT on protected routes
 
-- Checks cookie OR Authorization header
-- Verifies token, finds user, checks ACTIVE status
-- Attaches `req.user` for controllers
-- Returns 401 if invalid
+- **getTokenFromRequest(req)**: Reads token from `req.cookies.token` first, then from `Authorization: Bearer <token>` header (for environments where cookie is not sent)
+- Verifies token with `verifyToken(token)` (jwt.util)
+- Finds user with `User.findOne({ id: decoded.id }).select('id email status')`
+- Checks `user.status === USER_STATUS.ACTIVE`
+- Attaches `req.user` for controllers; returns 401 with `{ success: false }` if missing/invalid token or inactive user
 
-**When used?** All routes under `/api/v1/transactions`, `/api/v1/me`
+**When used?** All routes under `/api/v1/transactions` (via `router.use(protect)`), and `/api/v1` (user routes: GET /me)
 
 ### 2. `rateLimit.middleware.js`
 
@@ -500,7 +522,8 @@ try {
 
 **Why?** Centralized error handling
 
-- `errorHandler`: Catches all errors, logs them, sends safe response
+- **notFoundHandler**: Runs when no route matches (must be registered after all routes in app.js); returns 404
+- **errorHandler**: Catches all errors passed via `next(error)`, logs them, sends safe response
 - Handles Mongoose errors (ValidationError → 400, duplicate key → 409)
 - Handles JWT errors (401)
 - Unknown errors → 500 with generic message (no stack trace to client)
@@ -525,6 +548,15 @@ try {
 ---
 
 ## React Hooks Explained
+
+**Where hooks live:** Custom hooks are colocated with screens (e.g. `screens/login-signup/useSignup.ts`, `useLogin.ts`; `screens/transfer-money/useTransfer.ts`; `screens/transaction-history/useTransactions.ts`, `useTransactionDetail.ts`; `screens/dashboard/useDashboardData.ts`). Shared hook: `shared/useAsyncOperation.ts`.
+
+### useAsyncOperation (shared)
+
+**What?** Wraps async operations with loading and error state; optional onSuccess callback.
+**Where?** `client/src/shared/useAsyncOperation.ts`
+**Why?** DRY: avoid repeating loading/error/setError in every screen hook. Used by useSignup, useLogin, useTransfer, useTransactionDetail.
+**Returns:** `{ loading, error, execute(operation, onSuccess?), setError }`. On failure, sets error via `getErrorMessage(err)` from types.
 
 ### useState
 
@@ -568,7 +600,7 @@ useEffect(() => {
 **What?** Accesses context value without prop drilling
 **Why?** Avoids passing props through many components
 
-**File**: `client/src/context/ThemeContext.tsx`
+**File**: `client/src/context/ThemeContext.ts`
 
 - Creates context: `ThemeContext`
 - Custom hook: `useThemeContext()` throws if used outside provider
@@ -590,21 +622,21 @@ useEffect(() => {
 
 ### HTTP Client Setup
 
-**File**: `client/src/services/httpClient.ts`
+**File**: `client/src/api/http-client.ts`
 
-- Base URL from env: `VITE_API_URL`
-- `withCredentials: true`: Sends cookies (for JWT)
-- Request interceptor: Adds `Authorization: Bearer <token>` header
-- Response interceptor: On 401, clears auth (token expired)
+- Base URL from env: `VITE_API_URL` (must include `/api/v1` so relative paths like `/auth/login` and `/transactions` resolve correctly)
+- `withCredentials: true`: Sends cookies (HTTP-only cookie set by server at login)
+- No request interceptor in current implementation; server `protect` middleware reads token from cookie first, then from `Authorization: Bearer` if present
+- Response interceptor: On 401, calls `authStorage.clearAuth()` (removes user from localStorage); logs network errors when no response
 
 ### Authentication Flow
 
-1. Login → Server sets HTTP-only cookie
-2. Subsequent requests → Cookie sent automatically (`withCredentials: true`)
-3. If cookie missing → Request interceptor adds Bearer token from localStorage
-4. Server reads cookie OR Authorization header
+1. Login → Server sets HTTP-only cookie (client does not store token; only stores user in localStorage via `authStorage.setUser(data.user)`)
+2. Subsequent requests → Cookie sent automatically by browser (`withCredentials: true`)
+3. Logout → Client calls `authService.logout()` (POST /auth/logout); server clears cookie; client may clear localStorage elsewhere or rely on 401/clearAuth
+4. Server `protect` middleware reads token from cookie first, then from `Authorization: Bearer` header (for environments where cookie is not sent, e.g. some cross-origin or API clients)
 
-**Why both?** Cookie for same-origin, Bearer header for cross-origin or mobile apps
+**Why cookie-only on client?** XSS protection: JavaScript cannot read HTTP-only cookie. Token is never stored in localStorage.
 
 ---
 
@@ -612,20 +644,28 @@ useEffect(() => {
 
 ### User Model
 
-- `id`: UUID (not MongoDB _id)
-- `email`: Unique, lowercase, validated
-- `password`: Hashed, `select: false`
-- `status`: PENDING or ACTIVE
-- `verificationToken`: Hashed token
-- `balance`: Number, min 0
+**File**: `server/src/models/user.model.js`
+
+- `id`: String, required, unique, default `crypto.randomUUID()` (UUID, not MongoDB _id)
+- `firstName`, `lastName`: String, required, trim, min/max length
+- `email`: Unique, lowercase, trim, regex match
+- `password`: Required, min 8 chars, `select: false`
+- `phone`: Required, regex match
+- `status`: Enum PENDING | ACTIVE, default PENDING
+- `verificationToken`: Optional string (hashed)
+- `balance`: Number, default from constants, min 0
+- `timestamps`: createdAt only
 
 ### Transaction Model
 
-- `id`: Sequential number (from counter)
-- `fromEmail`, `toEmail`: Lowercase, validated
-- `amount`: Number, 0.01 - 1,000,000, max 2 decimals
-- `description`: Optional string
-- Indexes on fromEmail and toEmail for performance
+**File**: `server/src/models/transaction.model.js`
+
+- `id`: Number, required, unique (from Counter collection via `getNextTransactionId`)
+- `fromEmail`, `toEmail`: String, required, lowercase, trim, email regex
+- `amount`: Number, required, min/max (0.01 - 1,000,000), custom validator (finite, positive)
+- `description`: Optional string, trim, maxlength 500
+- `timestamps`: createdAt only
+- Indexes: `{ fromEmail: 1, createdAt: -1 }`, `{ toEmail: 1, createdAt: -1 }`
 
 ### Counter Collection
 
@@ -695,9 +735,9 @@ Below are detailed descriptions for each process that can be used to generate se
 
 - User (Browser)
 - ReactComponent (SignupForm component)
-- useSignupHook (Custom React hook)
-- AuthService (Client service layer)
-- HttpClient (Axios instance with interceptors)
+- useSignupHook (Custom React hook in screens/login-signup/useSignup.ts)
+- AuthService (client/src/api/auth.service.ts)
+- HttpClient (client/src/api/http-client.ts; no request interceptor)
 - ExpressRoute (Express route handler)
 - RateLimitMiddleware (authLimiter)
 - AuthController (signup controller function)
@@ -715,11 +755,10 @@ Below are detailed descriptions for each process that can be used to generate se
 3. ReactComponent calls useSignupHook.handleSubmit()
 4. useSignupHook sets loading state to true
 5. useSignupHook calls AuthService.signup(formData)
-6. AuthService calls HttpClient.post('/api/v1/auth/signup', formData)
-7. HttpClient request interceptor checks for token (none at signup)
-8. HttpClient sends POST request to ExpressRoute with formData
-9. ExpressRoute receives request at POST /api/v1/auth/signup
-10. ExpressRoute passes request to RateLimitMiddleware
+6. AuthService calls HttpClient.post('/auth/signup', formData) (baseURL includes /api/v1)
+7. HttpClient sends POST request with credentials to ExpressRoute (no request interceptor; no token at signup)
+8. ExpressRoute receives request at POST /api/v1/auth/signup
+9. ExpressRoute passes request to RateLimitMiddleware
 11. RateLimitMiddleware checks IP address against rate limit (5 per 15 min)
 12. If limit exceeded: RateLimitMiddleware returns 429 error → flows back to User
 13. If within limit: RateLimitMiddleware calls next() → continues to AuthController
@@ -768,10 +807,10 @@ Below are detailed descriptions for each process that can be used to generate se
 
 - User (Browser)
 - ReactComponent (LoginForm component)
-- useLoginHook (Custom React hook)
-- AuthService (Client service layer)
-- HttpClient (Axios instance)
-- AuthStorage (localStorage + cookies)
+- useLoginHook (Custom React hook in screens/login-signup/useLogin.ts)
+- AuthService (client/src/api/auth.service.ts)
+- HttpClient (client/src/api/http-client.ts)
+- AuthStorage (client/src/api/auth.storage.ts; user in localStorage only; token is server-set cookie)
 - ExpressRoute (Express route handler)
 - RateLimitMiddleware (authLimiter)
 - AuthController (login controller function)
@@ -788,9 +827,9 @@ Below are detailed descriptions for each process that can be used to generate se
 3. ReactComponent calls useLoginHook.handleSubmit()
 4. useLoginHook sets loading state to true, clears error
 5. useLoginHook calls AuthService.login(email, password)
-6. AuthService calls HttpClient.post('/api/v1/auth/login', { email, password })
-7. HttpClient request interceptor checks for token (none at login)
-8. HttpClient sends POST request with credentials to ExpressRoute
+6. AuthService calls HttpClient.post('/auth/login', { email, password }) (baseURL includes /api/v1)
+7. HttpClient sends POST request with credentials (no request interceptor; no token at login)
+8. ExpressRoute receives request at POST /api/v1/auth/login
 9. ExpressRoute receives request at POST /api/v1/auth/login
 10. CookieParser middleware parses cookies (none at login)
 11. ExpressRoute passes request to RateLimitMiddleware
@@ -815,23 +854,18 @@ Below are detailed descriptions for each process that can be used to generate se
 30. If password valid: AuthController calls JWTUtil.createToken(user)
 31. JWTUtil signs JWT with { id: user.id, email: user.email }, secret, expiresIn: 1h
 32. JWTUtil returns token string to AuthController
-33. AuthController calls res.cookie() to set HTTP-only cookie:
-  - name: 'token'
-    - value: token
-    - httpOnly: true
-    - secure: true (production)
-    - sameSite: 'strict'
-    - maxAge: 3600000 (1 hour)
-34. CookieParser sets Set-Cookie header in response
-35. AuthController returns 200 response with { user: {...}, token }
+33. AuthController calls res.cookie(config.cookie.tokenName, token, ...):
+  - name from config (e.g. 'token')
+  - httpOnly: true, secure: config.cookie.secure, sameSite: config.cookie.sameSite (e.g. 'lax'), maxAge from config, path: '/'
+34. CookieParser sets Set-Cookie header in response (HTTP-only cookie with token)
+35. AuthController returns 200 response with { user: { id, firstName, lastName, email } } (no token in body)
 36. Response flows back: AuthController → ExpressRoute → HttpClient → AuthService → useLoginHook
 37. HttpClient response interceptor checks status (200, no action)
-38. useLoginHook receives { user, token }
-39. useLoginHook calls AuthStorage.setUser(user) → stores in localStorage
-40. useLoginHook calls AuthStorage.setToken(token) → stores in cookie
-41. useLoginHook calls navigate('/dashboard')
-42. ReactComponent re-renders, user redirected to dashboard
-43. useLoginHook sets loading to false
+38. useLoginHook receives { user } in onSuccess callback
+39. useLoginHook calls AuthStorage.setUser(user) → stores user in localStorage only (token is in HTTP-only cookie, not stored on client)
+40. useLoginHook calls navigate(ROUTES.DASHBOARD)
+41. ReactComponent re-renders, user redirected to dashboard
+42. useAsyncOperation sets loading to false
 
 **Error Paths:**
 
@@ -919,15 +953,15 @@ Below are detailed descriptions for each process that can be used to generate se
 
 - User (Browser - authenticated)
 - ReactComponent (TransferForm component)
-- useTransferHook (Custom React hook)
-- TransactionsService (Client service layer)
-- HttpClient (Axios instance)
+- useTransferHook (client/src/screens/transfer-money/useTransfer.ts)
+- transactionService (client/src/api/transaction.service.ts)
+- HttpClient (client/src/api/http-client.ts; cookie sent with credentials)
 - ExpressRoute (Express route handler)
 - AuthMiddleware (protect middleware)
 - RateLimitMiddleware (transactionLimiter)
 - TransactionController (createTransaction controller function)
-- ValidationUtil (Amount validation)
-- TransactionService (executeTransfer service function)
+- ValidationUtil (server utils/validation.util.js - validateTransactionAmount)
+- TransactionService (server executeTransfer service function)
 - MongoDB (User collection, Transaction collection, Counter collection)
 - MongooseSession (MongoDB transaction session)
 
@@ -938,81 +972,69 @@ Below are detailed descriptions for each process that can be used to generate se
 3. User clicks submit button
 4. ReactComponent calls useTransferHook.handleSubmit()
 5. useTransferHook sets loading to true, clears error and success
-6. useTransferHook calls TransactionsService.create({ receiverEmail, amount })
-7. TransactionsService calls HttpClient.post('/api/v1/transactions', data)
-8. HttpClient request interceptor reads token from AuthStorage
-9. HttpClient adds Authorization: Bearer  header
-10. HttpClient sends POST request with credentials (cookie + header) to ExpressRoute
-11. ExpressRoute receives POST request at /api/v1/transactions
-12. ExpressRoute passes request to AuthMiddleware (protect)
-13. AuthMiddleware extracts token from cookie OR Authorization header
-14. AuthMiddleware calls JWTUtil.verifyToken(token)
-15. JWTUtil verifies token signature and expiration
-16. If token invalid/expired: AuthMiddleware returns 401 → User sees error
-17. If token valid: AuthMiddleware calls MongoDB.User.findOne({ id: decoded.id })
-18. MongoDB returns user document
-19. AuthMiddleware checks user.status === ACTIVE
-20. If not ACTIVE: AuthMiddleware returns 401
-21. If ACTIVE: AuthMiddleware attaches req.user = user → calls next()
-22. ExpressRoute passes request to RateLimitMiddleware
-23. RateLimitMiddleware checks IP against rate limit (10 per minute)
-24. If limit exceeded: Returns 429 → User sees error
-25. If within limit: Continues to TransactionController
-26. TransactionController.createTransaction() extracts receiverEmail, amount, description from req.body
-27. TransactionController gets senderEmail from req.user.email (set by AuthMiddleware)
-28. TransactionController calls ValidationUtil.validateTransactionAmount(amount)
-29. ValidationUtil checks:
-  - Is number? Is finite? Not NaN?
-    - > = 0.01? <= 1,000,000?
-    - Max 2 decimal places?
-30. If invalid: ValidationUtil returns { isValid: false, error } → TransactionController throws AppError(400)
-31. If valid: ValidationUtil returns { isValid: true, sanitized: amount }
-32. TransactionController calls TransactionService.executeTransfer(senderEmail, receiverEmail, amount, description)
-33. TransactionService calls MongooseSession.startSession()
-34. MongooseSession creates MongoDB transaction session
-35. TransactionService calls MongooseSession.startTransaction()
-36. TransactionService calls validateTransferRequest(senderEmail, receiverEmail)
-37. If sender === receiver: TransactionService throws AppError(400, "Cannot transfer to yourself")
-38. TransactionService calls deductSenderBalance(senderEmail, amount, session)
-39. deductSenderBalance calls MongoDB.User.findOneAndUpdate(
+6. useTransferHook calls transactionService.create({ receiverEmail, amount })
+7. transactionService calls HttpClient.post('/transactions', data) (baseURL includes /api/v1)
+8. HttpClient sends POST request with credentials (cookie sent automatically)
+9. ExpressRoute receives POST request at /api/v1/transactions
+11. AuthMiddleware extracts token from cookie OR Authorization header
+12. AuthMiddleware calls JWTUtil.verifyToken(token)
+13. JWTUtil verifies token signature and expiration
+14. If token invalid/expired: AuthMiddleware returns 401 → User sees error
+15. If token valid: AuthMiddleware calls MongoDB.User.findOne({ id: decoded.id })
+16. MongoDB returns user document
+17. AuthMiddleware checks user.status === ACTIVE
+18. If not ACTIVE: AuthMiddleware returns 401
+19. If ACTIVE: AuthMiddleware attaches req.user = user → calls next()
+20. ExpressRoute passes request to RateLimitMiddleware
+21. RateLimitMiddleware checks IP against rate limit (10 per minute)
+22. If limit exceeded: Returns 429 → User sees error
+23. If within limit: Continues to TransactionController
+24. TransactionController.createTransaction() extracts receiverEmail, amount, description from req.body
+25. TransactionController gets senderEmail from req.user.email (set by AuthMiddleware)
+26. TransactionController calls ValidationUtil.validateTransactionAmount(amount)
+27. ValidationUtil checks: is number, finite, not NaN; >= 0.01 and <= 1,000,000; max 2 decimal places
+28. If invalid: ValidationUtil returns { isValid: false, error } → TransactionController throws AppError(400)
+29. If valid: ValidationUtil returns { isValid: true, sanitized: amount }
+30. TransactionController calls TransactionService.executeTransfer(senderEmail, receiverEmail, amount, description)
+31. TransactionService calls MongooseSession.startSession()
+32. MongooseSession creates MongoDB transaction session
+33. TransactionService calls MongooseSession.startTransaction()
+34. TransactionService calls validateTransferRequest(senderEmail, receiverEmail)
+35. If sender === receiver: TransactionService throws AppError(400, "Cannot transfer to yourself")
+36. TransactionService calls deductSenderBalance(senderEmail, amount, session)
+37. deductSenderBalance calls MongoDB.User.findOneAndUpdate(
   { email: senderEmail, balance: { $gte: amount } },
       { $inc: { balance: -amount } },
       { session, new: true }
     )
-40. MongoDB atomically checks balance >= amount AND updates balance
-41. If insufficient funds: MongoDB returns null → TransactionService throws AppError(400, "Insufficient funds")
-42. If sufficient: MongoDB returns updated sender user → TransactionService continues
-43. TransactionService calls addReceiverBalance(receiverEmail, amount, session)
-44. addReceiverBalance calls MongoDB.User.findOneAndUpdate(
+38. MongoDB atomically checks balance >= amount AND updates balance
+39. If insufficient funds: MongoDB returns null → TransactionService throws AppError(400, "Insufficient funds")
+40. If sufficient: MongoDB returns updated sender user → TransactionService continues
+41. TransactionService calls addReceiverBalance(receiverEmail, amount, session)
+42. addReceiverBalance calls MongoDB.User.findOneAndUpdate(
   { email: receiverEmail },
       { $inc: { balance: amount } },
       { session, new: true }
     )
-45. MongoDB updates receiver balance
-46. If receiver not found: MongoDB returns null → TransactionService throws AppError(404, "Receiver not found")
-47. If receiver found: MongoDB returns updated receiver → TransactionService continues
-48. TransactionService calls createTransactionRecord(senderEmail, receiverEmail, amount, description, session)
-49. createTransactionRecord calls MongoDB.Counter.findByIdAndUpdate('transactions', { $inc: { seq: 1 } }, { session })
-50. MongoDB Counter collection atomically increments seq
-51. MongoDB returns counter with new seq number
-52. createTransactionRecord calls MongoDB.Transaction.create([{ id: seq, fromEmail, toEmail, amount, description }], { session })
-53. MongoDB creates transaction document within session
-54. MongoDB returns transaction document
-55. TransactionService calls MongooseSession.commitTransaction()
-56. MongoDB commits all changes atomically:
-  - Sender balance decreased
-    - Receiver balance increased
-    - Transaction document created
-    - Counter incremented
-57. TransactionService calls MongooseSession.endSession()
-58. TransactionService returns transaction to TransactionController
-59. TransactionController returns 201 response with { transaction }
-60. Response flows back: TransactionController → ExpressRoute → HttpClient → TransactionsService → useTransferHook
-61. useTransferHook receives success response
-62. useTransferHook sets success to true
-63. useTransferHook clears receiverEmail and amount
-64. useTransferHook sets loading to false
-65. ReactComponent re-renders showing success message
+43. MongoDB updates receiver balance
+44. If receiver not found: MongoDB returns null → TransactionService throws AppError(404, "Receiver not found")
+45. If receiver found: MongoDB returns updated receiver → TransactionService continues
+46. TransactionService calls createTransactionRecord(senderEmail, receiverEmail, amount, description, session)
+47. createTransactionRecord calls MongoDB.Counter.findByIdAndUpdate('transactions', { $inc: { seq: 1 } }, { session })
+48. MongoDB Counter collection atomically increments seq
+49. MongoDB returns counter with new seq number
+50. createTransactionRecord calls MongoDB.Transaction.create([{ id: seq, fromEmail, toEmail, amount, description }], { session })
+51. MongoDB creates transaction document within session
+52. MongoDB returns transaction document
+53. TransactionService calls MongooseSession.commitTransaction()
+54. MongoDB commits all changes atomically (sender balance decreased, receiver balance increased, transaction document created, counter incremented)
+55. TransactionService calls MongooseSession.endSession()
+56. TransactionService returns transaction to TransactionController
+57. TransactionController returns 201 response with { transaction }
+58. Response flows back: TransactionController → ExpressRoute → HttpClient → transactionService → useTransferHook
+59. useTransferHook onSuccess: sets success to true, clears receiverEmail and amount
+60. useAsyncOperation sets loading to false
+61. ReactComponent re-renders showing success message
 
 **Error Paths:**
 
@@ -1031,9 +1053,9 @@ Below are detailed descriptions for each process that can be used to generate se
 
 - User (Browser - authenticated)
 - ReactComponent (TransactionsPage component)
-- useTransactionsHook (Custom React hook)
-- TransactionsService (Client service layer)
-- HttpClient (Axios instance)
+- useTransactionsHook (client/src/screens/transaction-history/useTransactions.ts)
+- transactionService (client/src/api/transaction.service.ts)
+- HttpClient (client/src/api/http-client.ts)
 - ExpressRoute (Express route handler)
 - AuthMiddleware (protect middleware)
 - TransactionController (getTransactions/getTransactionById controller functions)
@@ -1048,10 +1070,9 @@ Below are detailed descriptions for each process that can be used to generate se
 4. useTransactionsHook calls useEffect with [currentPage, pageSize] dependencies
 5. useEffect calls loadTransactions()
 6. useTransactionsHook sets loading to true
-7. useTransactionsHook calls TransactionsService.getAll(currentPage, pageSize)
-8. TransactionsService calls HttpClient.get(`/api/v1/transactions?page=${currentPage}&limit=${pageSize}`)
-9. HttpClient request interceptor adds Authorization: Bearer  header
-10. HttpClient sends GET request with credentials to ExpressRoute
+7. useTransactionsHook calls transactionService.getAll(currentPage, pageSize)
+8. transactionService calls HttpClient.get(`/transactions?page=${currentPage}&limit=${pageSize}`) (baseURL includes /api/v1)
+9. HttpClient sends GET request with credentials (cookie) to ExpressRoute
 11. ExpressRoute receives GET request at /api/v1/transactions
 12. ExpressRoute passes request to AuthMiddleware (protect)
 13. AuthMiddleware validates JWT (same as transfer process)
@@ -1077,19 +1098,18 @@ Below are detailed descriptions for each process that can be used to generate se
 25. TransactionService returns { transactions, total, totalPages, currentPage }
 26. TransactionController returns 200 response with data
 27. Response flows back: TransactionController → ExpressRoute → HttpClient → TransactionsService → useTransactionsHook
-28. useTransactionsHook receives { transactions, totalPages }
-29. useTransactionsHook sets transactions state
-30. useTransactionsHook sets totalPages state
-31. useTransactionsHook sets loading to false
-32. ReactComponent re-renders displaying transactions list
-33. User sees paginated transaction list
+28. useTransactionsHook receives { transactions, totalPages } (and currentPage)
+29. useTransactionsHook sets transactions, totalPages state
+30. useTransactionsHook sets loading to false
+31. ReactComponent re-renders displaying transactions list
+32. User sees paginated transaction list
 
 **Flow - View Single Transaction:**
 
 1. User clicks on a transaction row
-2. ReactComponent calls useTransactionDetailHook (or similar)
-3. Hook calls TransactionsService.getById(transactionId)
-4. TransactionsService calls HttpClient.get(`/api/v1/transactions/${transactionId}`)
+2. ReactComponent calls useTransactionDetail (loadTransactionDetail(id))
+3. Hook calls transactionService.getById(transactionId)
+4. transactionService calls HttpClient.get(`/transactions/${transactionId}`)
 5. HttpClient sends GET request to ExpressRoute
 6. ExpressRoute receives GET request at /api/v1/transactions/:transactionId
 7. ExpressRoute passes request to AuthMiddleware (protect)

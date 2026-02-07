@@ -52,11 +52,13 @@ const TransferPage = () => {
               <TransferForm
                 receiverEmail={transfer.receiverEmail}
                 amount={transfer.amount}
+                description={transfer.description}
                 loading={transfer.loading}
                 error={transfer.error}
                 success={transfer.success}
                 onReceiverEmailChange={transfer.setReceiverEmail}
                 onAmountChange={transfer.setAmount}
+                onDescriptionChange={transfer.setDescription}
                 onSubmit={transfer.handleSubmit}
               />
             </Stack>

@@ -48,11 +48,13 @@ export interface Transaction {
   toEmail: string;
   amount: number;
   createdAt: string;
+  description?: string;
 }
 
 export interface TransferData {
   receiverEmail: string;
   amount: number;
+  description: string;
 }
 
 export interface TransactionsResponse {

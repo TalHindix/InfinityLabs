@@ -11,7 +11,7 @@
 | **Client** | React 19, TypeScript, Vite, React Router, MUI (Material-UI), Emotion, Axios, Socket.IO Client |
 | **Server** | Node.js, Express 5, ES Modules |
 | **Database** | MongoDB (Mongoose) |
-| **Auth** | JWT (HTTP-only cookie + optional Bearer header), bcrypt |
+| **Auth** | JWT (HTTP-only cookie; server sets cookie at login; optional Bearer header for protect middleware), bcrypt |
 | **Email** | Brevo API (verification emails) |
 | **Real-time** | Socket.IO (chatbot namespace `/chat`) |
 | **AI** | OpenAI (gpt-4o-mini) for chatbot intent fallback |
@@ -24,13 +24,14 @@
 ```
 [Browser]  →  Vite (port 5173)  →  React SPA
                   ↓
-            Proxy /api  →  Express (port 3000)  →  MongoDB
+            API base: VITE_API_URL  →  Express (port 3000)  →  MongoDB
+            (e.g. /api/v1 with Vite proxy, or full URL)
                   ↓
             Socket.IO  →  /chat namespace (auth + chatbot)
 ```
 
-- **Client:** Single Page App; API calls go to same origin; Vite proxies `/api` to the server.
-- **Server:** REST API under `/api/v1/*`; JWT in cookie (or `Authorization: Bearer`); 404/errors go to central error handler.
+- **Client:** Single Page App. API base URL from `VITE_API_URL` (required). In dev, use e.g. `http://localhost:5173/api/v1` so Vite proxies `/api` to the server (see `client/vite.config.ts`). Axios `http-client` uses `withCredentials: true`; no request interceptor — auth is HTTP-only cookie only; on 401, response interceptor clears user from localStorage. Client API layer: `client/src/api/` (auth.service, transaction.service, user.service, http-client, auth.storage). Hooks live in screens (e.g. `screens/login-signup/useSignup.ts`, `useLogin.ts`; `screens/transfer-money/useTransfer.ts`; `screens/transaction-history/useTransactions.ts`, `useTransactionDetail.ts`; `screens/dashboard/useDashboardData.ts`). Shared hook: `shared/useAsyncOperation.ts`.
+- **Server:** REST API under `/api/v1/auth`, `/api/v1` (user), `/api/v1/transactions`; JWT from cookie first, then `Authorization: Bearer`; 404 → notFoundHandler; errors → errorHandler.
 - **Socket:** Only `/chat` namespace; auth via cookie or `handshake.auth.token`; then `user-message` → chatbot → `bot-message`.
 
 ---
@@ -48,8 +49,8 @@
 | **POST** | `/signup` | authLimiter | 1. Read body (firstName, lastName, email, phone, password). 2. Hash password (bcrypt). 3. Generate verification token, hash it, save user (status PENDING). 4. Send verification email (Brevo, async). 5. Return 201 + "check your email". |
 | **GET** | `/verify` | verifyLimiter | 1. Read `token` from query. 2. If missing → 400 HTML failure page. 3. Hash token, find user by hashed token + PENDING. 4. If not found → 400 HTML failure. 5. Set user status ACTIVE, clear verificationToken, save. 6. Return 200 HTML success page. |
 | **POST** | `/resend-verification` | authLimiter | 1. Read `email` from body. 2. If missing → 400 AppError. 3. Find user by email + PENDING. 4. If not found → still 200 (no user enumeration). 5. If found: new token, hash, save; send email async. 6. Return 200 + same message either way. |
-| **POST** | `/login` | authLimiter | 1. Read email, password. 2. If missing → 400. 3. Find user by email (with password). 4. If no user or status ≠ ACTIVE → 401 "Invalid credentials". 5. Compare password (bcrypt). 6. If invalid → 401. 7. Create JWT, set HTTP-only cookie, return 200 + user (id, firstName, lastName, email). |
-| **POST** | `/logout` | — | 1. Clear auth cookie. 2. Return 200. |
+| **POST** | `/login` | authLimiter | 1. Read email, password. 2. If missing → 400. 3. Find user by email (with password). 4. If no user or status ≠ ACTIVE → 401 "Invalid credentials". 5. Compare password (bcrypt). 6. If invalid → 401. 7. Create JWT, set HTTP-only cookie (config.cookie.tokenName, path `/`, sameSite/secure/maxAge from config). 8. Return 200 + **user only** (id, firstName, lastName, email) — no token in body; client stores user in localStorage via authStorage.setUser. |
+| **POST** | `/logout` | — | 1. Clear auth cookie (same options as set). 2. Return 200. Client calls authService.logout(); client may clear localStorage elsewhere or rely on 401/clearAuth. |
 
 ---
 
@@ -84,7 +85,18 @@
 
 ---
 
-## 5. Rate Limits
+## 5. Project Structure (Summary)
+
+| Area | Path | Contents |
+|------|------|----------|
+| **Client** | `client/src/` | `api/` (auth.service, transaction.service, user.service, http-client, auth.storage), `screens/` (login-signup, dashboard, transfer-money, transaction-history), `shared/` (useAsyncOperation, formatters, messages, theme), `context/` (ThemeContext, ThemeContextProvider), `layout/`, `components/`, `constants/`, `types/` |
+| **Server** | `server/src/` | `routes/` (auth, user, transaction), `controllers/`, `services/`, `models/` (user, transaction + Counter), `middleware/` (auth, rateLimit, error, logger, socketAuth), `utils/`, `config/`, `socket/` |
+
+For full flow and file-level detail, see **ARCHITECTURE.md**.
+
+---
+
+## 6. Rate Limits
 
 | Limiter | Window | Max | Used on |
 |---------|--------|-----|--------|
@@ -94,7 +106,7 @@
 
 ---
 
-## 6. Error Handling (Server)
+## 7. Error Handling (Server)
 
 - **AppError:** Controllers throw with message + statusCode; error handler sends that status and message.
 - **Mongoose:** ValidationError → 400 (joined messages); duplicate key (11000) → 409; CastError → 400.
@@ -104,13 +116,13 @@
 
 ---
 
-## 7. Quick Reference for the Board
+## 8. Quick Reference for the Board
 
 **Stack in one line:**  
 React (TS, Vite) + Express + MongoDB + JWT (cookie) + Socket.IO + Brevo + OpenAI.
 
 **Auth flow:**  
-Signup → email verify (link) → Login → cookie → Protect on /me and /transactions.
+Signup → email verify (link) → Login → server sets HTTP-only cookie, returns user only; client stores user in localStorage (authStorage). Protect on /me and /transactions reads token from cookie (or Bearer header).
 
 **Transfer flow:**  
 Validate amount → MongoDB transaction: deduct sender, add receiver, create transaction record → 201.
