@@ -1,14 +1,13 @@
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../constants/routes';
-import { Container, Stack, Box, Button, IconButton } from '../shared/ui';
+import { ROUTES } from '../constants/routePaths';
+import { Container, Stack, Box, Button, IconButton } from '../shared/muiExports';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { DubaiBankLogoFull } from '../components/DubaiBankLogo';
 import { useThemeContext } from '../context/ThemeContext';
 import { authStorage } from '../api/auth.storage';
 import { authService } from '../api/auth.service';
-import { headerContainerSx, logoContainerSx, themeToggleSx, outlinedButtonSx,}
-from './AppHeader.styles';
+import { headerContainerSx, logoContainerSx, themeToggleSx, outlinedButtonSx } from './appHeaderStyles';
 
 interface AppHeaderProps {
   showThemeToggle?: boolean;

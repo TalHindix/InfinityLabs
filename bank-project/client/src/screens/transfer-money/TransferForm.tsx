@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/routePaths';
 import {
   TextField,
   Button,
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-} from '../../shared/ui';
+} from '../../shared/muiExports';
 import {
   amountAdornmentSx,
   cancelButtonSx,
@@ -32,7 +32,7 @@ import {
   dialogConfirmButtonSx,
   dialogActionsSx
 } from './TransferForm.styles';
-import { formatAmount } from '../../shared/formatters';
+import { formatAmount } from '../../shared/displayFormatters';
 
 interface TransferFormProps {
   receiverEmail: string;

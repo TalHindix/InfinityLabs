@@ -1,3 +1,4 @@
+// Re-exports of MUI components used across the app; single import from here.
 export {
   // Layout
   Container,

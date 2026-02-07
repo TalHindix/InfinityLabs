@@ -1,5 +1,5 @@
-import { Container, Box, Typography } from '../shared/ui';
-import { footerContainerSx } from './PageFooter.styles';
+import { Container, Box, Typography } from '../shared/muiExports';
+import { footerContainerSx } from './pageFooterStyles';
 
 export const PageFooter = () => {
   return (

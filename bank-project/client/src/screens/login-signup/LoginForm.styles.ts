@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from '@mui/material';
 import type { CSSProperties } from 'react';
-import { createFieldSx } from '../../shared/AuthForm.styles';
+import { createFieldSx } from '../../shared/authFormStyles';
 
 export { createFieldSx };
 

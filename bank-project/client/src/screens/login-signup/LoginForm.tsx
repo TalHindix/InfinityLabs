@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
-import { TextField, Button, Typography, Alert, Stack, Box } from '../../shared/ui';
+import { ROUTES } from '../../constants/routePaths';
+import { TextField, Button, Typography, Alert, Stack, Box } from '../../shared/muiExports';
 import { useThemeContext } from '../../context/ThemeContext';
 import {
   createFieldSx,

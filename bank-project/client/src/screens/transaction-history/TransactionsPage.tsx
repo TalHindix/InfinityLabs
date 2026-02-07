@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/routePaths';
 import {
   Container,
   Typography,
@@ -10,7 +10,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
-} from '../../shared/ui';
+} from '../../shared/muiExports';
 import { AppHeader } from '../../layout/AppHeader';
 import { PageFooter } from '../../layout/PageFooter';
 import { useTransactions } from './useTransactions';

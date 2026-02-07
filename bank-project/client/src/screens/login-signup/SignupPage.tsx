@@ -14,9 +14,9 @@ import {
   Step,
   StepLabel,
   Button,
-} from '../../shared/ui';
+} from '../../shared/muiExports';
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/routePaths';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useSignup } from './useSignup';
 import { SignupForm } from './SignupForm';

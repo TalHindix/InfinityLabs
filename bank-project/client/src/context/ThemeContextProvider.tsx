@@ -3,19 +3,24 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 
-import { lightTheme, darkTheme } from '../shared/theme';
+import { lightTheme, darkTheme } from '../shared/muiTheme';
 import { ThemeContext, type ThemeMode } from './ThemeContext';
 
 type Props = {
   children: ReactNode;
 };
 
-export function ThemeContextProvider({ children }: Props) {
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem('theme');
-    return saved === 'light' || saved === 'dark' ? saved : 'dark';
-  });
+/** Read saved theme from localStorage on first load; default to dark. */
+function getInitialThemeFromStorage(): ThemeMode {
+  const saved = localStorage.getItem('theme');
+  return saved === 'light' || saved === 'dark' ? saved : 'dark';
+}
 
+export function ThemeContextProvider({ children }: Props) {
+  // Initial value comes from localStorage (runs once on mount).
+  const [mode, setMode] = useState<ThemeMode>(getInitialThemeFromStorage);
+
+  // Save theme to localStorage whenever it changes.
   useEffect(() => {
     localStorage.setItem('theme', mode);
   }, [mode]);
@@ -24,6 +29,8 @@ export function ThemeContextProvider({ children }: Props) {
     setMode((m) => (m === 'light' ? 'dark' : 'light'));
   }
 
+  // ThemeContext = our mode + toggle for the app;
+  //  MuiThemeProvider = MUI colors/fonts.
   const isDark = mode === 'dark';
   const theme = isDark ? darkTheme : lightTheme;
 

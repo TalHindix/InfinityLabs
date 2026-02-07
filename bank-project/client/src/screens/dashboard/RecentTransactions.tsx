@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/routePaths';
 import {Card,CardContent,Typography,Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box,}
-from '../../shared/ui';
+from '../../shared/muiExports';
 import { type Transaction } from '../../types';
-import { formatAmount } from '../../shared/formatters';
+import { formatAmount } from '../../shared/displayFormatters';
 import { headerBarSx, sectionTitleSx, viewAllButtonSx, emptyCardContentSx, emptyIconSx, emptyIconTextSx,
           emptySubtextSx, tableContainerSx, amountCellSx, createAmountTextSx,}
 from './RecentTransactions.styles';

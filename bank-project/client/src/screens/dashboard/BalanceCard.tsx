@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
-import { Card, CardContent, Typography, Button, Box } from '../../shared/ui';
-import { formatAmount } from '../../shared/formatters';
+import { ROUTES } from '../../constants/routePaths';
+import { Card, CardContent, Typography, Button, Box } from '../../shared/muiExports';
+import { formatAmount } from '../../shared/displayFormatters';
 import {
   balanceCardSx,
   balanceBadgeSx,

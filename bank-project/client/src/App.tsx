@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import { ROUTES } from './constants/routes';
+import { ROUTES } from './constants/routePaths';
 import ChatAssistant from './components/ChatAssistant';
 import LoginPage from './screens/login-signup/LoginPage';
 import SignupPage from './screens/login-signup/SignupPage';

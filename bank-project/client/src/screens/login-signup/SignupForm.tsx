@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { TextField, Button, Typography, Stack } from '../../shared/ui';
+import { TextField, Button, Typography, Stack } from '../../shared/muiExports';
 import { useThemeContext } from '../../context/ThemeContext';
 import { createFieldSx, submitButtonSx, signInLinkStyle } from './SignupForm.styles';
 import type { SignupFormData } from '../../types';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/routePaths';
 
 interface SignupFormProps {
   formData: SignupFormData;

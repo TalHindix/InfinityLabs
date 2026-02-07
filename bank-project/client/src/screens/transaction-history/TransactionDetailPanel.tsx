@@ -1,6 +1,6 @@
-import { Card, CardContent, Typography, Stack, Box, Divider, CircularProgress } from '../../shared/ui';
+import { Card, CardContent, Typography, Stack, Box, Divider, CircularProgress } from '../../shared/muiExports';
 import { type Transaction } from '../../types';
-import { formatAmount, formatDate } from '../../shared/formatters';
+import { formatAmount, formatDate } from '../../shared/displayFormatters';
 import { createDetailPanelSx, createAmountIconSx, loadingContainerSx, loadingSpinnerSx, goldDividerSx, refTextSx, statusBadgeSx, emptyStateSx, emptyIconSx } from './TransactionDetailPanel.styles';
 
 interface TransactionDetailPanelProps {

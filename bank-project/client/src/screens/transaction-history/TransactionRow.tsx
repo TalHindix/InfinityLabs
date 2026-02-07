@@ -1,6 +1,6 @@
-import { TableRow, TableCell, Typography, Button } from '../../shared/ui';
+import { TableRow, TableCell, Typography, Button } from '../../shared/muiExports';
 import { type Transaction } from '../../types';
-import { formatAmount, formatShortDate } from '../../shared/formatters';
+import { formatAmount, formatShortDate } from '../../shared/displayFormatters';
 import {
   rowSx,
   refNumberSx,

@@ -6,7 +6,7 @@ import {
   Stack,
   Box,
   Divider,
-} from '../../shared/ui';
+} from '../../shared/muiExports';
 import { AppHeader } from '../../layout/AppHeader';
 import { useTransfer } from './useTransfer';
 import { TransferForm } from './TransferForm';

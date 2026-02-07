@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Box } from '../../shared/ui';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Box } from '../../shared/muiExports';
 import { type Transaction } from '../../types';
 import { TransactionRow } from './TransactionRow';
 import { tableContainerSx, emptyStateSx } from './TransactionTable.styles';

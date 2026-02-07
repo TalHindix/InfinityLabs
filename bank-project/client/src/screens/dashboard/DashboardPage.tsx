@@ -1,4 +1,4 @@
-import { Container, CircularProgress, Alert, Stack, Box, Typography } from '../../shared/ui';
+import { Container, CircularProgress, Alert, Stack, Box, Typography } from '../../shared/muiExports';
 import { AppHeader } from '../../layout/AppHeader';
 import { PageFooter } from '../../layout/PageFooter';
 import { useDashboardData } from './useDashboardData';

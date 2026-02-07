@@ -1,11 +1,11 @@
 // Login form state, submit, and resend-verification flow.
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
+import { ROUTES } from '../../constants/routePaths';
 import { authStorage } from '../../api/auth.storage';
 import { authService } from '../../api/auth.service';
-import { getIntelligentErrorMessage } from '../../shared/messages';
-import { getTimeBasedGreeting } from '../../shared/greetings';
+import { getIntelligentErrorMessage } from '../../shared/authErrorMessages';
+import { getTimeBasedGreeting } from '../../shared/timeBasedGreeting';
 import { useAsyncOperation } from '../../shared/useAsyncOperation';
 
 export const useLogin = () => {

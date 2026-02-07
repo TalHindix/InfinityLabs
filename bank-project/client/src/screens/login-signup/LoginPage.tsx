@@ -9,7 +9,7 @@ import {
   Stack,
   Box,
   Divider,
-} from '../../shared/ui';
+} from '../../shared/muiExports';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useLogin } from './useLogin';
 import { DubaiBankLogo } from '../../components/DubaiBankLogo';

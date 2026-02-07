@@ -1,5 +1,5 @@
-import { Typography } from '../shared/ui';
-import { createFooterCaptionSx } from './PageFooterCaption.styles';
+import { Typography } from '../shared/muiExports';
+import { createFooterCaptionSx } from './pageFooterCaptionStyles';
 
 interface PageFooterCaptionProps {
   isDark: boolean;
