@@ -1,0 +1,42 @@
+# Dependencies (installed in image)
+node_modules/
+
+# Environment (injected at runtime, not baked into image)
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Logs and runtime
+logs/
+*.log
+npm-debug.log*
+pids/
+*.pid
+*.seed
+
+# Test and coverage
+coverage/
+.nyc_output/
+**/*.test.js
+**/*.spec.js
+
+# Build output (not used in server image)
+dist/
+build/
+
+# Version control and IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs (optional: remove if you want them in image)
+*.md
+!README.md

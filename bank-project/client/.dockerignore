@@ -1,0 +1,36 @@
+# Dependencies (installed in image)
+node_modules/
+
+# Build output (we build inside the image)
+dist/
+build/
+.vite/
+
+# Environment (build args used instead; avoid leaking .env into image)
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Version control and IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test and tooling (not needed for production build)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+coverage/
+
+# Docs (optional: remove if you want them in image)
+*.md
+!README.md
