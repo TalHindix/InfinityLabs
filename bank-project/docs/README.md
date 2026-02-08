@@ -14,6 +14,7 @@
 | **[FROM_LOCAL_TO_PRODUCTION.md](FROM_LOCAL_TO_PRODUCTION.md)** | מעבר ל-production | מה לעשות אחרי שהבדיקה המקומית עברה; הסבר על image, סקריפט ו-Render. |
 | **[DEPLOY.md](DEPLOY.md)** | הגדרות production | משתני סביבה ב-Vercel וב-Render, CORS ו-cookies, Atlas. |
 | **[DOCKER_RENDER_CHECKLIST.md](DOCKER_RENDER_CHECKLIST.md)** | וידוא לפני deploy | רשימת בדיקות: Dockerfile, .dockerignore, /health, env, CORS, start script. |
+| **[DOCKER_WHY_AND_MANUAL.md](DOCKER_WHY_AND_MANUAL.md)** | למה Docker ואיך בלי סקריפטים | תרומות Docker (עקביות, בידוד, production); פקודות ידניות — build, run, health, signup, compose, ניקוי. |
 
 ---
 
