@@ -58,6 +58,13 @@ sandbox/
 !yarn.lock
 !pnpm-lock.yaml
 
+# Docker
+!**/Dockerfile
+!**/.dockerignore
+!*.yml
+!*.yaml
+!*.conf
+
 
 # Editor
 .vscode/

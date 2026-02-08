@@ -96,6 +96,17 @@ For full flow and file-level detail, see **ARCHITECTURE.md**.
 
 ---
 
+## Documentation (Docker, Deploy, Dev)
+
+תיעוד על Docker, Production (Vercel + Render + Atlas) וסביבת פיתוח מרוכז בתיקייה **`docs/`**. מפתח קבצים: **[docs/README.md](docs/README.md)**.
+
+- **פיתוח יומי (Dev):** [docs/DEV_WORKFLOW.md](docs/DEV_WORKFLOW.md) — איך להריץ שרת + קליינט מקומית בלי Docker.
+- **Docker מקומי:** [docs/DOCKER.md](docs/DOCKER.md) — הסבר על Dockerfile, docker-compose, nginx.
+- **בדיקת image לפני Render:** [docs/LOCAL_DOCKER_TEST.md](docs/LOCAL_DOCKER_TEST.md) — סקריפט ופקודות ידניות.
+- **Production:** [docs/DEPLOY.md](docs/DEPLOY.md) — משתני סביבה ב-Vercel ו-Render, CORS ו-cookies.
+
+---
+
 ## 6. Rate Limits
 
 | Limiter | Window | Max | Used on |
