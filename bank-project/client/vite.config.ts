@@ -27,4 +27,4 @@ export default defineConfig({
       exclude: ['node_modules/', 'src/__tests__/'],
     },
   },
-})
+} as any)
