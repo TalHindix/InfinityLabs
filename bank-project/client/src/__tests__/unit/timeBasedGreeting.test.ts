@@ -15,7 +15,7 @@
  * - Shows how to test functions that depend on system time
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getTimeBasedGreeting } from '../../shared/timeBasedGreeting';
 
 describe('getTimeBasedGreeting - Unit Test', () => {
