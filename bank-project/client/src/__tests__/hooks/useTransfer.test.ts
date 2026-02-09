@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useTransfer } from '../../screens/transfer-money/useTransfer';
 import { transactionService } from '../../api/transaction.service';
+import type { TransactionResponse } from '../../types';
 
 vi.mock('../../api/transaction.service', () => ({
   transactionService: {
@@ -56,8 +57,19 @@ describe('useTransfer', () => {
   });
 
   it('should set loading to true during transfer', async () => {
+    const mockTransactionResponse: TransactionResponse = {
+      transaction: {
+        _id: '1',
+        id: 1,
+        fromEmail: 'sender@example.com',
+        toEmail: 'receiver@example.com',
+        amount: 100,
+        createdAt: new Date().toISOString(),
+        description: 'Test',
+      },
+    };
     vi.mocked(transactionService.create).mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({}), 100))
+      () => new Promise((resolve) => setTimeout(() => resolve(mockTransactionResponse), 100))
     );
 
     const { result } = renderHook(() => useTransfer());
@@ -82,7 +94,18 @@ describe('useTransfer', () => {
   });
 
   it('should reset form fields on successful transfer', async () => {
-    vi.mocked(transactionService.create).mockResolvedValue({});
+    const mockTransactionResponse: TransactionResponse = {
+      transaction: {
+        _id: '1',
+        id: 1,
+        fromEmail: 'sender@example.com',
+        toEmail: 'receiver@example.com',
+        amount: 100,
+        createdAt: new Date().toISOString(),
+        description: 'Test transfer',
+      },
+    };
+    vi.mocked(transactionService.create).mockResolvedValue(mockTransactionResponse);
 
     const { result } = renderHook(() => useTransfer());
 
@@ -149,7 +172,18 @@ describe('useTransfer', () => {
   });
 
   it('should call transactionService.create with correct parameters', async () => {
-    vi.mocked(transactionService.create).mockResolvedValue({});
+    const mockTransactionResponse: TransactionResponse = {
+      transaction: {
+        _id: '1',
+        id: 1,
+        fromEmail: 'sender@example.com',
+        toEmail: 'receiver@example.com',
+        amount: 100.5,
+        createdAt: new Date().toISOString(),
+        description: 'Test transfer',
+      },
+    };
+    vi.mocked(transactionService.create).mockResolvedValue(mockTransactionResponse);
 
     const { result } = renderHook(() => useTransfer());
 
@@ -173,7 +207,18 @@ describe('useTransfer', () => {
   });
 
   it('should reset success flag when submitting again', async () => {
-    vi.mocked(transactionService.create).mockResolvedValue({});
+    const mockTransactionResponse: TransactionResponse = {
+      transaction: {
+        _id: '1',
+        id: 1,
+        fromEmail: 'sender@example.com',
+        toEmail: 'receiver@example.com',
+        amount: 100,
+        createdAt: new Date().toISOString(),
+        description: 'First transfer',
+      },
+    };
+    vi.mocked(transactionService.create).mockResolvedValue(mockTransactionResponse);
 
     const { result } = renderHook(() => useTransfer());
 

@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { authStorage } from '../../api/auth.storage';
 
 // Mock authStorage before importing httpClient
@@ -34,15 +34,10 @@ vi.mock('../../api/auth.storage', () => ({
 vi.stubEnv('VITE_API_URL', 'http://localhost:3000');
 
 describe('httpClient interceptor - Critical Error Handling Tests', () => {
-  let httpClient: typeof import('../../api/http-client').httpClient;
-
   beforeEach(async () => {
     vi.clearAllMocks();
     // Reset modules to get fresh httpClient instance
     vi.resetModules();
-    // Re-import httpClient to get fresh instance with mocks
-    const httpClientModule = await import('../../api/http-client');
-    httpClient = httpClientModule.httpClient;
   });
 
   describe('401 Unauthorized handling', () => {

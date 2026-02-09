@@ -69,7 +69,7 @@ describe('useLogin', () => {
   });
 
   it('should call authService.login on submit', async () => {
-    const mockUser = { id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' };
+    const mockUser = { _id: '1', id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User', phone: '+1234567890', balance: 1000 };
     vi.mocked(authService.login).mockResolvedValue({ user: mockUser });
 
     const { result } = renderHook(() => useLogin());
@@ -89,7 +89,7 @@ describe('useLogin', () => {
   });
 
   it('should save user to storage on successful login', async () => {
-    const mockUser = { id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' };
+    const mockUser = { _id: '1', id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User', phone: '+1234567890', balance: 1000 };
     vi.mocked(authService.login).mockResolvedValue({ user: mockUser });
 
     const { result } = renderHook(() => useLogin());
