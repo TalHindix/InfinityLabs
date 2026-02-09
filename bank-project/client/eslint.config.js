@@ -12,12 +12,12 @@ export default defineConfig([
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.recommended, // שים לב ל-... (ברוב הגרסאות זה מערך)
+      ...tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
     plugins: {
-      'unused-imports': unusedImports, // ✅ זה מה שחסר לך
+      'unused-imports': unusedImports,
     },
     rules: {
       'unused-imports/no-unused-imports': 'error',
