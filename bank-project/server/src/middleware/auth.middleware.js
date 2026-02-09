@@ -2,11 +2,8 @@ import User from '../models/user.model.js';
 import { USER_STATUS } from '../constants/index.js';
 import { verifyToken } from '../utils/jwt.util.js';
 
-const UNAUTHORIZED_RESPONSE = { success: false };
+const UNAUTHORIZED_RESPONSE = { success: false, error: 'Authentication failed' };
 
-/**
- * Gets the JWT from the request: first from the "token" cookie, then from the Authorization header (Bearer <token>).
- */
 function getTokenFromRequest(req) {
   const cookieToken = req.cookies?.token;
   if (cookieToken) return cookieToken;
@@ -18,9 +15,6 @@ function getTokenFromRequest(req) {
   return scheme === 'bearer' ? token : undefined;
 }
 
-/**
- * Protects routes: requires a valid JWT and an active user. Attaches req.user on success, returns 401 otherwise.
- */
 export const protect = async (req, res, next) => {
   try {
     const token = getTokenFromRequest(req);
@@ -33,6 +27,7 @@ export const protect = async (req, res, next) => {
       return res.status(401).json(UNAUTHORIZED_RESPONSE);
     }
 
+    // next route can use user object
     req.user = user;
     next();
   } catch {

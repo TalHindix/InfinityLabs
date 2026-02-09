@@ -24,12 +24,12 @@ export const validateTransactionAmount = (amount) => {
     return invalid('Amount must be a number');
   }
 
-  if (!Number.isFinite(amount)) {
-    return invalid('Amount must be a finite number');
-  }
-
   if (Number.isNaN(amount)) {
     return invalid('Amount cannot be NaN');
+  }
+
+  if (!Number.isFinite(amount)) {
+    return invalid('Amount must be a finite number');
   }
 
   if (amount < MIN_AMOUNT) {

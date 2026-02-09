@@ -15,10 +15,13 @@ import {
 import * as response from '../utils/response.util.js';
 import { AppError } from '../middleware/error.middleware.js';
 
-/** Creates a new user (PENDING), sends verification email, returns 201. */
 export const signup = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
+    if (!firstName || !lastName || !email || !phone || !password) {
+      throw new AppError('All fields are required', 400);
+    }
+    
     const { user, verificationToken } = await createUser({ firstName, lastName, email, phone, password });
     sendVerificationEmailAsync(user.email, verificationToken);
     return response.created(res, { message: 'Please check your email to verify your account.' });

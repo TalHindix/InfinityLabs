@@ -54,7 +54,7 @@ export const createTransaction = async (req, res, next) => {
 
     const amountValidation = validateTransactionAmount(amount);
     if (!amountValidation.isValid) throw new AppError(amountValidation.error, 400);
-
+    
     const transaction = await executeTransfer(
       senderEmail,
       receiverEmail,

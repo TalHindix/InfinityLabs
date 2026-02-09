@@ -13,4 +13,18 @@ export default defineConfig({
       },
     },
   },
+  test: {
+    // Use jsdom to simulate browser environment
+    environment: 'jsdom',
+    // Enable globals (describe, it, expect available without imports)
+    globals: true,
+    // Setup file runs before all tests
+    setupFiles: './src/__tests__/setup.ts',
+    // Coverage configuration
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'src/__tests__/'],
+    },
+  },
 })

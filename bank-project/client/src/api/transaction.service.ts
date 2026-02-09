@@ -5,16 +5,16 @@ import type { TransactionsResponse, TransactionResponse, TransferData } from '..
 export const transactionService = {
   async getAll(page = 1, limit = 10): Promise<TransactionsResponse> {
     const res = await httpClient.get(`/transactions?page=${page}&limit=${limit}`);
-    return res.data;
+    return res.data.data;
   },
 
   async getById(id: string): Promise<TransactionResponse> {
     const res = await httpClient.get(`/transactions/${id}`);
-    return res.data;
+    return res.data.data;
   },
 
   async create(data: TransferData): Promise<TransactionResponse> {
     const res = await httpClient.post('/transactions', data);
-    return res.data;
+    return res.data.data;
   },
 };

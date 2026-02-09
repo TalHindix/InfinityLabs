@@ -6,17 +6,17 @@ import type { LoginResponse, SignupData, SignupResponse , ResendVerificationResp
 export const authService = {
   async login(email: string, password: string): Promise<LoginResponse> {
     const res = await httpClient.post('/auth/login', { email, password });
-    return res.data;
+    return res.data.data;
   },
 
   async signup(data: SignupData): Promise<SignupResponse> {
     const res = await httpClient.post('/auth/signup', data);
-    return res.data;
+    return res.data.data;
   },
 
   async resendVerification(email: string): Promise<ResendVerificationResponse> {
     const res = await httpClient.post('/auth/resend-verification', { email });
-    return res.data;
+    return res.data.data;
   },
 
   async logout(): Promise<void> {
