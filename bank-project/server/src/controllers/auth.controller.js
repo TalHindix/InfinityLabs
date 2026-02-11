@@ -13,9 +13,11 @@ import {
   buildVerificationResultPage,
 } from '../utils/email.util.js';
 import * as response from '../utils/response.util.js';
-import { AppError } from '../middleware/error.middleware.js';
+import { mapErrorToResponse } from '../utils/error.util.js';
+import { AppError } from '../utils/error.util.js';
+import { disconnectUser } from '../socket/socket.handler.js';
 
-export const signup = async (req, res, next) => {
+export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
     if (!firstName || !lastName || !email || !phone || !password) {
@@ -26,7 +28,16 @@ export const signup = async (req, res, next) => {
     sendVerificationEmailAsync(user.email, verificationToken);
     return response.created(res, { message: 'Please check your email to verify your account.' });
   } catch (error) {
-    next(error);
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
   }
 };
 
@@ -50,7 +61,7 @@ export const verifyEmail = async (req, res) => {
 };
 
 /** Resends verification email if user exists and is PENDING; always returns same message (no user enumeration). */
-export const resendVerification = async (req, res, next) => {
+export const resendVerification = async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) throw new AppError('Email is required', 400);
@@ -61,12 +72,21 @@ export const resendVerification = async (req, res, next) => {
 
     return response.ok(res, { message: successMessage });
   } catch (error) {
-    next(error);
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
   }
 };
 
 /** Logs in with email/password, sets HTTP-only cookie with JWT, returns user summary. Fails with same message for wrong email, wrong password, or unverified account. */
-export const login = async (req, res, next) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) throw new AppError('Email and password are required', 400);
@@ -97,12 +117,26 @@ export const login = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
   }
 };
 
-/** Clears the auth cookie and returns 200. */
+/** Clears the auth cookie, disconnects active sockets, and returns 200. */
 export const logout = (req, res) => {
+  // Disconnect sockets if user is authenticated (optionalProtect sets req.user if token exists)
+  if (req.user?.id) {
+    disconnectUser(req.user.id);
+  }
+
   res.clearCookie(config.cookie.tokenName, {
     path: '/',
     httpOnly: true,

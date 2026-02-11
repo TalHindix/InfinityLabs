@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { Box, Fab, Paper, Typography, TextField, IconButton } from '@mui/material';
 import { Chat, Close, Send } from '@mui/icons-material';
@@ -12,7 +13,8 @@ import {
   inputContainerSx,
   textFieldSx,
 } from './ChatAssistant.styles';
-import { authStorage } from '../api/auth.storage';
+import { authStorage, AUTH_CHANGE_EVENT } from '../api/auth.storage';
+import { ROUTES } from '../constants/routePaths';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
@@ -28,35 +30,61 @@ interface Message {
 }
 
 const ChatAssistant = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(authStorage.isAuthenticated());
+
+  // Monitor auth state changes via events
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsAuthenticated(authStorage.isAuthenticated());
+    };
+
+    // Set initial auth state
+    handleAuthChange();
+
+    // Listen for auth state changes
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+    return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+  }, []);
 
   useEffect(() => {
-    if (!authStorage.isAuthenticated()) {
+    if (!isAuthenticated) {
+      // Disconnect socket if user logs out
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
       return;
     }
 
-    socketRef.current = io(`${SOCKET_URL}/chat`, {
-      withCredentials: true,
-    });
+    // Create socket if authenticated and not already connected
+    if (!socketRef.current || !socketRef.current.connected) {
+      socketRef.current = io(`${SOCKET_URL}/chat`, {
+        withCredentials: true,
+      });
 
-    socketRef.current.on('connect_error', () => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: 'bot',
-          text: 'Authentication failed. Please log in again to use the chat assistant.',
-        },
-      ]);
-      socketRef.current?.disconnect();
-    });
+      socketRef.current.on('connect_error', () => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: 'bot',
+            text: 'Authentication failed. Please log in again to use the chat assistant.',
+          },
+        ]);
+        socketRef.current?.disconnect();
+        authStorage.clearAuth();
+        navigate(ROUTES.LOGIN);
+      });
 
-    socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
-      setMessages((prev) => [...prev, { type: 'bot', text: data.response, data: data.data }]);
-    });
+      socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
+        setMessages((prev) => [...prev, { type: 'bot', text: data.response, data: data.data }]);
+      });
+    }
 
     return () => {
       if (socketRef.current) {
@@ -64,7 +92,7 @@ const ChatAssistant = () => {
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (isOpen && messages.length > 0 && messagesEndRef.current) {

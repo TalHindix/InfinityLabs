@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { AppError } from './error.util.js';
 
 /**
  * Generates a cryptographically random verification token (64 hex characters).
@@ -12,7 +13,7 @@ export const generateVerificationToken = () =>
  */
 export const hashToken = (token) => {
   if (token == null || typeof token !== 'string') {
-    throw new Error('Token is required for hashing');
+    throw new AppError('Token is required for hashing', 400);
   }
   return crypto.createHash('sha256').update(token, 'utf8').digest('hex');
 };

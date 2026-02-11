@@ -7,7 +7,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import transactionRoutes from './routes/transaction.routes.js';
 import { requestLogger } from './middleware/logger.middleware.js';
-import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import { errorHandler, notFoundHandler } from './utils/error.util.js';
 
 const app = express();
 

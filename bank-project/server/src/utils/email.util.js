@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from '../config/index.js';
 import logger from './logger.util.js';
+import { AppError } from './error.util.js';
 
 const brevo = axios.create({
   baseURL: 'https://api.brevo.com/v3',
@@ -128,9 +129,9 @@ export const buildVerificationResultPage = (success, errorMessage = null) => {
  * @param {string} token - Verification token
  */
 async function sendVerificationEmail(email, token) {
-  if (!config.email.brevoApiKey) throw new Error('Missing BREVO_API_KEY');
-  if (!config.email.from) throw new Error('Missing EMAIL_FROM');
-  if (!config.serverUrl) throw new Error('Missing SERVER_URL');
+  if (!config.email.brevoApiKey) throw new AppError('Missing BREVO_API_KEY', 500);
+  if (!config.email.from) throw new AppError('Missing EMAIL_FROM', 500);
+  if (!config.serverUrl) throw new AppError('Missing SERVER_URL', 500);
 
   const payload = {
     sender: { name: 'Dubai-Bank', email: config.email.from },

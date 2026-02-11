@@ -5,7 +5,8 @@ import {
   executeTransfer,
 } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
-import { AppError } from '../middleware/error.middleware.js';
+import { mapErrorToResponse } from '../utils/error.util.js';
+import { AppError } from '../utils/error.util.js';
 import { validateTransactionAmount } from '../utils/validation.util.js';
 
 /** Max allowed page size for list transactions (avoids huge responses). */
@@ -14,7 +15,7 @@ const MAX_PAGE_SIZE = 100;
 /**
  * Returns paginated transactions for the current user. Query: page (default 1), limit (default from constants, max 100).
  */
-export const getTransactions = async (req, res, next) => {
+export const getTransactions = async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(req.query.limit) || DEFAULT_PAGE_SIZE));
@@ -23,14 +24,23 @@ export const getTransactions = async (req, res, next) => {
     const result = await findTransactionsByUserEmail(userEmail, page, limit);
     return response.ok(res, result);
   } catch (error) {
-    next(error);
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
   }
 };
 
 /**
  * Returns one transaction by id if it belongs to the current user; 404 if not found or not owned.
  */
-export const getTransactionById = async (req, res, next) => {
+export const getTransactionById = async (req, res) => {
   try {
     const { transactionId } = req.params;
     const userEmail = req.user.email;
@@ -39,14 +49,23 @@ export const getTransactionById = async (req, res, next) => {
     if (result.status === 'NOT_FOUND') throw new AppError('Transaction not found', 404);
     return response.ok(res, { transaction: result.data });
   } catch (error) {
-    next(error);
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
   }
 };
 
 /**
  * Creates a transfer from the current user to receiverEmail. Validates amount; returns 201 with the created transaction.
  */
-export const createTransaction = async (req, res, next) => {
+export const createTransaction = async (req, res) => {
   try {
     const { receiverEmail, amount, description } = req.body;
     const senderEmail = req.user.email;
@@ -63,6 +82,15 @@ export const createTransaction = async (req, res, next) => {
     );
     return response.created(res, { transaction });
   } catch (error) {
-    next(error);
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
   }
 };

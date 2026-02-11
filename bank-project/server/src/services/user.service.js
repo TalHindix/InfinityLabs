@@ -33,7 +33,7 @@ export const getAccountSummary = async (userId) => {
   const user = await User.findOne({ id: userId }).select('id balance');
 
   if (!user) {
-    throw new Error('User not found');
+    throw new AppError('User not found', 404);
   }
 
   return { userId: user.id, balance: user.balance };

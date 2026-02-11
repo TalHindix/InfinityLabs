@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Transaction, { getNextTransactionId } from '../models/transaction.model.js';
 import User from '../models/user.model.js';
 import { DEFAULT_PAGE_SIZE } from '../constants/index.js';
-import { AppError } from '../middleware/error.middleware.js';
+import { AppError } from '../utils/error.util.js';
 
 const userTransactionQuery = (userEmail) => ({
   $or: [{ fromEmail: userEmail }, { toEmail: userEmail }],
@@ -38,17 +38,6 @@ export const findTransactionById = async (transactionId, userEmail) => {
   return transaction ? { status: 'SUCCESS', data: transaction } : { status: 'NOT_FOUND', data: null };
 };
 
-/**
- * Validates transfer request before executing
- * @param {string} senderEmail - Email of the sender
- * @param {string} receiverEmail - Email of the receiver
- * @throws {AppError} If sender and receiver are the same
- */
-const validateTransferRequest = (senderEmail, receiverEmail) => {
-  if (receiverEmail.toLowerCase() === senderEmail.toLowerCase()) {
-    throw new AppError('Cannot transfer to yourself', 400);
-  }
-};
 
 /**
  * Deducts amount from sender's balance
@@ -119,7 +108,9 @@ export const executeTransfer = async (senderEmail, receiverEmail, amount, descri
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    validateTransferRequest(senderEmail, receiverEmail);
+    if (receiverEmail.toLowerCase() === senderEmail.toLowerCase()) {
+      throw new AppError('Cannot transfer to yourself', 400);
+    }
     await deductSenderBalance(senderEmail, amount, session);
     await addReceiverBalance(receiverEmail, amount, session);
     const transaction = await createTransactionRecord(

@@ -5,7 +5,7 @@ import { verifyToken } from '../utils/jwt.util.js';
 /**
  * Extracts the "token" cookie value from the Cookie header string (e.g. "token=abc123; other=...").
  */
-function getTokenFromCookie(cookieHeader) {
+export function getTokenFromCookie(cookieHeader) {
   if (!cookieHeader || typeof cookieHeader !== 'string') return null;
   const match = cookieHeader.match(/\btoken=([^;]+)/);
   return match ? decodeURIComponent(match[1].trim()) : null;
@@ -34,7 +34,7 @@ export const authenticateSocket = async (socket, next) => {
       return next(new Error('User account is not active'));
     }
 
-    socket.user = user;
+    socket.data.user = user;
     next();
   } catch (error) {
     const isJwtError =
