@@ -53,41 +53,53 @@ const ChatAssistant = () => {
   }, []);
 
   useEffect(() => {
+    // If user is not authenticated, disconnect socket
     if (!isAuthenticated) {
-      // Disconnect socket if user logs out
       if (socketRef.current) {
+        socketRef.current.removeAllListeners();
         socketRef.current.disconnect();
         socketRef.current = null;
       }
       return;
     }
 
-    // Create socket if authenticated and not already connected
-    if (!socketRef.current || !socketRef.current.connected) {
-      socketRef.current = io(`${SOCKET_URL}/chat`, {
-        withCredentials: true,
-      });
-
-      socketRef.current.on('connect_error', () => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: 'bot',
-            text: 'Authentication failed. Please log in again to use the chat assistant.',
-          },
-        ]);
-        socketRef.current?.disconnect();
-        authStorage.clearAuth();
-        navigate(ROUTES.LOGIN);
-      });
-
-      socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
-        setMessages((prev) => [...prev, { type: 'bot', text: data.response, data: data.data }]);
-      });
+    // If socket already exists and is connected, don't create a new one
+    if (socketRef.current?.connected) {
+      return;
     }
 
+    // Clean up old socket if exists but not connected
+    if (socketRef.current) {
+      socketRef.current.removeAllListeners();
+      socketRef.current.disconnect();
+    }
+
+    // Create new socket
+    socketRef.current = io(`${SOCKET_URL}/chat`, {
+      withCredentials: true,
+    });
+
+    socketRef.current.on('connect_error', () => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'bot',
+          text: 'Authentication failed. Please log in again to use the chat assistant.',
+        },
+      ]);
+      socketRef.current?.disconnect();
+      authStorage.clearAuth();
+      navigate(ROUTES.LOGIN);
+    });
+
+    socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
+      setMessages((prev) => [...prev, { type: 'bot', text: data.response, data: data.data }]);
+    });
+
+    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
+        socketRef.current.removeAllListeners();
         socketRef.current.disconnect();
         socketRef.current = null;
       }
