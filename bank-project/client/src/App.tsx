@@ -8,6 +8,7 @@ import SignupPage from './screens/login-signup/SignupPage';
 import DashboardPage from './screens/dashboard/DashboardPage';
 import TransferPage from './screens/transfer-money/TransferPage';
 import TransactionsPage from './screens/transaction-history/TransactionsPage';
+import VideoCallPage from './screens/video-call/VideoCallPage';
 import { authStorage } from './api/auth.storage';
 
 /** If not logged in, redirects to login; otherwise renders ChatAssistant and the page (children). */
@@ -36,6 +37,7 @@ export default function App() {
         <Route path={ROUTES.DASHBOARD} element={<RequireAuth><DashboardPage /></RequireAuth>} />
         <Route path={ROUTES.TRANSFER} element={<RequireAuth><TransferPage /></RequireAuth>} />
         <Route path={ROUTES.TRANSACTIONS} element={<RequireAuth><TransactionsPage /></RequireAuth>} />
+        <Route path={`${ROUTES.VIDEO_CALL}/:roomName`} element={<RequireAuth><VideoCallPage /></RequireAuth>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />

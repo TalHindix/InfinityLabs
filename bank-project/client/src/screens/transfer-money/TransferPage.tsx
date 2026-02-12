@@ -56,10 +56,13 @@ const TransferPage = () => {
                 loading={transfer.loading}
                 error={transfer.error}
                 success={transfer.success}
+                transaction={transfer.transaction}
+                videoRoomName={transfer.videoRoomName}
                 onReceiverEmailChange={transfer.setReceiverEmail}
                 onAmountChange={transfer.setAmount}
                 onDescriptionChange={transfer.setDescription}
                 onSubmit={transfer.handleSubmit}
+                onCloseDialog={transfer.handleCloseDialog}
               />
             </Stack>
           </CardContent>

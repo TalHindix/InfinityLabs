@@ -1,4 +1,3 @@
-// Transactions API: list (paginated), get by id, create transfer.
 import { httpClient } from './http-client';
 import type { TransactionsResponse, TransactionResponse, TransferData } from '../types';
 
@@ -15,6 +14,11 @@ export const transactionService = {
 
   async create(data: TransferData): Promise<TransactionResponse> {
     const res = await httpClient.post('/transactions', data);
+    return res.data.data;
+  },
+
+  async sendNotification(transactionId: string): Promise<{ message: string; roomName: string }> {
+    const res = await httpClient.post(`/transactions/${transactionId}/send-notification`);
     return res.data.data;
   },
 };

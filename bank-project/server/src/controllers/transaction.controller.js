@@ -3,11 +3,14 @@ import {
   findTransactionById,
   findTransactionsByUserEmail,
   executeTransfer,
+  sendTransferEmailNotification,
+  generateVideoCallRoomName,
 } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
 import { mapErrorToResponse } from '../utils/error.util.js';
 import { AppError } from '../utils/error.util.js';
 import { validateTransactionAmount } from '../utils/validation.util.js';
+import User from '../models/user.model.js';
 
 /** Max allowed page size for list transactions (avoids huge responses). */
 const MAX_PAGE_SIZE = 100;
@@ -94,3 +97,56 @@ export const createTransaction = async (req, res) => {
     });
   }
 };
+
+/**
+ * Sends transfer notification email to receiver.
+ * Requires transaction to belong to current user (as sender).
+ */
+export const sendTransferNotification = async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const userEmail = req.user.email;
+    
+    const result = await findTransactionById(transactionId, userEmail);
+    if (result.status === 'NOT_FOUND') {
+      throw new AppError('Transaction not found', 404);
+    }
+
+    const transaction = result.data;
+    
+    // Verify that current user is the sender
+    if (transaction.fromEmail.toLowerCase() !== userEmail.toLowerCase()) {
+      throw new AppError('You can only send notifications for your own transfers', 403);
+    }
+
+    // Get sender and receiver user details
+    const [sender, receiver] = await Promise.all([
+      User.findOne({ email: transaction.fromEmail }),
+      User.findOne({ email: transaction.toEmail }),
+    ]);
+
+    if (!sender) throw new AppError('Sender not found', 404);
+    if (!receiver) throw new AppError('Receiver not found', 404);
+
+    await sendTransferEmailNotification(transaction, sender, receiver);
+
+    const roomName = generateVideoCallRoomName(sender.email, receiver.email);
+
+    return response.ok(res, {
+      message: 'Notification email sent successfully',
+      roomName,
+    });
+  } catch (error) {
+    const { statusCode, message } = mapErrorToResponse(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[${req.method}] ${req.originalUrl}:`, error);
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+};
+

@@ -1,8 +1,11 @@
+import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import Transaction, { getNextTransactionId } from '../models/transaction.model.js';
 import User from '../models/user.model.js';
 import { DEFAULT_PAGE_SIZE } from '../constants/index.js';
 import { AppError } from '../utils/error.util.js';
+import { sendTransferNotificationEmailAsync } from '../utils/email.util.js';
+import config from '../config/index.js';
 
 const userTransactionQuery = (userEmail) => ({
   $or: [{ fromEmail: userEmail }, { toEmail: userEmail }],
@@ -128,4 +131,31 @@ export const executeTransfer = async (senderEmail, receiverEmail, amount, descri
   } finally {
     session.endSession();
   }
+};
+
+export const generateVideoCallRoomName = (email1, email2) => {
+  const pair = [email1.toLowerCase(), email2.toLowerCase()].sort().join('|');
+  return crypto.createHash('sha256').update(pair).digest('hex').slice(0, 16);
+};
+
+/**
+ * Sends transfer notification email to receiver
+ * @param {Object} transaction - Transaction document
+ * @param {Object} sender - Sender user document
+ * @param {Object} receiver - Receiver user document
+ */
+export const sendTransferEmailNotification = async (transaction, sender, receiver) => {
+  const roomName = generateVideoCallRoomName(sender.email, receiver.email);
+  const videoCallUrl = `${config.clientUrl}/video-call/${roomName}`;
+
+  sendTransferNotificationEmailAsync({
+    receiverEmail: receiver.email,
+    receiverName: `${receiver.firstName} ${receiver.lastName}`,
+    senderName: `${sender.firstName} ${sender.lastName}`,
+    senderEmail: sender.email,
+    amount: transaction.amount,
+    description: transaction.description,
+    transactionId: transaction.id,
+    videoCallUrl,
+  });
 };

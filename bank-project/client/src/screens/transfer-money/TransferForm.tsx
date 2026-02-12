@@ -15,6 +15,8 @@ import {
   DialogContent,
   DialogActions,
 } from '../../shared/muiExports';
+import { TransferSuccessDialog } from '../../components/TransferSuccessDialog';
+import type { Transaction } from '../../types';
 import {
   amountAdornmentSx,
   cancelButtonSx,
@@ -41,10 +43,13 @@ interface TransferFormProps {
   loading: boolean;
   error: string;
   success: boolean;
+  transaction: Transaction | null;
+  videoRoomName: string;
   onReceiverEmailChange: (value: string) => void;
   onAmountChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onCloseDialog: () => void;
 }
 
 export const TransferForm = ({
@@ -54,10 +59,13 @@ export const TransferForm = ({
   loading,
   error,
   success,
+  transaction,
+  videoRoomName,
   onReceiverEmailChange,
   onAmountChange,
   onDescriptionChange,
   onSubmit,
+  onCloseDialog,
 }: TransferFormProps) => {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -79,11 +87,13 @@ export const TransferForm = ({
   return (
     <>
       {error && <Alert severity="error">{error}</Alert>}
-      {success && (
-        <Alert severity="success">
-          Transfer completed successfully! The funds have been sent.
-        </Alert>
-      )}
+
+      <TransferSuccessDialog
+        open={success && !!transaction}
+        transaction={transaction}
+        videoRoomName={videoRoomName}
+        onClose={onCloseDialog}
+      />
 
       <form onSubmit={handleSubmitClick}>
         <Stack spacing={3}>

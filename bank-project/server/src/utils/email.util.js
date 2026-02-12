@@ -71,6 +71,97 @@ const buildEmailTemplate = (token) => {
 };
 
 /**
+ * Builds HTML template for transfer notification email
+ * @param {Object} params - Email parameters
+ * @param {string} params.receiverName - Name of the receiver
+ * @param {string} params.senderName - Name of the sender
+ * @param {string} params.senderEmail - Email of the sender
+ * @param {number} params.amount - Transfer amount
+ * @param {string} params.description - Transaction description
+ * @param {number} params.transactionId - Transaction ID
+ * @param {string} params.videoCallUrl - URL to join video call
+ * @returns {string} HTML content
+ */
+const buildTransferNotificationEmailTemplate = ({
+  receiverName,
+  senderName,
+  senderEmail,
+  amount,
+  description,
+  transactionId,
+  videoCallUrl,
+}) => {
+  const year = new Date().getFullYear();
+  const formattedAmount = amount.toFixed(2);
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #ffffff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; margin: 0;">Dubai-Bank</h1>
+          </div>
+          <h2 style="color: #333; text-align: center;">💰 Money Transfer Received</h2>
+          <p style="color: #666; font-size: 16px;">
+            Hello ${receiverName || 'there'},
+          </p>
+          <p style="color: #666; font-size: 16px;">
+            You have received a money transfer:
+          </p>
+          <div style="background-color: #f9f9f9; border-radius: 6px; padding: 20px; margin: 20px 0;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Amount:</strong></td>
+                <td style="padding: 8px 0; text-align: right; color: #2c3e50; font-size: 18px; font-weight: bold;">
+                  ${formattedAmount} AED
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>From:</strong></td>
+                <td style="padding: 8px 0; text-align: right; color: #2c3e50;">
+                  ${senderName} (${senderEmail})
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Description:</strong></td>
+                <td style="padding: 8px 0; text-align: right; color: #2c3e50;">
+                  ${description || '—'}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;"><strong>Transaction ID:</strong></td>
+                <td style="padding: 8px 0; text-align: right; color: #2c3e50;">
+                  #${transactionId}
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${videoCallUrl}"
+               style="background-color: #4CAF50; color: white; padding: 14px 28px;
+                      text-decoration: none; border-radius: 6px; font-size: 16px;
+                      font-weight: bold; display: inline-block;">
+              Join Video Call
+            </a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #bbb; text-align: center; font-size: 12px;">
+            © ${year} Dubai-Bank. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+/**
  * Builds HTML page for verification result (success/failure)
  * @param {boolean} success - Whether verification succeeded
  * @param {string|null} errorMessage - Error message if failed
@@ -159,5 +250,66 @@ export const sendVerificationEmailAsync = (email, token) => {
     const status = err?.response?.status;
     const data = err?.response?.data;
     logger.error(`Async email failed for ${email}: status=${status} data=${JSON.stringify(data)}`, { error: err });
+  });
+};
+
+/**
+ * Sends transfer notification email to receiver
+ * @param {Object} params - Email parameters
+ * @param {string} params.receiverEmail - Email of the receiver
+ * @param {string} params.receiverName - Name of the receiver
+ * @param {string} params.senderName - Name of the sender
+ * @param {string} params.senderEmail - Email of the sender
+ * @param {number} params.amount - Transfer amount
+ * @param {string} params.description - Transaction description
+ * @param {number} params.transactionId - Transaction ID
+ * @param {string} params.videoCallUrl - URL to join video call
+ */
+async function sendTransferNotificationEmail({
+  receiverEmail,
+  receiverName,
+  senderName,
+  senderEmail,
+  amount,
+  description,
+  transactionId,
+  videoCallUrl,
+}) {
+  if (!config.email.brevoApiKey) throw new AppError('Missing BREVO_API_KEY', 500);
+  if (!config.email.from) throw new AppError('Missing EMAIL_FROM', 500);
+
+  const payload = {
+    sender: { name: 'Dubai-Bank', email: config.email.from },
+    to: [{ email: receiverEmail, name: receiverName }],
+    subject: `💰 Money Transfer Received - ${amount.toFixed(2)} AED from ${senderName}`,
+    htmlContent: buildTransferNotificationEmailTemplate({
+      receiverName,
+      senderName,
+      senderEmail,
+      amount,
+      description,
+      transactionId,
+      videoCallUrl,
+    }),
+  };
+
+  const res = await brevo.post('/smtp/email', payload);
+  logger.info(`Transfer notification email sent to ${receiverEmail} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
+}
+
+/**
+ * Sends transfer notification email asynchronously (fire-and-forget).
+ * Logs and ignores errors.
+ * @param {Object} params - Email parameters
+ */
+export const sendTransferNotificationEmailAsync = (params) => {
+  if (!params?.receiverEmail) {
+    logger.error('sendTransferNotificationEmailAsync: receiverEmail is required');
+    return;
+  }
+  sendTransferNotificationEmail(params).catch((err) => {
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+    logger.error(`Async transfer email failed for ${params.receiverEmail}: status=${status} data=${JSON.stringify(data)}`, { error: err });
   });
 };
