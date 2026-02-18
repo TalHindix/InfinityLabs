@@ -1,14 +1,6 @@
-/** Minimum allowed transfer amount. */
 const MIN_AMOUNT = 0.01;
-
-/** Maximum allowed transfer amount. */
 const MAX_AMOUNT = 1_000_000;
 
-/**
- * Validates transaction amount.
- * @param {*} amount - The amount to validate
- * @returns {{ isValid: boolean, error: string | null, sanitized: number | null }}
- */
 export const validateTransactionAmount = (amount) => {
   const invalid = (error) => ({
     isValid: false,

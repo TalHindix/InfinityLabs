@@ -15,11 +15,6 @@ const startServer = async () => {
     logger.info(`Listening on ${config.port}`);
   });
 
-  httpServer.on('error', (err) => {
-    logger.error('HTTP server error', err);
-    process.exit(1);
-  });
-
   const io = new Server(httpServer, {
     cors: {
       origin: config.clientUrl || 'http://localhost:5173',
@@ -32,28 +27,25 @@ const startServer = async () => {
   logger.info('Socket.IO chatbot initialized');
 };
 
-const shutdown = (signal) => {
-  logger.info(`${signal} received, shutting down gracefully`);
+const shutdown = () => {
+  logger.info('Shutting down gracefully');
   if (httpServer) {
     httpServer.close(() => {
-      logger.info('HTTP server closed');
-      mongoose.connection.close(false).then(() => {
-        logger.info('MongoDB connection closed');
-        process.exit(0);
-      }).catch((err) => {
-        logger.error('Error closing MongoDB connection', err);
-        process.exit(1);
-      });
+      mongoose.connection.close(false)
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
     });
   } else {
     process.exit(0);
   }
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
-startServer().catch((err) => {
+try {
+  await startServer();
+} catch (err) {
   logger.error('Failed to start server', err);
   process.exit(1);
-});
+}

@@ -4,6 +4,8 @@ const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
 
+const RATE_LIMIT_HEADERS = { standardHeaders: true, legacyHeaders: false };
+
 export const authLimiter = rateLimit({
   windowMs: FIFTEEN_MINUTES_MS,
   max: process.env.NODE_ENV === 'production' ? 5 : 999999,
@@ -11,8 +13,7 @@ export const authLimiter = rateLimit({
     success: false,
     error: 'Too many authentication attempts. Please try again after 15 minutes.',
   },
-  standardHeaders: true,
-  legacyHeaders: false,
+  ...RATE_LIMIT_HEADERS,
   skipSuccessfulRequests: false,
 });
 
@@ -23,8 +24,7 @@ export const verifyLimiter = rateLimit({
     success: false,
     error: 'Too many verification attempts. Please try again later.',
   },
-  standardHeaders: true,
-  legacyHeaders: false,
+  ...RATE_LIMIT_HEADERS,
 });
 
 export const transactionLimiter = rateLimit({
@@ -34,6 +34,5 @@ export const transactionLimiter = rateLimit({
     success: false,
     error: 'Too many transactions. Please wait before making another transfer.',
   },
-  standardHeaders: true,
-  legacyHeaders: false,
+  ...RATE_LIMIT_HEADERS,
 });

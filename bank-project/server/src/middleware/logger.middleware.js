@@ -1,9 +1,5 @@
 import logger from '../utils/logger.util.js';
 
-/**
- * Logs each request when the response finishes (so we have the real status code and duration).
- * Format: "METHOD /path STATUS - 123ms". Uses warn for 4xx/5xx, info for success.
- */
 export const requestLogger = (req, res, next) => {
   const start = Date.now();
 

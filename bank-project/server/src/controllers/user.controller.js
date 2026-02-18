@@ -1,13 +1,9 @@
 import { findUserById } from '../services/user.service.js';
 import { findRecentTransactions } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
-import { mapErrorToResponse } from '../utils/error.util.js';
 import { AppError } from '../utils/error.util.js';
 
-/**
- * Returns the current authenticated user (from req.user) and their 10 most recent transactions.
- */
-export const getCurrentUser = async (req, res) => {
+export const getCurrentUser = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const user = await findUserById(userId);
@@ -27,15 +23,6 @@ export const getCurrentUser = async (req, res) => {
       recentTransactions,
     });
   } catch (error) {
-    const { statusCode, message } = mapErrorToResponse(error);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[${req.method}] ${req.originalUrl}:`, error);
-    }
-
-    return res.status(statusCode).json({
-      success: false,
-      error: message,
-    });
+    next(error);
   }
 };

@@ -2,15 +2,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 function validateRequiredEnvVars() {
-  const required = [
-    { key: 'JWT_SECRET', value: process.env.JWT_SECRET },
-    { key: 'MONGO_URI', value: process.env.MONGO_URI }
-  ];
-  const missing = required.filter(({ value }) => !value);
-  if (missing.length > 0) {
-    const missingKeys = missing.map(({ key }) => key).join(', ');
-    throw new Error(`Missing required environment variables: ${missingKeys}\nPlease check your .env file or environment configuration.`);
-  }
+  if (!process.env.JWT_SECRET) throw new Error('Missing required environment variable: JWT_SECRET');
+  if (!process.env.MONGO_URI) throw new Error('Missing required environment variable: MONGO_URI');
 }
 
 validateRequiredEnvVars();
@@ -28,8 +21,7 @@ const config = {
 
   cookie: {
     tokenName: 'token',
-    maxAgeSeconds: 3600, // 1 hour, should match jwt.expiresIn
-    // Use 'none' when frontend and API are on different origins (e.g. different Render URLs)
+    maxAgeSeconds: 3600,
     sameSite: process.env.COOKIE_SAME_SITE || 'lax',
     secure: process.env.NODE_ENV === 'production',
   },

@@ -7,113 +7,75 @@ import { AppError } from '../utils/error.util.js';
 import { sendTransferNotificationEmailAsync } from '../utils/email.util.js';
 import config from '../config/index.js';
 
-const userTransactionQuery = (userEmail) => ({
-  $or: [{ fromEmail: userEmail }, { toEmail: userEmail }],
-});
+function transactionsForUserQuery(userEmail) {
+  return { $or: [{ fromEmail: userEmail }, { toEmail: userEmail }] };
+}
 
-export const findTransactionsByUserEmail = async (userEmail, page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
+export async function findTransactionsByUserEmail(userEmail, page = 1, pageSize = DEFAULT_PAGE_SIZE) {
   const firstItemIndex = (page - 1) * pageSize;
-  const query = userTransactionQuery(userEmail);
+  const query = transactionsForUserQuery(userEmail);
 
   const [transactions, total] = await Promise.all([
     Transaction.find(query).sort({ createdAt: -1 }).skip(firstItemIndex).limit(pageSize),
     Transaction.countDocuments(query),
   ]);
+
   return {
     transactions,
     total,
     totalPages: Math.ceil(total / pageSize),
     currentPage: page,
   };
-};
+}
 
-export const findRecentTransactions = async (userEmail, pageSize = 10) => {
-  return Transaction.find(userTransactionQuery(userEmail))
-    .sort({ createdAt: -1 })
-    .limit(pageSize);
-};
+export async function findRecentTransactions(userEmail, pageSize = 10) {
+  const query = transactionsForUserQuery(userEmail);
+  return Transaction.find(query).sort({ createdAt: -1 }).limit(pageSize);
+}
 
-export const findTransactionById = async (transactionId, userEmail) => {
-  const transaction = await Transaction.findOne({
-    id: Number(transactionId),
-    ...userTransactionQuery(userEmail),
-  });
-  return transaction ? { status: 'SUCCESS', data: transaction } : { status: 'NOT_FOUND', data: null };
-};
+export async function findTransactionById(transactionId, userEmail) {
+  const query = { id: Number(transactionId), ...transactionsForUserQuery(userEmail) };
+  return Transaction.findOne(query);
+}
 
-
-/**
- * Deducts amount from sender's balance
- * @param {string} senderEmail - Email of the sender
- * @param {number} amount - Amount to deduct
- * @param {mongoose.ClientSession} session - MongoDB session for transaction
- * @returns {Promise<User>} Updated sender user document
- * @throws {AppError} If sender not found or insufficient funds
- */
-const deductSenderBalance = async (senderEmail, amount, session) => {
+async function deductSenderBalance(senderEmail, amount, session) {
   const sender = await User.findOneAndUpdate(
     { email: senderEmail, balance: { $gte: amount } },
     { $inc: { balance: -amount } },
-    { session, new: true },
+    { session, new: true }
   );
   if (!sender) throw new AppError('Insufficient funds', 400);
   return sender;
-};
+}
 
-/**
- * Adds amount to receiver's balance
- * @param {string} receiverEmail - Email of the receiver
- * @param {number} amount - Amount to add
- * @param {mongoose.ClientSession} session - MongoDB session for transaction
- * @returns {Promise<User>} Updated receiver user document
- * @throws {AppError} If receiver not found
- */
-const addReceiverBalance = async (receiverEmail, amount, session) => {
+async function addReceiverBalance(receiverEmail, amount, session) {
   const receiver = await User.findOneAndUpdate(
     { email: receiverEmail },
     { $inc: { balance: amount } },
-    { session, new: true },
+    { session, new: true }
   );
   if (!receiver) throw new AppError('Receiver not found', 404);
   return receiver;
-};
+}
 
-/**
- * Creates transaction record in database
- * @param {string} senderEmail - Email of the sender
- * @param {string} receiverEmail - Email of the receiver
- * @param {number} amount - Transfer amount
- * @param {string} description - Optional transaction description
- * @param {mongoose.ClientSession} session - MongoDB session for transaction
- * @returns {Promise<Transaction>} Created transaction document
- */
-const createTransactionRecord = async (senderEmail, receiverEmail, amount, description, session) => {
-  const id = await getNextTransactionId(session);
+async function createTransactionRecord(senderEmail, receiverEmail, amount, description, session) {
+  const nextId = await getNextTransactionId(session);
   const [transaction] = await Transaction.create(
-    [{ id, fromEmail: senderEmail, toEmail: receiverEmail, amount, description }],
-    { session },
+    [{ id: nextId, fromEmail: senderEmail, toEmail: receiverEmail, amount, description }],
+    { session }
   );
   return transaction;
-};
+}
 
-/**
- * Executes a money transfer between two users
- * Uses MongoDB transactions to ensure atomicity
- * 
- * @param {string} senderEmail - Email of the user sending money
- * @param {string} receiverEmail - Email of the user receiving money
- * @param {number} amount - Amount to transfer (validated before this function)
- * @param {string} description - Optional transaction description
- * @returns {Promise<Transaction>} Created transaction record
- * @throws {AppError} For validation or business logic errors
- */
-export const executeTransfer = async (senderEmail, receiverEmail, amount, description) => {
+export async function executeTransfer(senderEmail, receiverEmail, amount, description) {
+  if (receiverEmail.toLowerCase() === senderEmail.toLowerCase()) {
+    throw new AppError('Cannot transfer to yourself', 400);
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
+
   try {
-    if (receiverEmail.toLowerCase() === senderEmail.toLowerCase()) {
-      throw new AppError('Cannot transfer to yourself', 400);
-    }
     await deductSenderBalance(senderEmail, amount, session);
     await addReceiverBalance(receiverEmail, amount, session);
     const transaction = await createTransactionRecord(
@@ -121,7 +83,7 @@ export const executeTransfer = async (senderEmail, receiverEmail, amount, descri
       receiverEmail,
       amount,
       description,
-      session,
+      session
     );
     await session.commitTransaction();
     return transaction;
@@ -131,31 +93,29 @@ export const executeTransfer = async (senderEmail, receiverEmail, amount, descri
   } finally {
     session.endSession();
   }
-};
+}
 
-export const generateVideoCallRoomName = (email1, email2) => {
-  const pair = [email1.toLowerCase(), email2.toLowerCase()].sort().join('|');
-  return crypto.createHash('sha256').update(pair).digest('hex').slice(0, 16);
-};
+export function generateVideoCallRoomName(firstEmail, secondEmail) {
+  const emails = [firstEmail.toLowerCase(), secondEmail.toLowerCase()].sort();
+  const pair = emails.join('|');
+  const hash = crypto.createHash('sha256').update(pair).digest('hex');
+  return hash.slice(0, 16);
+}
 
-/**
- * Sends transfer notification email to receiver
- * @param {Object} transaction - Transaction document
- * @param {Object} sender - Sender user document
- * @param {Object} receiver - Receiver user document
- */
-export const sendTransferEmailNotification = async (transaction, sender, receiver) => {
+export async function sendTransferEmailNotification(transaction, sender, receiver) {
   const roomName = generateVideoCallRoomName(sender.email, receiver.email);
   const videoCallUrl = `${config.clientUrl}/video-call/${roomName}`;
+  const receiverName = `${receiver.firstName} ${receiver.lastName}`;
+  const senderName = `${sender.firstName} ${sender.lastName}`;
 
   sendTransferNotificationEmailAsync({
     receiverEmail: receiver.email,
-    receiverName: `${receiver.firstName} ${receiver.lastName}`,
-    senderName: `${sender.firstName} ${sender.lastName}`,
+    receiverName,
+    senderName,
     senderEmail: sender.email,
     amount: transaction.amount,
     description: transaction.description,
     transactionId: transaction.id,
     videoCallUrl,
   });
-};
+}

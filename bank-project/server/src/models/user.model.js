@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 import { USER_STATUS, DEFAULT_BALANCE } from '../constants/index.js';
 
-/** User document: account identity, auth, balance, and email verification. */
 const userSchema = new mongoose.Schema(
   {
     id: {

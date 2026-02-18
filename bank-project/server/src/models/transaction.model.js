@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 
-/** Bounds for transaction amount (must match validation.util.js). */
 const MIN_AMOUNT = 0.01;
 const MAX_AMOUNT = 1_000_000;
 
@@ -11,11 +10,6 @@ const counterSchema = new mongoose.Schema({
 
 const Counter = mongoose.model('Counter', counterSchema);
 
-/**
- * Returns the next sequential transaction id. Optionally runs inside a MongoDB transaction session.
- * @param {mongoose.ClientSession | null} session - Optional session for transactional use
- * @returns {Promise<number>} Next transaction id
- */
 export const getNextTransactionId = async (session = null) => {
   const options = { new: true, upsert: true };
   if (session) {
@@ -29,7 +23,6 @@ export const getNextTransactionId = async (session = null) => {
   return counter.seq;
 };
 
-/** Transfer record: sender, receiver, amount, optional description. */
 const transactionSchema = new mongoose.Schema(
   {
     id: {

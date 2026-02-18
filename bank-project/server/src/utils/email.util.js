@@ -12,18 +12,9 @@ const brevo = axios.create({
   },
 });
 
-/* ============================================
-   Email Templates
-   ============================================ */
-
 const buildVerificationUrl = (token) =>
   `${config.serverUrl}/api/v1/auth/verify?token=${token}`;
 
-/**
- * Builds HTML template for verification email
- * @param {string} token - Verification token
- * @returns {string} HTML content
- */
 const buildEmailTemplate = (token) => {
   const verificationUrl = buildVerificationUrl(token);
   const year = new Date().getFullYear();
@@ -70,18 +61,6 @@ const buildEmailTemplate = (token) => {
   `;
 };
 
-/**
- * Builds HTML template for transfer notification email
- * @param {Object} params - Email parameters
- * @param {string} params.receiverName - Name of the receiver
- * @param {string} params.senderName - Name of the sender
- * @param {string} params.senderEmail - Email of the sender
- * @param {number} params.amount - Transfer amount
- * @param {string} params.description - Transaction description
- * @param {number} params.transactionId - Transaction ID
- * @param {string} params.videoCallUrl - URL to join video call
- * @returns {string} HTML content
- */
 const buildTransferNotificationEmailTemplate = ({
   receiverName,
   senderName,
@@ -161,12 +140,6 @@ const buildTransferNotificationEmailTemplate = ({
   `;
 };
 
-/**
- * Builds HTML page for verification result (success/failure)
- * @param {boolean} success - Whether verification succeeded
- * @param {string|null} errorMessage - Error message if failed
- * @returns {string} HTML page content
- */
 export const buildVerificationResultPage = (success, errorMessage = null) => {
   const year = new Date().getFullYear();
 
@@ -210,15 +183,6 @@ export const buildVerificationResultPage = (success, errorMessage = null) => {
   `;
 };
 
-/* ============================================
-   Email Sending Functions
-   ============================================ */
-
-/**
- * Sends verification email
- * @param {string} email - Recipient email
- * @param {string} token - Verification token
- */
 async function sendVerificationEmail(email, token) {
   if (!config.email.brevoApiKey) throw new AppError('Missing BREVO_API_KEY', 500);
   if (!config.email.from) throw new AppError('Missing EMAIL_FROM', 500);
@@ -235,12 +199,6 @@ async function sendVerificationEmail(email, token) {
   logger.info(`Verification email sent to ${email} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
 }
 
-/**
- * Sends verification email asynchronously (fire-and-forget).
- * Logs and ignores errors. Does nothing if email or token is missing.
- * @param {string} email - Recipient email
- * @param {string} token - Verification token
- */
 export const sendVerificationEmailAsync = (email, token) => {
   if (!email || !token) {
     logger.error('sendVerificationEmailAsync: email and token are required');
@@ -253,18 +211,6 @@ export const sendVerificationEmailAsync = (email, token) => {
   });
 };
 
-/**
- * Sends transfer notification email to receiver
- * @param {Object} params - Email parameters
- * @param {string} params.receiverEmail - Email of the receiver
- * @param {string} params.receiverName - Name of the receiver
- * @param {string} params.senderName - Name of the sender
- * @param {string} params.senderEmail - Email of the sender
- * @param {number} params.amount - Transfer amount
- * @param {string} params.description - Transaction description
- * @param {number} params.transactionId - Transaction ID
- * @param {string} params.videoCallUrl - URL to join video call
- */
 async function sendTransferNotificationEmail({
   receiverEmail,
   receiverName,
@@ -297,11 +243,6 @@ async function sendTransferNotificationEmail({
   logger.info(`Transfer notification email sent to ${receiverEmail} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
 }
 
-/**
- * Sends transfer notification email asynchronously (fire-and-forget).
- * Logs and ignores errors.
- * @param {Object} params - Email parameters
- */
 export const sendTransferNotificationEmailAsync = (params) => {
   if (!params?.receiverEmail) {
     logger.error('sendTransferNotificationEmailAsync: receiverEmail is required');

@@ -2,17 +2,14 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.model.js';
 import { SALT_ROUNDS, USER_STATUS } from '../constants/index.js';
 import { generateVerificationToken, hashToken } from '../utils/generate.util.js';
+import { AppError } from '../utils/error.util.js';
 
 export const findAndVerifyUserByToken = async (token) => {
-  const user = await User.findOne({
-    verificationToken: hashToken(token),
-    status: USER_STATUS.PENDING,
-  });
-  if (!user) return null;
-
-  user.status = USER_STATUS.ACTIVE;
-  user.verificationToken = undefined;
-  await user.save();
+  const user = await User.findOneAndUpdate(
+    { verificationToken: hashToken(token), status: USER_STATUS.PENDING },
+    { status: USER_STATUS.ACTIVE, verificationToken: undefined },
+    { new: true }
+  );
   return user;
 };
 
@@ -24,26 +21,17 @@ export const findUserById = async (id) => {
   return User.findOne({ id });
 };
 
-/**
- * Get account summary for ChatBot
- * @param {string} userId - User ID
- * @returns {Promise<{userId: string, balance: number}>}
- */
+export const findActiveUserById = async (id) => {
+  const user = await User.findOne({ id }).select('id email status');
+  return user?.status === USER_STATUS.ACTIVE ? user : null;
+};
+
 export const getAccountSummary = async (userId) => {
   const user = await User.findOne({ id: userId }).select('id balance');
-
-  if (!user) {
-    throw new AppError('User not found', 404);
-  }
-
+  if (!user) throw new AppError('User not found', 404);
   return { userId: user.id, balance: user.balance };
 };
 
-/**
- * Create a new user
- * @param {Object} userData - User data
- * @returns {Promise<{user: Object, verificationToken: string}>}
- */
 export const createUser = async (userData) => {
   const { firstName, lastName, email, phone, password } = userData;
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -61,18 +49,9 @@ export const createUser = async (userData) => {
   return { user, verificationToken };
 };
 
-/**
- * Regenerates verification token (for resend).
- * @param {string} email - User email
- * @returns {Promise<{verificationToken: string}|null>}
- */
 export const regenerateVerificationToken = async (email) => {
-  const user = await User.findOne({
-    email: email.toLowerCase(),
-    status: USER_STATUS.PENDING,
-  });
+  const user = await User.findOne({ email: email.toLowerCase(), status: USER_STATUS.PENDING });
   if (!user) return null;
-
   const verificationToken = generateVerificationToken();
   user.verificationToken = hashToken(verificationToken);
   await user.save();

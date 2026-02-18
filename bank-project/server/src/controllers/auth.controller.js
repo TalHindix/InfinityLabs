@@ -13,11 +13,11 @@ import {
   buildVerificationResultPage,
 } from '../utils/email.util.js';
 import * as response from '../utils/response.util.js';
-import { mapErrorToResponse } from '../utils/error.util.js';
 import { AppError } from '../utils/error.util.js';
 import { disconnectUser } from '../socket/socket.handler.js';
+import { getAuthenticatedUser } from '../middleware/auth.middleware.js';
 
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
     if (!firstName || !lastName || !email || !phone || !password) {
@@ -28,20 +28,10 @@ export const signup = async (req, res) => {
     sendVerificationEmailAsync(user.email, verificationToken);
     return response.created(res, { message: 'Please check your email to verify your account.' });
   } catch (error) {
-    const { statusCode, message } = mapErrorToResponse(error);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[${req.method}] ${req.originalUrl}:`, error);
-    }
-
-    return res.status(statusCode).json({
-      success: false,
-      error: message,
-    });
+    next(error);
   }
 };
 
-/** Verifies email via query token; returns HTML success or failure page. */
 export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;
@@ -60,8 +50,7 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-/** Resends verification email if user exists and is PENDING; always returns same message (no user enumeration). */
-export const resendVerification = async (req, res) => {
+export const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
     if (!email) throw new AppError('Email is required', 400);
@@ -72,21 +61,11 @@ export const resendVerification = async (req, res) => {
 
     return response.ok(res, { message: successMessage });
   } catch (error) {
-    const { statusCode, message } = mapErrorToResponse(error);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[${req.method}] ${req.originalUrl}:`, error);
-    }
-
-    return res.status(statusCode).json({
-      success: false,
-      error: message,
-    });
+    next(error);
   }
 };
 
-/** Logs in with email/password, sets HTTP-only cookie with JWT, returns user summary. Fails with same message for wrong email, wrong password, or unverified account. */
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) throw new AppError('Email and password are required', 400);
@@ -117,25 +96,13 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    const { statusCode, message } = mapErrorToResponse(error);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[${req.method}] ${req.originalUrl}:`, error);
-    }
-
-    return res.status(statusCode).json({
-      success: false,
-      error: message,
-    });
+    next(error);
   }
 };
 
-/** Clears the auth cookie, disconnects active sockets, and returns 200. */
-export const logout = (req, res) => {
-  // Disconnect sockets if user is authenticated (optionalProtect sets req.user if token exists)
-  if (req.user?.id) {
-    disconnectUser(req.user.id);
-  }
+export const logout = async (req, res) => {
+  const user = await getAuthenticatedUser(req);
+  if (user?.id) disconnectUser(user.id);
 
   res.clearCookie(config.cookie.tokenName, {
     path: '/',

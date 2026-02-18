@@ -2,116 +2,93 @@ import { processMessage } from '../services/chatbot.service.js';
 import { authenticateSocket, getTokenFromCookie } from '../middleware/socketAuth.middleware.js';
 import { verifyToken } from '../utils/jwt.util.js';
 
-const getTimestamp = () => new Date().toISOString();
+const MESSAGES = {
+  GREETING: "Hello! I'm your virtual banking assistant.",
+  ERROR: 'Sorry, something went wrong. Please try again.',
+  SESSION_EXPIRED: 'Your session has expired. Please refresh the page and log in again.',
+  LOGGED_OUT: 'You have been logged out. Please refresh the page.',
+};
 
-/** Message sent when a client first connects to the chat. */
-const INITIAL_GREETING = 'Hello! I\'m your virtual banking assistant 🏦';
+const activeSocketsByUserId = new Map();
 
-/** Message sent when processing a user message fails. */
-const ERROR_FALLBACK_MESSAGE = 'Sorry, something went wrong. Please try again.';
+const emitBot = (socket, response, intent, data = null, requiresAuth = false) => {
+  socket.emit('bot-message', {
+    response,
+    intent,
+    data,
+    requiresAuth,
+    timestamp: new Date().toISOString(),
+  });
+};
 
-// Track active sockets per user: userId → Set<socket>
-const activeSockets = new Map();
+const isTokenValid = (socket) => {
+  const cookieHeader = socket.handshake.headers?.cookie;
+  const token = getTokenFromCookie(cookieHeader);
+  if (!token) return false;
 
-/**
- * Disconnects all sockets for a given user ID.
- * @param {string} userId - User ID to disconnect
- */
-export const disconnectUser = (userId) => {
-  const sockets = activeSockets.get(userId);
-  if (sockets) {
-    sockets.forEach((socket) => {
-      socket.emit('bot-message', {
-        response: 'You have been logged out. Please refresh the page.',
-        intent: 'error',
-        timestamp: getTimestamp(),
-      });
-      socket.disconnect();
-    });
-    activeSockets.delete(userId);
+  try {
+    verifyToken(token);
+    return true;
+  } catch (err) {
+    if (err?.name === 'TokenExpiredError' || err?.name === 'JsonWebTokenError') return false;
+    throw err;
   }
 };
 
-/**
- * Sets up the /chat Socket.IO namespace: auth on connect, then greeting; user-message -> processMessage -> bot-message.
- */
-export const initChatbotSocket = (io) => {
-  const chatNamespace = io.of('/chat');
-  chatNamespace.use(authenticateSocket);
+const trackSocket = (userId, socket) => {
+  if (!activeSocketsByUserId.has(userId)) activeSocketsByUserId.set(userId, new Set());
+  activeSocketsByUserId.get(userId).add(socket);
+};
 
-  chatNamespace.on('connection', (socket) => {
+const untrackSocket = (userId, socket) => {
+  const set = activeSocketsByUserId.get(userId);
+  if (!set) return;
+  set.delete(socket);
+  if (set.size === 0) activeSocketsByUserId.delete(userId);
+};
+
+export const disconnectUser = (userId) => {
+  const set = activeSocketsByUserId.get(userId);
+  if (!set) return;
+
+  for (const socket of set) {
+    emitBot(socket, MESSAGES.LOGGED_OUT, 'error');
+    socket.disconnect();
+  }
+  activeSocketsByUserId.delete(userId);
+};
+
+export const initChatbotSocket = (io) => {
+  const chat = io.of('/chat');
+  chat.use(authenticateSocket);
+
+  chat.on('connection', (socket) => {
     const userId = socket.data.user.id;
 
-    // Track socket
-    if (!activeSockets.has(userId)) {
-      activeSockets.set(userId, new Set());
-    }
-    activeSockets.get(userId).add(socket);
-
-    socket.emit('bot-message', {
-      response: INITIAL_GREETING,
-      intent: 'greeting',
-      timestamp: getTimestamp(),
-    });
+    trackSocket(userId, socket);
+    emitBot(socket, MESSAGES.GREETING, 'greeting');
 
     socket.on('user-message', async (message) => {
       try {
-        // Re-verify token on each message
-        const cookieHeader = socket.handshake.headers?.cookie;
-        const token = getTokenFromCookie(cookieHeader);
-
-        if (!token) {
-          socket.emit('bot-message', {
-            response: 'Your session has expired. Please refresh the page and log in again.',
-            intent: 'error',
-            timestamp: getTimestamp(),
-          });
+        if (!isTokenValid(socket)) {
+          emitBot(socket, MESSAGES.SESSION_EXPIRED, 'error');
           socket.disconnect();
           return;
         }
 
-        try {
-          verifyToken(token); // Throws if expired or invalid
-        } catch (error) {
-          if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
-            socket.emit('bot-message', {
-              response: 'Your session has expired. Please refresh the page and log in again.',
-              intent: 'error',
-              timestamp: getTimestamp(),
-            });
-            socket.disconnect();
-            return;
-          }
-          throw error; // Re-throw non-JWT errors
-        }
-
-        const context = { userId };
-        const result = await processMessage(message, context);
-        socket.emit('bot-message', {
-          response: result.message,
-          intent: result.intent,
-          data: result.data ?? null,
-          requiresAuth: result.requiresAuth ?? false,
-          timestamp: getTimestamp(),
-        });
-      } catch {
-        socket.emit('bot-message', {
-          response: ERROR_FALLBACK_MESSAGE,
-          intent: 'error',
-          timestamp: getTimestamp(),
-        });
+        const result = await processMessage(message, { userId });
+        emitBot(
+          socket,
+          result.message,
+          result.intent,
+          result.data ?? null,
+          result.requiresAuth ?? false
+        );
+      } catch (err) {
+        emitBot(socket, MESSAGES.ERROR, 'error');
       }
     });
 
-    socket.on('disconnect', () => {
-      // Remove socket from tracking
-      const sockets = activeSockets.get(userId);
-      if (sockets) {
-        sockets.delete(socket);
-        if (sockets.size === 0) {
-          activeSockets.delete(userId);
-        }
-      }
-    });
+    socket.on('disconnect', () => untrackSocket(userId, socket));
   });
 };

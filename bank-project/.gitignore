@@ -10,3 +10,6 @@
 
 # Dependencies (each subfolder has its own; this is for root)
 node_modules/
+
+# Docker override files (local development only)
+docker-compose.override.yml

@@ -1,5 +1,3 @@
-/** Shared application constants. */
-
 export const USER_STATUS = Object.freeze({
   PENDING: 'PENDING',
   ACTIVE: 'ACTIVE',

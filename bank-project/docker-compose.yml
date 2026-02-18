@@ -1,8 +1,15 @@
+# Docker Compose configuration for LOCAL TESTING only
+# 
+# Production deployment:
+#   - Server: Render Docker Service (uses server/Dockerfile)
+#   - Client: Vercel (no Docker)
+#   - Database: MongoDB Atlas (no Docker)
+#
+# Usage: docker compose up -d
+
 services:
   mongo:
     image: mongo:7
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:

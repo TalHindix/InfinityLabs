@@ -1,3 +1,7 @@
+# Client Dockerfile - Multi-stage build (Node.js builder + Nginx server)
+# Currently not used in production (client deployed on Vercel)
+# Available for future use if migrating to Docker-based hosting
+#
 # Stage 1: build
 FROM node:20-alpine AS builder
 
