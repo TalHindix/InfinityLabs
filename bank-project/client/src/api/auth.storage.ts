@@ -19,10 +19,6 @@ export const authStorage = {
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   },
 
-  logout(): void {
-    this.clearAuth();
-  },
-
   isAuthenticated() {
     return !!this.getUser();
   },

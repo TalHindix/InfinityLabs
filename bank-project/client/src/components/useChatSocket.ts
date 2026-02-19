@@ -20,9 +20,6 @@ export interface Message {
 
 export const useChatSocket = (isAuthenticated: boolean) => {
   const navigate = useNavigate();
-  const navigateRef = useRef(navigate);
-  navigateRef.current = navigate;
-
   const [messages, setMessages] = useState<Message[]>([]);
   const socketRef = useRef<Socket | null>(null);
 
@@ -35,25 +32,17 @@ export const useChatSocket = (isAuthenticated: boolean) => {
   }, []);
 
   useEffect(() => {
+    disconnectSocket();
+
     if (!isAuthenticated) {
-      disconnectSocket();
       return;
-    }
-
-    if (socketRef.current?.connected) {
-      return;
-    }
-
-    if (socketRef.current) {
-      socketRef.current.removeAllListeners();
-      socketRef.current.disconnect();
     }
 
     socketRef.current = io(`${SOCKET_URL}/chat`, {
       withCredentials: true,
     });
 
-    socketRef.current.on('connect_error', () => {
+    socketRef.current.once('connect_error', () => {
       setMessages((prev) => [
         ...prev,
         {
@@ -63,7 +52,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
       ]);
       socketRef.current?.disconnect();
       authStorage.clearAuth();
-      navigateRef.current(ROUTES.LOGIN);
+      navigate(ROUTES.LOGIN);
     });
 
     socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
@@ -77,7 +66,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
     return () => {
       disconnectSocket();
     };
-  }, [isAuthenticated, disconnectSocket]);
+  }, [isAuthenticated, navigate, disconnectSocket]);
 
   const sendMessage = useCallback((text: string) => {
     if (!text.trim()) return;

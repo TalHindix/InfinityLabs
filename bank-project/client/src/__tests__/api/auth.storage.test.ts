@@ -164,15 +164,7 @@ describe('authStorage - Critical Edge Case Tests', () => {
     });
   });
 
-  describe('logout', () => {
-    it('should call clearAuth', () => {
-      const clearAuthSpy = vi.spyOn(authStorage, 'clearAuth');
-
-      authStorage.logout();
-
-      expect(clearAuthSpy).toHaveBeenCalledTimes(1);
-    });
-
+  describe('clearAuth', () => {
     it('should remove user from localStorage', () => {
       const mockUser: User = {
         id: '1',
@@ -186,7 +178,7 @@ describe('authStorage - Critical Edge Case Tests', () => {
 
       localStorage.setItem('user', JSON.stringify(mockUser));
 
-      authStorage.logout();
+      authStorage.clearAuth();
 
       expect(authStorage.getUser()).toBeNull();
     });

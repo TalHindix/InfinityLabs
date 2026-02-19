@@ -184,10 +184,6 @@ export async function processWithFunctionCalling(message, chatHistory, context) 
 
     const replyContent = assistantMessage.content || '';
 
-    const calledFunctions = messages
-      .filter((m) => m.role === 'tool')
-      .map((m) => m.tool_call_id);
-
     const assistantMessages = messages.filter((m) => m.tool_calls);
     const allCalledNames = assistantMessages.flatMap(
       (m) => m.tool_calls.map((tc) => tc.function.name)
