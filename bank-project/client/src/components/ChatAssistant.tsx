@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { Box, Fab, Paper, Typography, TextField, IconButton } from '@mui/material';
 import { Chat, Close, Send } from '@mui/icons-material';
+import Markdown from 'react-markdown';
 import {
   fabSx,
   windowSx,
@@ -10,6 +11,7 @@ import {
   closeButtonSx,
   messagesContainerSx,
   createMessageSx,
+  botMarkdownSx,
   inputContainerSx,
   textFieldSx,
 } from './ChatAssistant.styles';
@@ -148,12 +150,12 @@ const ChatAssistant = () => {
       <Box sx={messagesContainerSx}>
         {messages.map((msg, index) => (
           <Box key={`${msg.type}-${index}`} sx={createMessageSx(msg.type === 'user')}>
-            {msg.text}
-            {msg.data && (
-              <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 1 }}>
-                {msg.data.userId && <div>Account: {msg.data.userId}</div>}
-                {msg.data.balance && <div>Balance: {msg.data.balance}</div>}
+            {msg.type === 'bot' ? (
+              <Box sx={botMarkdownSx}>
+                <Markdown>{msg.text}</Markdown>
               </Box>
+            ) : (
+              msg.text
             )}
           </Box>
         ))}
@@ -164,9 +166,16 @@ const ChatAssistant = () => {
         <TextField
           size="small"
           fullWidth
+          multiline
+          maxRows={4}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
           placeholder="Type a message..."
           sx={textFieldSx}
         />
