@@ -111,6 +111,10 @@ export const initChatbotSocket = (io) => {
           result.data ?? null,
           result.requiresAuth ?? false
         );
+
+        if (result.transferCompleted) {
+          socket.emit('transfer-completed');
+        }
       } catch (err) {
         emitBot(socket, MESSAGES.ERROR, 'error');
       }

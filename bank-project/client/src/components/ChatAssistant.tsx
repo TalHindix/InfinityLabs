@@ -98,6 +98,10 @@ const ChatAssistant = () => {
       setMessages((prev) => [...prev, { type: 'bot', text: data.response, data: data.data }]);
     });
 
+    socketRef.current.on('transfer-completed', () => {
+      window.dispatchEvent(new CustomEvent('dashboard:refresh'));
+    });
+
     // Cleanup on unmount
     return () => {
       if (socketRef.current) {
@@ -179,7 +183,12 @@ const ChatAssistant = () => {
           placeholder="Type a message..."
           sx={textFieldSx}
         />
-        <IconButton color="primary" onClick={handleSend}>
+        <IconButton
+          color="primary"
+          onClick={handleSend}
+          disabled={!input.trim()}
+          sx={{ opacity: input.trim() ? 1 : 0.4, transition: 'opacity 0.2s' }}
+        >
           <Send />
         </IconButton>
       </Box>

@@ -61,6 +61,10 @@ const TOOLS = [
             type: 'number',
             description: 'The amount in AED to transfer.',
           },
+          description: {
+            type: 'string',
+            description: 'The reason or description for the transfer. Ask the user if not provided.',
+          },
         },
         required: ['recipientEmail', 'amount'],
       },
@@ -180,6 +184,15 @@ export async function processWithFunctionCalling(message, chatHistory, context) 
 
     const replyContent = assistantMessage.content || '';
 
+    const calledFunctions = messages
+      .filter((m) => m.role === 'tool')
+      .map((m) => m.tool_call_id);
+
+    const assistantMessages = messages.filter((m) => m.tool_calls);
+    const allCalledNames = assistantMessages.flatMap(
+      (m) => m.tool_calls.map((tc) => tc.function.name)
+    );
+
     const updatedHistory = [
       ...chatHistory,
       { role: 'user', content: message },
@@ -189,6 +202,7 @@ export async function processWithFunctionCalling(message, chatHistory, context) 
     return {
       message: replyContent,
       chatHistory: updatedHistory,
+      transferCompleted: allCalledNames.includes('transfer_money'),
     };
   } catch (error) {
     logger.error('OpenAI function calling failed', { error: error.message });

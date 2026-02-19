@@ -25,6 +25,7 @@ export async function processMessage(message, chatHistory, context) {
       intent: 'chat',
       message: result.message,
       chatHistory: result.chatHistory,
+      transferCompleted: result.transferCompleted || false,
     };
   } catch (error) {
     logger.error('Chatbot processMessage failed', { error: error.message });

@@ -4,6 +4,7 @@ export const fabSx: SxProps<Theme> = {
   position: 'fixed',
   bottom: 20,
   right: 20,
+  zIndex: 1300,
 };
 
 export const windowSx: SxProps<Theme> = {
@@ -18,6 +19,7 @@ export const windowSx: SxProps<Theme> = {
   overflow: 'hidden',
   direction: 'ltr',
   bgcolor: 'background.paper',
+  zIndex: 1300,
 };
 
 export const headerSx: SxProps<Theme> = {
