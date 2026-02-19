@@ -99,12 +99,9 @@ export const inputContainerSx: SxProps<Theme> = {
 
 export const textFieldSx: SxProps<Theme> = {
   '& .MuiInputBase-root': {
-    maxHeight: 120,
-    overflowY: 'auto',
-    alignItems: 'flex-end',
     fontSize: '0.875rem',
   },
-  '& .MuiInputBase-input': {
+  '& textarea': {
     textAlign: 'left',
     overflowWrap: 'break-word',
     wordBreak: 'break-word',
