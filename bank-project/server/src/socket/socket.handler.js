@@ -7,9 +7,14 @@ const MESSAGES = {
   ERROR: 'Sorry, something went wrong. Please try again.',
   SESSION_EXPIRED: 'Your session has expired. Please refresh the page and log in again.',
   LOGGED_OUT: 'You have been logged out. Please refresh the page.',
+  RATE_LIMITED: 'Too many messages. Please wait a moment before sending another.',
 };
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+
 const activeSocketsByUserId = new Map();
+const userMessageCounts = new Map();
 
 const emitBot = (socket, response, intent, data = null, requiresAuth = false) => {
   socket.emit('bot-message', {
@@ -58,6 +63,21 @@ export const disconnectUser = (userId) => {
   activeSocketsByUserId.delete(userId);
 };
 
+const checkRateLimit = (userId) => {
+  const now = Date.now();
+  const entry = userMessageCounts.get(userId);
+
+  if (!entry || now > entry.resetAt) {
+    userMessageCounts.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+
+  entry.count++;
+  return true;
+};
+
 export const initChatbotSocket = (io) => {
   const chat = io.of('/chat');
   chat.use(authenticateSocket);
@@ -66,6 +86,7 @@ export const initChatbotSocket = (io) => {
     const userId = socket.data.user.id;
 
     trackSocket(userId, socket);
+    socket.data.chatHistory = [];
     emitBot(socket, MESSAGES.GREETING, 'greeting');
 
     socket.on('user-message', async (message) => {
@@ -76,7 +97,13 @@ export const initChatbotSocket = (io) => {
           return;
         }
 
-        const result = await processMessage(message, { userId });
+        if (!checkRateLimit(userId)) {
+          emitBot(socket, MESSAGES.RATE_LIMITED, 'error');
+          return;
+        }
+
+        const result = await processMessage(message, socket.data.chatHistory, { userId });
+        socket.data.chatHistory = result.chatHistory;
         emitBot(
           socket,
           result.message,

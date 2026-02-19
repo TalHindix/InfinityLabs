@@ -133,7 +133,7 @@ server/
 │   │
 │   ├── middleware/           # Cross-cutting concerns
 │   │   ├── auth.middleware.js
-│   │   ├── rateLimit.middleware.js
+│   │   ├── ratelimit.middleware.js
 │   │   ├── logger.middleware.js
 │   │   └── socketAuth.middleware.js
 │   │

@@ -6,7 +6,7 @@ import {
   sendTransferNotification,
 } from '../controllers/transaction.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
-import { transactionLimiter } from '../middleware/rateLimit.middleware.js';
+import { transactionLimiter } from '../middleware/ratelimit.middleware.js';
 
 const router = Router();
 

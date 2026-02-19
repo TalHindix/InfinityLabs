@@ -6,7 +6,7 @@ import {
   logout,
   resendVerification,
 } from '../controllers/auth.controller.js';
-import { authLimiter, verifyLimiter } from '../middleware/rateLimit.middleware.js';
+import { authLimiter, verifyLimiter } from '../middleware/ratelimit.middleware.js';
 
 const router = Router();
 
