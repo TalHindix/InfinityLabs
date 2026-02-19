@@ -33,6 +33,9 @@ interface Message {
 
 const ChatAssistant = () => {
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -91,7 +94,7 @@ const ChatAssistant = () => {
       ]);
       socketRef.current?.disconnect();
       authStorage.clearAuth();
-      navigate(ROUTES.LOGIN);
+      navigateRef.current(ROUTES.LOGIN);
     });
 
     socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
@@ -102,7 +105,6 @@ const ChatAssistant = () => {
       window.dispatchEvent(new CustomEvent('dashboard:refresh'));
     });
 
-    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.removeAllListeners();
@@ -110,7 +112,7 @@ const ChatAssistant = () => {
         socketRef.current = null;
       }
     };
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isOpen && messages.length > 0 && messagesEndRef.current) {

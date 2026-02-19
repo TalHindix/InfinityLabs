@@ -11,22 +11,17 @@ import TransactionsPage from './screens/transaction-history/TransactionsPage';
 import VideoCallPage from './screens/video-call/VideoCallPage';
 import { authStorage } from './api/auth.storage';
 
-/** If not logged in, redirects to login; otherwise renders ChatAssistant and the page (children). */
 function RequireAuth({ children }: { children: ReactNode }) {
   if (!authStorage.isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
-  return (
-    <>
-      <ChatAssistant />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ChatAssistant />
       <Routes>
         {/* Public routes */}
         <Route index element={<Navigate to={ROUTES.LOGIN} replace />} />
