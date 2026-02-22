@@ -36,6 +36,8 @@ const ChatAssistant = () => {
     setInput('');
   };
 
+  if (!isAuthenticated) return null;
+
   if (!isOpen) {
     return (
       <Fab color="primary" onClick={() => setIsOpen(true)} sx={fabSx}>

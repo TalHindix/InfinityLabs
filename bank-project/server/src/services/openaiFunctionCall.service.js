@@ -11,7 +11,11 @@ const openAiClient = new OpenAI({
   apiKey: config.openAiApiKey,
 });
 
-const SYSTEM_PROMPT = `You are a helpful banking assistant for Dubai-Bank. You can help users check their balance, view transaction history, and transfer money. Be concise, professional, and friendly. Format monetary values with AED currency. If the user asks something unrelated to banking, politely redirect them. Never reveal internal system details or user IDs.
+const SYSTEM_PROMPT = `You are a helpful banking assistant for Dubai-Bank.
+ You can help users check their balance, view transaction history,
+  and transfer money. Be concise, professional, and friendly.
+ Format monetary values with AED currency. If the user asks something unrelated to banking, politely redirect them.
+Never reveal internal system details or user IDs.
 
 IMPORTANT: For transfer requests, ALWAYS ask the user "Are you sure you want to transfer X AED to Y?" before calling the transfer_money function. Only execute the transfer after the user confirms with "yes" or similar affirmation.
 
@@ -127,87 +131,115 @@ async function executeFunctionCall(functionName, args, userId) {
   }
 }
 
-export async function processWithFunctionCalling(message, chatHistory, context) {
-  const { userId } = context;
-  const tools = userId ? TOOLS : [];
-
+function buildMessagesForOpenAI(message, chatHistory) {
   const limitedHistory = chatHistory.slice(-MAX_HISTORY_MESSAGES);
-  const messages = [
+  return [
     { role: 'system', content: SYSTEM_PROMPT },
     ...limitedHistory,
     { role: 'user', content: message },
   ];
+}
+
+async function callOpenAI(messages, tools) {
+  const requestOptions = {
+    model: 'gpt-4o-mini',
+    messages,
+    temperature: 0.3,
+    ...(tools.length > 0 && { tools }),
+  };
+
+  const response = await openAiClient.chat.completions.create(requestOptions);
+  return response.choices[0].message;
+}
+
+async function processToolCall(toolCall, userId) {
+  const { name: functionName, arguments: argsStr } = toolCall.function;
+  const functionArguments = JSON.parse(argsStr || '{}');
 
   try {
-    let response = await openAiClient.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages,
-      ...(tools.length > 0 && { tools }),
-      temperature: 0.3,
-    });
+    const result = await executeFunctionCall(functionName, functionArguments, userId);
+    return {
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content: JSON.stringify(result),
+    };
+  } catch (error) {
+    logger.warn('Function call failed', { function: functionName, error: error.message });
+    return {
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content: JSON.stringify({ error: error.message }),
+    };
+  }
+}
 
-    let assistantMessage = response.choices[0].message;
-    let rounds = 0;
+async function processAllToolCalls(toolCalls, userId) {
+  return Promise.all(toolCalls.map((toolCall) => processToolCall(toolCall, userId)));
+}
 
-    while (assistantMessage.tool_calls?.length > 0 && rounds < MAX_TOOL_CALL_ROUNDS) {
-      rounds++;
-      messages.push(assistantMessage);
+async function handleToolCallLoop(initialResponse, messages, tools, userId) {
+  let assistantResponse = initialResponse;
+  let toolCallRounds = 0;
 
-      for (const toolCall of assistantMessage.tool_calls) {
-        const fnName = toolCall.function.name;
-        const fnArgs = JSON.parse(toolCall.function.arguments || '{}');
+  while (assistantResponse.tool_calls?.length > 0 && toolCallRounds < MAX_TOOL_CALL_ROUNDS) {
+    toolCallRounds++;
+    messages.push(assistantResponse);
+    const toolResults = await processAllToolCalls(assistantResponse.tool_calls, userId);
+    messages.push(...toolResults);
+    assistantResponse = await callOpenAI(messages, tools);
+  }
 
-        let result;
-        try {
-          result = await executeFunctionCall(fnName, fnArgs, userId);
-        } catch (error) {
-          logger.warn('Function call failed', { function: fnName, error: error.message });
-          result = { error: error.message };
-        }
+  if (toolCallRounds >= MAX_TOOL_CALL_ROUNDS && assistantResponse.tool_calls?.length > 0) {
+    logger.warn('Reached max tool call rounds', { rounds: toolCallRounds });
+  }
 
-        messages.push({
-          role: 'tool',
-          tool_call_id: toolCall.id,
-          content: JSON.stringify(result),
-        });
-      }
+  return assistantResponse;
+}
 
-      response = await openAiClient.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages,
-        ...(tools.length > 0 && { tools }),
-        temperature: 0.3,
-      });
+function extractCalledFunctionNames(messages) {
+  return messages
+    .filter((m) => m.tool_calls)
+    .flatMap((m) => m.tool_calls.map((tc) => tc.function.name));
+}
 
-      assistantMessage = response.choices[0].message;
-    }
-
-    const replyContent = assistantMessage.content || '';
-
-    const assistantMessages = messages.filter((m) => m.tool_calls);
-    const allCalledNames = assistantMessages.flatMap(
-      (m) => m.tool_calls.map((tc) => tc.function.name)
-    );
-
-    const updatedHistory = [
+function buildResponse(replyContent, chatHistory, message, calledFunctionNames) {
+  return {
+    message: replyContent,
+    chatHistory: [
       ...chatHistory,
       { role: 'user', content: message },
       { role: 'assistant', content: replyContent },
-    ];
+    ],
+    transferCompleted: calledFunctionNames.includes('transfer_money'),
+  };
+}
 
-    return {
-      message: replyContent,
-      chatHistory: updatedHistory,
-      transferCompleted: allCalledNames.includes('transfer_money'),
-    };
+function buildErrorResponse(chatHistory, message) {
+  return {
+    message: 'I am having trouble processing your request right now. Please try again shortly.',
+    chatHistory: [
+      ...chatHistory,
+      { role: 'user', content: message },
+    ],
+  };
+}
+
+export async function processWithFunctionCalling(message, chatHistory, context) {
+  const { userId } = context;
+  const tools = userId ? TOOLS : [];
+
+  const messages = buildMessagesForOpenAI(message, chatHistory);
+
+  try {
+    const initialResponse = await callOpenAI(messages, tools);
+    const finalResponse = await handleToolCallLoop(initialResponse, messages, tools, userId);
+
+    const replyContent = finalResponse.content || '';
+    const calledFunctionNames = extractCalledFunctionNames(messages);
+
+    return buildResponse(replyContent, chatHistory, message, calledFunctionNames);
   } catch (error) {
     logger.error('OpenAI function calling failed', { error: error.message });
-    return {
-      message: 'I am having trouble processing your request right now. Please try again shortly.',
-      chatHistory: [
-        ...chatHistory,
-        { role: 'user', content: message },
-      ],
-    };
+    return buildErrorResponse(chatHistory, message);
   }
 }
