@@ -35,8 +35,11 @@ export const useChatSocket = (isAuthenticated: boolean) => {
     disconnectSocket();
 
     if (!isAuthenticated) {
+      setMessages([]);
       return;
     }
+
+    setMessages([{ type: 'bot', text: "Hello! I'm your virtual banking assistant." }]);
 
     socketRef.current = io(`${SOCKET_URL}/chat`, {
       withCredentials: true,

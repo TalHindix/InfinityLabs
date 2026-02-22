@@ -3,7 +3,6 @@ import { authenticateSocket, getTokenFromCookie } from '../middleware/socketAuth
 import { verifyToken } from '../utils/jwt.util.js';
 
 const MESSAGES = {
-  GREETING: "Hello! I'm your virtual banking assistant.",
   ERROR: 'Sorry, something went wrong. Please try again.',
   SESSION_EXPIRED: 'Your session has expired. Please refresh the page and log in again.',
   LOGGED_OUT: 'You have been logged out. Please refresh the page.',
@@ -87,7 +86,6 @@ export const initChatbotSocket = (io) => {
 
     trackSocket(userId, socket);
     socket.data.chatHistory = [];
-    emitBot(socket, MESSAGES.GREETING, 'greeting');
 
     socket.on('user-message', async (message) => {
       try {
