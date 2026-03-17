@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(python3 -c \"import sys,json; deps=json.load\\(sys.stdin\\).get\\(''''dependencies'''',{}\\); [print\\(f''''{k}: {v}''''\\) for k,v in sorted\\(deps.items\\(\\)\\)]\")"
+    ]
+  }
+}
