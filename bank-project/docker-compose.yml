@@ -10,10 +10,11 @@
 services:
   mongo:
     image: mongo:7
+    command: ["mongod", "--replSet", "rs0"]
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--eval", "try { rs.status() } catch(e) { rs.initiate() } db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,7 +29,7 @@ services:
     env_file:
       - .env
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3000
       MONGO_URI: mongodb://mongo:27017/Dubai-Bank
       CLIENT_URL: http://localhost
@@ -43,6 +44,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: http://localhost:3000/api/v1
+        VITE_SOCKET_URL: http://localhost:3000
     ports:
       - "80:80"
     depends_on:

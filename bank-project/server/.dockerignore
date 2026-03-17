@@ -18,8 +18,11 @@ pids/
 # Test and coverage
 coverage/
 .nyc_output/
+__tests__/
+**/__tests__/
 **/*.test.js
 **/*.spec.js
+jest.config.js
 
 # Build output (not used in server image)
 dist/
