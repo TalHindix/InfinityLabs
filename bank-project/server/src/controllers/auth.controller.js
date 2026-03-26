@@ -3,14 +3,18 @@ import { USER_STATUS } from '../constants/index.js';
 import { createToken } from '../utils/jwt.util.js';
 import {
   findUserByEmailWithPassword,
+  findUserByEmail,
   createUser,
   validatePassword,
   findAndVerifyUserByToken,
   regenerateVerificationToken,
+  saveOtp,
+  verifyOtp as verifyOtpService,
 } from '../services/user.service.js';
 import {
   sendVerificationEmailAsync,
   buildVerificationResultPage,
+  sendOtpEmailAsync,
 } from '../utils/email.util.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../utils/error.util.js';
@@ -78,6 +82,28 @@ export const login = async (req, res, next) => {
     const isValidPassword = await validatePassword(password, user.password);
     if (!isValidPassword) throw new AppError('Invalid credentials', 401);
 
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    await saveOtp(user.id, otp);
+    sendOtpEmailAsync(user.email, otp);
+
+    return response.ok(res, { otpRequired: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) throw new AppError('Email and OTP are required', 400);
+
+    const user = await findUserByEmail(email);
+    if (!user || user.status !== USER_STATUS.ACTIVE) {
+      throw new AppError('Invalid request', 400);
+    }
+
+    await verifyOtpService(user, otp);
+
     const token = createToken(user);
     res.cookie(config.cookie.tokenName, token, {
       httpOnly: true,
@@ -95,6 +121,24 @@ export const login = async (req, res, next) => {
         email: user.email,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) throw new AppError('Email is required', 400);
+
+    const user = await findUserByEmail(email);
+    if (user && user.status === USER_STATUS.ACTIVE) {
+      const otp = String(Math.floor(100000 + Math.random() * 900000));
+      await saveOtp(user.id, otp);
+      sendOtpEmailAsync(user.email, otp);
+    }
+
+    return response.ok(res, { message: 'If the account exists, a new OTP has been sent.' });
   } catch (error) {
     next(error);
   }

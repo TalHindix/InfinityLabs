@@ -61,3 +61,40 @@ export const regenerateVerificationToken = async (email) => {
 export const validatePassword = async (inputPassword, hashedPassword) => {
   return bcrypt.compare(inputPassword, hashedPassword);
 };
+
+export const findUserByEmail = async (email) => {
+  return User.findOne({ email: email.toLowerCase() });
+};
+
+const OTP_EXPIRY_MS = 5 * 60 * 1000;
+const MAX_OTP_ATTEMPTS = 5;
+
+export const saveOtp = async (userId, otp) => {
+  const otpHash = await bcrypt.hash(otp, SALT_ROUNDS);
+  await User.findOneAndUpdate(
+    { id: userId },
+    { otpHash, otpExpiry: new Date(Date.now() + OTP_EXPIRY_MS), otpAttempts: 0 }
+  );
+};
+
+export const verifyOtp = async (user, otp) => {
+  if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
+    throw new AppError('Too many failed attempts. Please request a new OTP.', 429);
+  }
+
+  if (!user.otpHash || !user.otpExpiry || user.otpExpiry < new Date()) {
+    throw new AppError('OTP has expired. Please request a new one.', 400);
+  }
+
+  const isValid = await bcrypt.compare(otp, user.otpHash);
+
+  if (!isValid) {
+    await User.findOneAndUpdate({ id: user.id }, { $inc: { otpAttempts: 1 } });
+    throw new AppError('Invalid OTP.', 400);
+  }
+
+  await User.findOneAndUpdate(
+    { id: user.id },
+    { $unset: { otpHash: '', otpExpiry: '' }, $set: { otpAttempts: 0 } }
+  );
+};

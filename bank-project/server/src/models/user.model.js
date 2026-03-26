@@ -53,6 +53,9 @@ const userSchema = new mongoose.Schema(
       default: USER_STATUS.PENDING,
     },
     verificationToken: { type: String },
+    otpHash: { type: String },
+    otpExpiry: { type: Date },
+    otpAttempts: { type: Number, default: 0 },
     balance: {
       type: Number,
       default: DEFAULT_BALANCE,

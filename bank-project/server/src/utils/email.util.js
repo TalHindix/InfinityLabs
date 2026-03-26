@@ -140,6 +140,71 @@ const buildTransferNotificationEmailTemplate = ({
   `;
 };
 
+const buildOtpEmailTemplate = (otp) => {
+  const year = new Date().getFullYear();
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #ffffff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; margin: 0;">Dubai-Bank</h1>
+          </div>
+          <h2 style="color: #333; text-align: center;">Your Login Code</h2>
+          <p style="color: #666; text-align: center; font-size: 16px;">
+            Use the code below to complete your sign in. It expires in 5 minutes.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="display: inline-block; background-color: #f9f9f9; border: 2px solid #C9A227; border-radius: 8px; padding: 20px 40px;">
+              <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #2c3e50;">${otp}</span>
+            </div>
+          </div>
+          <p style="color: #999; text-align: center; font-size: 14px;">
+            If you did not attempt to sign in, you can safely ignore this email.
+          </p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #bbb; text-align: center; font-size: 12px;">
+            © ${year} Dubai-Bank. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+async function sendOtpEmail(email, otp) {
+  if (!config.email.brevoApiKey) throw new AppError('Missing BREVO_API_KEY', 500);
+  if (!config.email.from) throw new AppError('Missing EMAIL_FROM', 500);
+
+  const payload = {
+    sender: { name: 'Dubai-Bank', email: config.email.from },
+    to: [{ email }],
+    subject: '🔐 Your Login Code - Dubai-Bank',
+    htmlContent: buildOtpEmailTemplate(otp),
+  };
+
+  const res = await brevo.post('/smtp/email', payload);
+  logger.info(`OTP email sent to ${email} (brevoMessageId: ${res.data?.messageId ?? 'n/a'})`);
+}
+
+export const sendOtpEmailAsync = (email, otp) => {
+  if (!email || !otp) {
+    logger.error('sendOtpEmailAsync: email and otp are required');
+    return;
+  }
+  sendOtpEmail(email, otp).catch((err) => {
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+    logger.error(`Async OTP email failed for ${email}: status=${status} data=${JSON.stringify(data)}`, { error: err });
+  });
+};
+
 export const buildVerificationResultPage = (success, errorMessage = null) => {
   const year = new Date().getFullYear();
 

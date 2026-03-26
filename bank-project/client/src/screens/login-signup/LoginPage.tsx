@@ -37,9 +37,17 @@ const LoginPage = () => {
     showResendOption,
     resendLoading,
     resendSuccess,
+    otpRequired,
+    otp,
+    otpLoading,
+    otpError,
+    resendCooldown,
     handleFieldChange,
     handleSubmit,
     handleResendVerification,
+    handleVerifyOtp,
+    handleResendOtp,
+    setOtp,
   } = useLogin();
 
   return (
@@ -97,6 +105,14 @@ const LoginPage = () => {
                 onFieldChange={handleFieldChange}
                 onSubmit={handleSubmit}
                 onResendVerification={handleResendVerification}
+                otpRequired={otpRequired}
+                otp={otp}
+                otpLoading={otpLoading}
+                otpError={otpError}
+                resendCooldown={resendCooldown}
+                onOtpChange={setOtp}
+                onVerifyOtp={handleVerifyOtp}
+                onResendOtp={handleResendOtp}
               />
             </Stack>
           </CardContent>

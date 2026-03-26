@@ -19,6 +19,16 @@ export const authService = {
     return res.data.data;
   },
 
+  async verifyOtp(email: string, otp: string): Promise<LoginResponse> {
+    const res = await httpClient.post('/auth/verify-otp', { email, otp });
+    return res.data.data;
+  },
+
+  async resendOtp(email: string): Promise<{ message: string }> {
+    const res = await httpClient.post('/auth/resend-otp', { email });
+    return res.data.data;
+  },
+
   async logout(): Promise<void> {
     await httpClient.post('/auth/logout');
   },

@@ -22,7 +22,8 @@ export interface SignupData {
 export type SignupFormData = SignupData;
 
 export interface LoginResponse {
-  user: User;
+  user?: User;
+  otpRequired?: boolean;
   /** JWT for Authorization header (used when cookie is not sent cross-origin) */
   token?: string;
 }
