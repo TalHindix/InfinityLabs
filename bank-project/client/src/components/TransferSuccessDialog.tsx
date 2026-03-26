@@ -28,6 +28,7 @@ interface TransferSuccessDialogProps {
   transaction: Transaction | null;
   videoRoomName: string;
   onClose: () => void;
+  onVideoCall: (transactionId: string) => Promise<void>;
 }
 
 export const TransferSuccessDialog = ({
@@ -35,6 +36,7 @@ export const TransferSuccessDialog = ({
   transaction,
   videoRoomName,
   onClose,
+  onVideoCall,
 }: TransferSuccessDialogProps) => {
   const [showVideoCall, setShowVideoCall] = useState(false);
 
@@ -43,7 +45,10 @@ export const TransferSuccessDialog = ({
   const currentUser = authStorage.getUser();
   const amountText = `${formatAmount(transaction.amount)} AED`;
 
-  const handleStartVideoCall = () => setShowVideoCall(true);
+  const handleStartVideoCall = async () => {
+    await onVideoCall(transaction.id.toString());
+    setShowVideoCall(true);
+  };
   const handleCloseVideoCall = () => setShowVideoCall(false);
 
   if (showVideoCall && currentUser) {
@@ -125,7 +130,6 @@ export const TransferSuccessDialog = ({
           <Button
             onClick={handleStartVideoCall}
             variant="contained"
-            disabled={!videoRoomName}
             startIcon={<VideocamIcon />}
             sx={{
               flex: 1,

@@ -33,11 +33,13 @@ export const useTransfer = () => {
         setReceiverEmail('');
         setAmount('');
         setDescription('');
-        transactionService.sendNotification(tx.id.toString())
-          .then((res) => setVideoRoomName(res.roomName))
-          .catch(() => {});
       }
     );
+  };
+
+  const handleVideoCall = async (transactionId: string) => {
+    const res = await transactionService.sendNotification(transactionId);
+    setVideoRoomName(res.roomName);
   };
 
   const handleCloseDialog = () => {
@@ -59,6 +61,7 @@ export const useTransfer = () => {
     setAmount,
     setDescription,
     handleSubmit,
+    handleVideoCall,
     handleCloseDialog,
   };
 };

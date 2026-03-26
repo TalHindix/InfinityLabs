@@ -50,6 +50,7 @@ interface TransferFormProps {
   onDescriptionChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCloseDialog: () => void;
+  onVideoCall: (transactionId: string) => Promise<void>;
 }
 
 export const TransferForm = ({
@@ -66,6 +67,7 @@ export const TransferForm = ({
   onDescriptionChange,
   onSubmit,
   onCloseDialog,
+  onVideoCall,
 }: TransferFormProps) => {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -93,6 +95,7 @@ export const TransferForm = ({
         transaction={transaction}
         videoRoomName={videoRoomName}
         onClose={onCloseDialog}
+        onVideoCall={onVideoCall}
       />
 
       <form onSubmit={handleSubmitClick}>

@@ -63,6 +63,7 @@ const TransferPage = () => {
                 onDescriptionChange={transfer.setDescription}
                 onSubmit={transfer.handleSubmit}
                 onCloseDialog={transfer.handleCloseDialog}
+                onVideoCall={transfer.handleVideoCall}
               />
             </Stack>
           </CardContent>
