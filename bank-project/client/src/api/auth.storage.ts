@@ -1,7 +1,9 @@
-// Auth persistence: user in localStorage only; JWT lives in httpOnly cookie (server-set).
+// Auth persistence: user in localStorage, token in memory (for mobile cookie fallback).
 import type { User } from '../types';
 
 export const AUTH_CHANGE_EVENT = 'auth-state-change';
+
+let inMemoryToken: string | null = null;
 
 export const authStorage = {
   getUser(): User | null {
@@ -14,8 +16,17 @@ export const authStorage = {
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   },
 
+  getToken(): string | null {
+    return inMemoryToken;
+  },
+
+  setToken(token: string) {
+    inMemoryToken = token;
+  },
+
   clearAuth() {
     localStorage.removeItem('user');
+    inMemoryToken = null;
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   },
 

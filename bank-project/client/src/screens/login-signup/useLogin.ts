@@ -63,6 +63,7 @@ export const useLogin = () => {
         if (data.otpRequired) {
           setOtpRequired(true);
         } else {
+          if (data.token) authStorage.setToken(data.token);
           authStorage.setUser(data.user!);
           navigate(ROUTES.DASHBOARD);
         }
@@ -83,6 +84,7 @@ export const useLogin = () => {
     await otpAsync.execute(
       () => authService.verifyOtp(email, otp),
       (data) => {
+        if (data.token) authStorage.setToken(data.token);
         authStorage.setUser(data.user!);
         navigate(ROUTES.DASHBOARD);
       }

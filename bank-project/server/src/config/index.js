@@ -8,6 +8,16 @@ function validateRequiredEnvVars() {
 
 validateRequiredEnvVars();
 
+const isCrossOrigin = (() => {
+  try {
+    const clientOrigin = new URL(process.env.CLIENT_URL || '').origin;
+    const serverOrigin = new URL(process.env.SERVER_URL || '').origin;
+    return clientOrigin !== serverOrigin;
+  } catch {
+    return false;
+  }
+})();
+
 const config = {
   port: Number(process.env.PORT) || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -22,8 +32,8 @@ const config = {
   cookie: {
     tokenName: 'token',
     maxAgeSeconds: 3600,
-    sameSite: process.env.COOKIE_SAME_SITE || 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.COOKIE_SAME_SITE || (isCrossOrigin ? 'none' : 'lax'),
+    secure: process.env.NODE_ENV === 'production' || isCrossOrigin,
   },
 
   email: {

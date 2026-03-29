@@ -46,6 +46,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
 
     socketRef.current = io(`${SOCKET_URL}/chat`, {
       withCredentials: true,
+      auth: { token: authStorage.getToken() },
     });
 
     socketRef.current.on('connect', () => {

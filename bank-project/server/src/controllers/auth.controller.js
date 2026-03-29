@@ -120,6 +120,7 @@ export const verifyOtp = async (req, res, next) => {
         lastName: user.lastName,
         email: user.email,
       },
+      token,
     });
   } catch (error) {
     next(error);

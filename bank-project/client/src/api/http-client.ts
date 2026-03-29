@@ -12,6 +12,14 @@ export const httpClient = axios.create({
   withCredentials: true,
 });
 
+httpClient.interceptors.request.use((reqConfig) => {
+  const token = authStorage.getToken();
+  if (token) {
+    reqConfig.headers.Authorization = `Bearer ${token}`;
+  }
+  return reqConfig;
+});
+
 httpClient.interceptors.response.use(
   (res) => res,
   (err: AxiosError) => {
