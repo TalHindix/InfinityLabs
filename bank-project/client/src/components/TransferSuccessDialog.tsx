@@ -9,6 +9,7 @@ import {
   Stack,
   Box,
   Divider,
+  Alert,
 } from '../shared/muiExports';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VideocamIcon from '@mui/icons-material/Videocam';
@@ -39,6 +40,8 @@ export const TransferSuccessDialog = ({
   onVideoCall,
 }: TransferSuccessDialogProps) => {
   const [showVideoCall, setShowVideoCall] = useState(false);
+  const [videoCallLoading, setVideoCallLoading] = useState(false);
+  const [videoCallError, setVideoCallError] = useState('');
 
   if (!transaction) return null;
 
@@ -46,8 +49,16 @@ export const TransferSuccessDialog = ({
   const amountText = `${formatAmount(transaction.amount)} AED`;
 
   const handleStartVideoCall = async () => {
-    await onVideoCall(transaction.id.toString());
-    setShowVideoCall(true);
+    setVideoCallLoading(true);
+    setVideoCallError('');
+    try {
+      await onVideoCall(transaction.id.toString());
+      setShowVideoCall(true);
+    } catch {
+      setVideoCallError('Could not start the video call. Please try again.');
+    } finally {
+      setVideoCallLoading(false);
+    }
   };
   const handleCloseVideoCall = () => setShowVideoCall(false);
 
@@ -118,6 +129,12 @@ export const TransferSuccessDialog = ({
           )}
         </Stack>
       </DialogContent>
+      {videoCallError && (
+        <Box sx={{ px: 3, pb: 1 }}>
+          <Alert severity="error">{videoCallError}</Alert>
+        </Box>
+      )}
+
       <DialogActions sx={dialogActionsSx}>
         <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
           <Button
@@ -131,6 +148,7 @@ export const TransferSuccessDialog = ({
             onClick={handleStartVideoCall}
             variant="contained"
             startIcon={<VideocamIcon />}
+            disabled={videoCallLoading}
             sx={{
               flex: 1,
               fontWeight: 600,
@@ -141,7 +159,7 @@ export const TransferSuccessDialog = ({
               },
             }}
           >
-            Video Call
+            {videoCallLoading ? 'Starting...' : 'Video Call'}
           </Button>
         </Stack>
       </DialogActions>

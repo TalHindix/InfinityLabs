@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../constants/routePaths';
 import { authStorage } from '../../api/auth.storage';
@@ -8,10 +9,13 @@ const VideoCallPage = () => {
   const navigate = useNavigate();
   const currentUser = authStorage.getUser();
 
-  if (!roomName || !currentUser) {
-    navigate(ROUTES.DASHBOARD, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (!roomName || !currentUser) {
+      navigate(ROUTES.DASHBOARD, { replace: true });
+    }
+  }, [roomName, currentUser, navigate]);
+
+  if (!roomName || !currentUser) return null;
 
   return (
     <VideoCall

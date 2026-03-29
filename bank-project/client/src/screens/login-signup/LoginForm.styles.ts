@@ -11,15 +11,9 @@ export const createSecurityNoteSx = (isDark: boolean): SxProps<Theme> => ({
   px: 1,
 });
 
-export const createForgotPasswordSx = (isDark: boolean): SxProps<Theme> => ({
-  color: isDark ? 'rgba(255,255,255,0.70)' : 'rgba(13,27,42,0.70)',
-  cursor: 'pointer',
-  '&:hover': { color: '#C9A227' },
-});
-
 export const footerContainerSx: SxProps<Theme> = {
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   alignItems: 'center',
   pt: 0.5,
 };

@@ -6,7 +6,6 @@ import {
   createFieldSx,
   primaryButtonSx,
   createSecurityNoteSx,
-  createForgotPasswordSx,
   footerContainerSx,
   errorAlertSx,
   errorCaptionSx,
@@ -189,9 +188,6 @@ export const LoginForm = ({
           </Typography>
 
           <Box sx={footerContainerSx}>
-            <Typography variant="body2" sx={createForgotPasswordSx(isDark)}>
-              Forgot password? (TODO)
-            </Typography>
             <Typography variant="body2">
               <Link to={ROUTES.SIGNUP} style={signUpLinkStyle}>
                 Create account

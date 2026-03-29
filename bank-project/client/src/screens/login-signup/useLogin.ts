@@ -5,6 +5,7 @@ import { ROUTES } from '../../constants/routePaths';
 import { authStorage } from '../../api/auth.storage';
 import { authService } from '../../api/auth.service';
 import { getIntelligentErrorMessage } from '../../shared/authErrorMessages';
+import { getErrorMessage } from '../../types';
 import { getTimeBasedGreeting } from '../../shared/timeBasedGreeting';
 import { useAsyncOperation } from '../../shared/useAsyncOperation';
 
@@ -89,9 +90,13 @@ export const useLogin = () => {
   };
 
   const handleResendOtp = async () => {
-    await authService.resendOtp(email).catch(() => {});
-    setOtp('');
-    setResendCooldown(60);
+    try {
+      await authService.resendOtp(email);
+      setOtp('');
+      setResendCooldown(60);
+    } catch (err) {
+      otpAsync.setError(getIntelligentErrorMessage(getErrorMessage(err)));
+    }
   };
 
   const handleResendVerification = async () => {

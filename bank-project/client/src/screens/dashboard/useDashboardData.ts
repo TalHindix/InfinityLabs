@@ -5,7 +5,7 @@ import { transactionService } from '../../api/transaction.service';
 import { type User, type Transaction } from '../../types';
 import { getErrorMessage } from '../../types';
 
-const DASHBOARD_REFRESH_EVENT = 'dashboard:refresh';
+export const DASHBOARD_REFRESH_EVENT = 'dashboard:refresh';
 
 export const useDashboardData = () => {
   const [user, setUser] = useState<User | null>(null);
