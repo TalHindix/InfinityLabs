@@ -29,10 +29,10 @@ const DashboardPage = () => {
       <Container maxWidth="lg" sx={containerSx}>
         <Stack spacing={4}>
           <Box>
-            <Typography variant="h4">
+            <Typography sx={{ fontSize: { xs: '1.4rem', sm: '2.125rem' }, fontWeight: 400 }}>
               Welcome back, {user?.firstName || 'User'}
             </Typography>
-            <Typography color="text.secondary">
+            <Typography color="text.secondary" variant="body2">
               Here's your account overview
             </Typography>
           </Box>

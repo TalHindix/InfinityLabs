@@ -6,7 +6,8 @@ export const pageRootSx: SxProps<Theme> = {
 };
 
 export const containerSx: SxProps<Theme> = {
-  py: 4,
+  py: { xs: 2, sm: 4 },
+  px: { xs: 2, sm: 3 },
 };
 
 export const loadingScreenSx: SxProps<Theme> = {

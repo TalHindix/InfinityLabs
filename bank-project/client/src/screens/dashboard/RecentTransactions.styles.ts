@@ -10,6 +10,7 @@ export const headerBarSx: SxProps<Theme> = {
 
 export const sectionTitleSx: SxProps<Theme> = {
   fontWeight: 600,
+  fontSize: { xs: '1.1rem', sm: '1.5rem' },
 };
 
 export const viewAllButtonSx: SxProps<Theme> = {
@@ -44,6 +45,7 @@ export const emptySubtextSx: SxProps<Theme> = {
 
 export const tableContainerSx: SxProps<Theme> = {
   borderRadius: 3,
+  overflowX: 'auto',
 };
 
 export const amountCellSx: SxProps<Theme> = {

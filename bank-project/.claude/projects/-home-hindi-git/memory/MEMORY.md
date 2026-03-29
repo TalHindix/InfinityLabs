@@ -1,0 +1,1 @@
+- [Mobile responsive layout](project_mobile_responsive.md) — Phases 1-2 done, 3-6 remaining

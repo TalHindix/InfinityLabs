@@ -9,11 +9,11 @@ export const balanceCardSx: SxProps<Theme> = {
 
 export const balanceBadgeSx: SxProps<Theme> = {
   position: 'absolute',
-  top: -20,
-  right: 30,
-  width: 80,
-  height: 80,
-  borderRadius: '20px',
+  top: { xs: -14, sm: -20 },
+  right: { xs: 16, sm: 30 },
+  width: { xs: 56, sm: 80 },
+  height: { xs: 56, sm: 80 },
+  borderRadius: { xs: '14px', sm: '20px' },
   background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
   display: 'flex',
   alignItems: 'center',
@@ -26,7 +26,7 @@ export const badgeTextSx: SxProps<Theme> = {
 };
 
 export const cardContentSx: SxProps<Theme> = {
-  p: 4,
+  p: { xs: 2.5, sm: 4 },
 };
 
 export const availableLabelSx: SxProps<Theme> = {
@@ -48,8 +48,9 @@ export const amountCurrencySx: SxProps<Theme> = {
 export const primaryButtonSx: SxProps<Theme> = {
   background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
   color: '#0D1B2A',
-  px: 4,
-  py: 1.5,
+  px: { xs: 3, sm: 4 },
+  py: { xs: 1, sm: 1.5 },
+  fontSize: { xs: '0.85rem', sm: '0.875rem' },
   '&:hover': {
     background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
   },

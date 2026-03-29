@@ -23,7 +23,7 @@ export const BalanceCard = ({ balance }: BalanceCardProps) => {
   return (
     <Card sx={balanceCardSx}>
       <Box sx={balanceBadgeSx}>
-        <Typography variant="h4" sx={badgeTextSx}>
+        <Typography sx={{ ...badgeTextSx, fontSize: { xs: '1.2rem', sm: '2.125rem' } }}>
           AED
         </Typography>
       </Box>
@@ -33,9 +33,9 @@ export const BalanceCard = ({ balance }: BalanceCardProps) => {
           Available Balance
         </Typography>
 
-        <Typography variant="h2" sx={amountValueSx}>
+        <Typography sx={{ ...amountValueSx, fontSize: { xs: '1.75rem', sm: '3.75rem' } }}>
           {balance !== undefined ? formatAmount(balance) : '0.00'}
-          <Typography component="span" variant="h5" sx={amountCurrencySx}>
+          <Typography component="span" sx={{ ...amountCurrencySx, fontSize: { xs: '1rem', sm: '1.5rem' } }}>
             AED
           </Typography>
         </Typography>

@@ -65,8 +65,8 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
                         })}
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
+                    <TableCell sx={{ maxWidth: { xs: 120, sm: 'none' }, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Typography variant="body2" noWrap>
                         {isSent ? `To: ${tx.toEmail}` : `From: ${tx.fromEmail}`}
                       </Typography>
                     </TableCell>
