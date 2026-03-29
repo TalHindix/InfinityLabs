@@ -27,7 +27,7 @@ const emitBot = (socket, response, intent, data = null, requiresAuth = false) =>
 
 const isTokenValid = (socket) => {
   const cookieHeader = socket.handshake.headers?.cookie;
-  const token = getTokenFromCookie(cookieHeader);
+  const token = socket.handshake.auth?.token ?? getTokenFromCookie(cookieHeader);
   if (!token) return false;
 
   try {
