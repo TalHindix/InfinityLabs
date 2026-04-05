@@ -8,7 +8,6 @@ import {
   chartTitleSx,
   chartCardSx,
   chartContainerSx,
-  recipientsSectionSx,
   recipientRowSx,
   recipientEmailSx,
   recipientAmountSx,
@@ -74,7 +73,7 @@ export const SpendingChart = () => {
                   <XAxis dataKey="label" tick={{ fontSize: 12, fill: tickColor }} />
                   <YAxis tick={{ fontSize: 12, fill: tickColor }} tickFormatter={(v) => formatAmount(v)} />
                   <Tooltip
-                    formatter={(value: number) => [`${formatAmount(value)} AED`, 'Spent']}
+                    formatter={(value) => [`${formatAmount(Number(value))} AED`, 'Spent']}
                     labelFormatter={(label) => label}
                     contentStyle={{
                       backgroundColor: tooltipBg,
