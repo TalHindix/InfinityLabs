@@ -6,6 +6,7 @@ import {
   sendTransferEmailNotification,
   generateVideoCallRoomName,
   getMonthlySpending,
+  getMonthlyReceived,
   getTopRecipients,
 } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
@@ -77,12 +78,22 @@ export const getSpendingAnalytics = async (req, res, next) => {
     const userEmail = req.user.email;
     const months = Math.min(12, Math.max(1, Number(req.query.months) || 6));
 
-    const [monthlySpending, topRecipients] = await Promise.all([
+    const [monthlySpending, monthlyReceived, topRecipients] = await Promise.all([
       getMonthlySpending(userEmail, months),
+      getMonthlyReceived(userEmail, months),
       getTopRecipients(userEmail, months),
     ]);
 
-    return response.ok(res, { monthlySpending, topRecipients });
+    const totalSpent = monthlySpending.reduce((sum, m) => sum + m.totalSpent, 0);
+    const totalReceived = monthlyReceived.reduce((sum, m) => sum + m.totalReceived, 0);
+
+    return response.ok(res, {
+      monthlySpending,
+      monthlyReceived,
+      topRecipients,
+      totalSpent: Math.round(totalSpent * 100) / 100,
+      totalReceived: Math.round(totalReceived * 100) / 100,
+    });
   } catch (error) {
     next(error);
   }

@@ -130,6 +130,34 @@ export async function getMonthlySpending(userEmail, months = 6) {
   ]);
 }
 
+export async function getMonthlyReceived(userEmail, months = 6) {
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - months);
+  startDate.setDate(1);
+  startDate.setHours(0, 0, 0, 0);
+
+  return Transaction.aggregate([
+    { $match: { toEmail: userEmail, createdAt: { $gte: startDate } } },
+    {
+      $group: {
+        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+        totalReceived: { $sum: '$amount' },
+        transactionCount: { $count: {} },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
+    {
+      $project: {
+        _id: 0,
+        year: '$_id.year',
+        month: '$_id.month',
+        totalReceived: { $round: ['$totalReceived', 2] },
+        transactionCount: 1,
+      },
+    },
+  ]);
+}
+
 export async function getTopRecipients(userEmail, months = 6, limit = 5) {
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);

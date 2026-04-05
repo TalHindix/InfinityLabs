@@ -77,6 +77,13 @@ export interface MonthlySpending {
   transactionCount: number;
 }
 
+export interface MonthlyReceived {
+  year: number;
+  month: number;
+  totalReceived: number;
+  transactionCount: number;
+}
+
 export interface TopRecipient {
   email: string;
   totalSent: number;
@@ -85,7 +92,10 @@ export interface TopRecipient {
 
 export interface SpendingAnalyticsResponse {
   monthlySpending: MonthlySpending[];
+  monthlyReceived: MonthlyReceived[];
   topRecipients: TopRecipient[];
+  totalSpent: number;
+  totalReceived: number;
 }
 
 // Error handling
