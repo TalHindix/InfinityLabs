@@ -1,5 +1,5 @@
 import { httpClient } from './http-client';
-import type { TransactionsResponse, TransactionResponse, TransferData } from '../types';
+import type { TransactionsResponse, TransactionResponse, TransferData, SpendingAnalyticsResponse } from '../types';
 
 export const transactionService = {
   async getAll(page = 1, limit = 10): Promise<TransactionsResponse> {
@@ -19,6 +19,11 @@ export const transactionService = {
 
   async sendNotification(transactionId: string): Promise<{ message: string; roomName: string }> {
     const res = await httpClient.post(`/transactions/${transactionId}/send-notification`);
+    return res.data.data;
+  },
+
+  async getSpendingAnalytics(months = 6): Promise<SpendingAnalyticsResponse> {
+    const res = await httpClient.get(`/transactions/analytics/spending?months=${months}`);
     return res.data.data;
   },
 };

@@ -5,6 +5,8 @@ import {
   executeTransfer,
   sendTransferEmailNotification,
   generateVideoCallRoomName,
+  getMonthlySpending,
+  getTopRecipients,
 } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../utils/error.util.js';
@@ -65,6 +67,22 @@ export const createTransaction = async (req, res, next) => {
     );
 
     return response.created(res, { transaction });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSpendingAnalytics = async (req, res, next) => {
+  try {
+    const userEmail = req.user.email;
+    const months = Math.min(12, Math.max(1, Number(req.query.months) || 6));
+
+    const [monthlySpending, topRecipients] = await Promise.all([
+      getMonthlySpending(userEmail, months),
+      getTopRecipients(userEmail, months),
+    ]);
+
+    return response.ok(res, { monthlySpending, topRecipients });
   } catch (error) {
     next(error);
   }

@@ -102,6 +102,62 @@ export function generateVideoCallRoomName(firstEmail, secondEmail) {
   return hash.slice(0, 16);
 }
 
+export async function getMonthlySpending(userEmail, months = 6) {
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - months);
+  startDate.setDate(1);
+  startDate.setHours(0, 0, 0, 0);
+
+  return Transaction.aggregate([
+    { $match: { fromEmail: userEmail, createdAt: { $gte: startDate } } },
+    {
+      $group: {
+        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+        totalSpent: { $sum: '$amount' },
+        transactionCount: { $count: {} },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
+    {
+      $project: {
+        _id: 0,
+        year: '$_id.year',
+        month: '$_id.month',
+        totalSpent: { $round: ['$totalSpent', 2] },
+        transactionCount: 1,
+      },
+    },
+  ]);
+}
+
+export async function getTopRecipients(userEmail, months = 6, limit = 5) {
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - months);
+  startDate.setDate(1);
+  startDate.setHours(0, 0, 0, 0);
+
+  return Transaction.aggregate([
+    { $match: { fromEmail: userEmail, createdAt: { $gte: startDate } } },
+    {
+      $group: {
+        _id: '$toEmail',
+        totalSent: { $sum: '$amount' },
+        transactionCount: { $count: {} },
+      },
+    },
+    { $sort: { totalSent: -1 } },
+    { $limit: limit },
+    {
+      $project: {
+        _id: 0,
+        email: '$_id',
+        totalSent: { $round: ['$totalSent', 2] },
+        transactionCount: 1,
+      },
+    },
+  ]);
+}
+
 export async function sendTransferEmailNotification(transaction, sender, receiver) {
   const roomName = generateVideoCallRoomName(sender.email, receiver.email);
   const videoCallUrl = `${config.clientUrl}/video-call/${roomName}`;

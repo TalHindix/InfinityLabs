@@ -4,6 +4,7 @@ import { PageFooter } from '../../layout/PageFooter';
 import { useDashboardData } from './useDashboardData';
 import { BalanceCard } from './BalanceCard';
 import { RecentTransactions } from './RecentTransactions';
+import { SpendingChart } from './SpendingChart';
 import {
   pageRootSx,
   containerSx,
@@ -40,6 +41,8 @@ const DashboardPage = () => {
           {error && <Alert severity="error">{error}</Alert>}
 
           <BalanceCard balance={user?.balance} />
+
+          <SpendingChart />
 
           <RecentTransactions
             transactions={transactions}

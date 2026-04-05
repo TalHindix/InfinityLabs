@@ -69,6 +69,25 @@ export interface TransactionResponse {
   transaction: Transaction;
 }
 
+// Analytics types
+export interface MonthlySpending {
+  year: number;
+  month: number;
+  totalSpent: number;
+  transactionCount: number;
+}
+
+export interface TopRecipient {
+  email: string;
+  totalSent: number;
+  transactionCount: number;
+}
+
+export interface SpendingAnalyticsResponse {
+  monthlySpending: MonthlySpending[];
+  topRecipients: TopRecipient[];
+}
+
 // Error handling
 export interface ApiError {
   response?: {
