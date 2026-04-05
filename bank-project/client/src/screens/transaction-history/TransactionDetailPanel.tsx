@@ -1,7 +1,7 @@
 import { Card, CardContent, Typography, Stack, Box, Divider, CircularProgress } from '../../shared/muiExports';
 import { type Transaction } from '../../types';
 import { formatAmount, formatDate } from '../../shared/displayFormatters';
-import { createDetailPanelSx, createAmountIconSx, loadingContainerSx, loadingSpinnerSx, goldDividerSx, refTextSx, statusBadgeSx, emptyStateSx, emptyIconSx } from './TransactionDetailPanel.styles';
+import { createDetailPanelSx, createAmountIconSx, loadingContainerSx, loadingSpinnerSx, goldDividerSx, refTextSx, statusBadgeSx, emptyStateSx, emptyIconContainerSx, emptyIconTextSx } from './TransactionDetailPanel.styles';
 
 interface TransactionDetailPanelProps {
   transaction: Transaction | null;
@@ -77,7 +77,9 @@ export const TransactionDetailPanel = ({ transaction, loading, userEmail }: Tran
           </Stack>
         ) : (
           <Box sx={emptyStateSx}>
-            <Typography sx={emptyIconSx}>📋</Typography>
+            <Box sx={emptyIconContainerSx}>
+              <Typography variant="h3" sx={emptyIconTextSx}>$</Typography>
+            </Box>
             <Typography color="text.secondary">Select a transaction to view details</Typography>
           </Box>
         )}

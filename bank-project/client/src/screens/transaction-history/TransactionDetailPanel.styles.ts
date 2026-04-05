@@ -30,7 +30,7 @@ export const loadingContainerSx: SxProps<Theme> = {
 };
 
 export const loadingSpinnerSx: SxProps<Theme> = {
-  color: GOLD_COLOR,
+  color: 'secondary.main',
 };
 
 export const goldDividerSx: SxProps<Theme> = {
@@ -55,7 +55,18 @@ export const emptyStateSx: SxProps<Theme> = {
   textAlign: 'center',
 };
 
-export const emptyIconSx: SxProps<Theme> = {
-  fontSize: 28,
-  opacity: 0.7,
+export const emptyIconContainerSx: SxProps<Theme> = {
+  width: 80,
+  height: 80,
+  mx: 'auto',
+  mb: 2,
+  borderRadius: '50%',
+  bgcolor: 'rgba(13, 27, 42, 0.05)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+export const emptyIconTextSx: SxProps<Theme> = {
+  opacity: 0.3,
 };

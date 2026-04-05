@@ -25,10 +25,19 @@ export const descriptionSx: SxProps<Theme> = {
 };
 
 export const primaryButtonSx: SxProps<Theme> = {
-  py: 1.5,
+  py: 1.45,
+  fontSize: '1rem',
+  fontWeight: 700,
+  letterSpacing: '0.01em',
   background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
   color: '#0D1B2A',
+  boxShadow: '0 12px 30px rgba(201,162,39,0.22)',
+  transition: 'all 200ms ease',
   '&:hover': {
     background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
+    boxShadow: '0 14px 34px rgba(201,162,39,0.28)',
+  },
+  '&:active': {
+    transform: 'translateY(1px)',
   },
 };

@@ -9,14 +9,14 @@ export const contentSx: SxProps<Theme> = {
 };
 
 export const spinnerSx: SxProps<Theme> = {
-  color: 'primary.main',
+  color: 'secondary.main',
 };
 
 export const emptyIconContainerSx: SxProps<Theme> = {
   width: 80,
   height: 80,
   borderRadius: '50%',
-  bgcolor: 'action.hover',
+  bgcolor: 'rgba(13, 27, 42, 0.05)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

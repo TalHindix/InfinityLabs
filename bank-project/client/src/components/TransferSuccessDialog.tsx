@@ -22,6 +22,7 @@ import {
   dialogTitleSx,
   dialogContentSx,
   dialogActionsSx,
+  videoCallButtonSx,
 } from './TransferSuccessDialog.styles';
 
 interface TransferSuccessDialogProps {
@@ -87,7 +88,7 @@ export const TransferSuccessDialog = ({
       <DialogContent sx={dialogContentSx}>
         <Stack spacing={2}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <CheckCircleIcon sx={{ color: '#4CAF50' }} />
+            <CheckCircleIcon sx={{ color: 'success.main' }} />
             <Typography variant="body1" color="text.secondary">
               Transfer successful — notification email sent to recipient
             </Typography>
@@ -97,7 +98,7 @@ export const TransferSuccessDialog = ({
             <Typography variant="body2" color="text.secondary">
               Amount
             </Typography>
-            <Typography variant="h6" sx={{ color: '#C9A227', fontWeight: 700 }}>
+            <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 700 }}>
               {amountText}
             </Typography>
           </Box>
@@ -149,15 +150,7 @@ export const TransferSuccessDialog = ({
             variant="contained"
             startIcon={<VideocamIcon />}
             disabled={videoCallLoading}
-            sx={{
-              flex: 1,
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
-              color: '#0D1B2A',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
-              },
-            }}
+            sx={videoCallButtonSx}
           >
             {videoCallLoading ? 'Starting...' : 'Video Call'}
           </Button>

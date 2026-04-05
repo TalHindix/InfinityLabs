@@ -18,5 +18,5 @@ export const loadingScreenSx: SxProps<Theme> = {
 };
 
 export const loadingSpinnerSx: SxProps<Theme> = {
-  color: 'primary.main',
+  color: 'secondary.main',
 };
