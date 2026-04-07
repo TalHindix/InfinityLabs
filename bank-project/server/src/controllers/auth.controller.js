@@ -38,6 +38,9 @@ export const signup = async (req, res, next) => {
     sendVerificationEmailAsync(user.email, verificationToken);
     return response.created(res, { message: 'Please check your email to verify your account.' });
   } catch (error) {
+    if (error.code === 11000) {
+      return response.created(res, { message: 'Please check your email to verify your account.' });
+    }
     next(error);
   }
 };

@@ -15,13 +15,17 @@ function RequireAuth({ children }: { children: ReactNode }) {
   if (!authStorage.isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
-  return <>{children}</>;
+  return (
+    <>
+      <ChatAssistant />
+      {children}
+    </>
+  );
 }
 
 export default function App() {
   return (
     <BrowserRouter>
-      <ChatAssistant />
       <Routes>
         {/* Public routes */}
         <Route index element={<Navigate to={ROUTES.LOGIN} replace />} />
