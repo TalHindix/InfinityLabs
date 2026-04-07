@@ -23,7 +23,7 @@ export const transactionService = {
   },
 
   async getSpendingAnalytics(months = 6): Promise<SpendingAnalyticsResponse> {
-    const res = await httpClient.get(`/transactions/analytics/spending?months=${months}`);
+    const res = await httpClient.get(`/transactions/analytics?months=${months}`);
     return res.data.data;
   },
 };

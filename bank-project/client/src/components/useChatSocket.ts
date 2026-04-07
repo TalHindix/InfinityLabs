@@ -27,7 +27,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
 
   const disconnectSocket = useCallback(() => {
     if (socketRef.current) {
-      socketRef.current.removeAllListeners();
+      socketRef.current.removeAllListeners()
       socketRef.current.disconnect();
       socketRef.current = null;
     }

@@ -17,7 +17,7 @@ router
   .route('/')
   .get(getTransactions)
   .post(transactionLimiter, createTransaction);
-router.route('/analytics/spending').get(getSpendingAnalytics);
+router.route('/analytics').get(getSpendingAnalytics);
 router.route('/:transactionId').get(getTransactionById);
 router.route('/:transactionId/send-notification').post(sendTransferNotification);
 
