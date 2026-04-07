@@ -5,6 +5,8 @@ import { createFieldSx, submitButtonSx, signInLinkStyle } from './SignupForm.sty
 import type { SignupFormData } from '../../types';
 import { ROUTES } from '../../constants/routePaths';
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 interface SignupFormProps {
   formData: SignupFormData;
   loading: boolean;
@@ -21,7 +23,6 @@ export const SignupForm = ({
   const { isDark } = useThemeContext();
   const fieldSx = createFieldSx(isDark);
 
-  const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
   const passwordTouched = formData.password.length > 0;
   const passwordError = passwordTouched && !PASSWORD_REGEX.test(formData.password);
 

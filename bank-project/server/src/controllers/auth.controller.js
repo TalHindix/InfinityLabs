@@ -21,6 +21,8 @@ import { AppError } from '../utils/error.util.js';
 import { disconnectUser } from '../socket/socket.handler.js';
 import { getAuthenticatedUser } from '../middleware/auth.middleware.js';
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 export const signup = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
@@ -28,8 +30,7 @@ export const signup = async (req, res, next) => {
       throw new AppError('All fields are required', 400);
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(password)) {
+    if (!PASSWORD_REGEX.test(password)) {
       throw new AppError('Password must be at least 8 characters with uppercase, lowercase, and number', 400);
     }
 
