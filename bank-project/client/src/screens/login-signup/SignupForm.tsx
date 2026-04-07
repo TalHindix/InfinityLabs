@@ -21,6 +21,10 @@ export const SignupForm = ({
   const { isDark } = useThemeContext();
   const fieldSx = createFieldSx(isDark);
 
+  const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  const passwordTouched = formData.password.length > 0;
+  const passwordError = passwordTouched && !PASSWORD_REGEX.test(formData.password);
+
   return (
     <form onSubmit={onSubmit}>
       <Stack spacing={2}>
@@ -72,6 +76,7 @@ export const SignupForm = ({
           value={formData.password}
           onChange={(e) => onFieldChange('password', e.target.value)}
           required
+          error={passwordError}
           helperText="At least 8 characters with uppercase, lowercase, and number"
           sx={fieldSx}
         />
@@ -81,7 +86,7 @@ export const SignupForm = ({
           type="submit"
           variant="contained"
           size="large"
-          disabled={loading}
+          disabled={loading || passwordError}
           sx={submitButtonSx}
         >
           {loading ? 'Creating Account...' : 'Create Account'}

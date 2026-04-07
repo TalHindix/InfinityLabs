@@ -27,7 +27,12 @@ export const signup = async (req, res, next) => {
     if (!firstName || !lastName || !email || !phone || !password) {
       throw new AppError('All fields are required', 400);
     }
-    
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      throw new AppError('Password must be at least 8 characters with uppercase, lowercase, and number', 400);
+    }
+
     const { user, verificationToken } = await createUser({ firstName, lastName, email, phone, password });
     sendVerificationEmailAsync(user.email, verificationToken);
     return response.created(res, { message: 'Please check your email to verify your account.' });
