@@ -27,4 +27,5 @@ export default defineConfig({
       exclude: ['node_modules/', 'src/__tests__/'],
     },
   },
-})
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vitest/config types conflict with vite types
+} as any)
