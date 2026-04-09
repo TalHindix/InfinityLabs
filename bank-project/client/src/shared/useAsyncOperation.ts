@@ -7,9 +7,9 @@ export const useAsyncOperation = (initialLoading = false) => {
   const [error, setError] = useState('');
 
   const execute = useCallback(
-    async (
-      operation: () => Promise<any>,
-      onSuccess?: (result: any) => void
+    async <T>(
+      operation: () => Promise<T>,
+      onSuccess?: (result: T) => void
     ) => {
       setError('');
       setLoading(true);

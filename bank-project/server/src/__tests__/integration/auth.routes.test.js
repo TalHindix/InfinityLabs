@@ -23,7 +23,7 @@ describe('POST /api/v1/auth/signup - Integration Test', () => {
     const lastName = 'Doe';
     const email = 'john@example.com';
     const phone = '+1234567890';
-    const password = 'password123';
+    const password = 'Password123';
 
     const userData = {
       firstName: firstName,
@@ -56,7 +56,7 @@ describe('POST /api/v1/auth/signup - Integration Test', () => {
     const expectedFirstName = 'John';
     const expectedLastName = 'Doe';
     const expectedStatus = 'PENDING';
-    const originalPassword = 'password123';
+    const originalPassword = 'Password123';
     const minimumPasswordLength = 20;
 
     expect(user).toBeTruthy();
@@ -68,12 +68,12 @@ describe('POST /api/v1/auth/signup - Integration Test', () => {
     expect(user.password.length).toBeGreaterThan(minimumPasswordLength);
   });
 
-  it('should reject duplicate email', async () => {
+  it('should return same response for duplicate email (prevent enumeration)', async () => {
     const firstName = 'John';
     const lastName = 'Doe';
     const email = 'john@example.com';
     const phone = '+1234567890';
-    const password = 'password123';
+    const password = 'Password123';
 
     const userData = {
       firstName: firstName,
@@ -93,18 +93,20 @@ describe('POST /api/v1/auth/signup - Integration Test', () => {
       .post(requestPath)
       .send(userData);
 
-    const response = await secondPostRequest.expect(409);
+    const response = await secondPostRequest.expect(201);
 
     const responseSuccess = response.body.success;
+    const responseMessage = response.body.data.message;
 
-    expect(responseSuccess).toBe(false);
+    expect(responseSuccess).toBe(true);
+    expect(responseMessage).toContain('check your email');
   });
 
   it('should reject signup with missing email', async () => {
     const firstName = 'John';
     const lastName = 'Doe';
     const phone = '+1234567890';
-    const password = 'password123';
+    const password = 'Password123';
 
     const userData = {
       firstName: firstName,
@@ -130,7 +132,7 @@ describe('POST /api/v1/auth/signup - Integration Test', () => {
     const lastName = 'Doe';
     const invalidEmail = 'not-an-email';
     const phone = '+1234567890';
-    const password = 'password123';
+    const password = 'Password123';
 
     const userData = {
       firstName: firstName,

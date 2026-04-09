@@ -20,8 +20,8 @@ describe('POST /api/v1/auth/login - Integration Test', () => {
     await clearDB();
   });
 
-  it('should login and set cookie for valid user', async () => {
-    const password = 'password123';
+  it('should return otpRequired for valid credentials', async () => {
+    const password = 'Password123';
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -36,7 +36,7 @@ describe('POST /api/v1/auth/login - Integration Test', () => {
     await User.create(userData);
 
     const loginEmail = 'john@example.com';
-    const loginPassword = 'password123';
+    const loginPassword = 'Password123';
     const loginData = {
       email: loginEmail,
       password: loginPassword,
@@ -51,24 +51,13 @@ describe('POST /api/v1/auth/login - Integration Test', () => {
 
     const responseSuccess = response.body.success;
     const responseData = response.body.data;
-    const responseUser = responseData.user;
-
-    const expectedEmail = 'john@example.com';
 
     expect(responseSuccess).toBe(true);
-    expect(responseUser).toBeDefined();
-    expect(responseUser.email).toBe(expectedEmail);
-
-    const responseHeaders = response.headers;
-    const cookies = responseHeaders['set-cookie'];
-
-    expect(cookies).toBeDefined();
-    const hasTokenCookie = cookies.some((cookie) => cookie.includes('token='));
-    expect(hasTokenCookie).toBe(true);
+    expect(responseData.otpRequired).toBe(true);
   });
 
   it('should reject login with wrong password', async () => {
-    const password = 'password123';
+    const password = 'Password123';
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -103,7 +92,7 @@ describe('POST /api/v1/auth/login - Integration Test', () => {
 
   it('should reject login for non-existent user', async () => {
     const nonExistentEmail = 'nonexistent@example.com';
-    const loginPassword = 'password123';
+    const loginPassword = 'Password123';
     const loginData = {
       email: nonExistentEmail,
       password: loginPassword,
@@ -122,7 +111,7 @@ describe('POST /api/v1/auth/login - Integration Test', () => {
   });
 
   it('should reject login for unverified user', async () => {
-    const password = 'password123';
+    const password = 'Password123';
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -137,7 +126,7 @@ describe('POST /api/v1/auth/login - Integration Test', () => {
     await User.create(userData);
 
     const loginEmail = 'john@example.com';
-    const loginPassword = 'password123';
+    const loginPassword = 'Password123';
     const loginData = {
       email: loginEmail,
       password: loginPassword,

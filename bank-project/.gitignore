@@ -11,5 +11,12 @@
 # Dependencies (each subfolder has its own; this is for root)
 node_modules/
 
+# Personal / interview prep notes
+INTERVIEW.md
+interview-questions.html
+questions.md
+SPENDING_ANALYTICS_GUIDE.md
+TWO_FACTOR_AUTH_EXPLAINED.md
+
 # Docker override files (local development only)
 docker-compose.override.yml

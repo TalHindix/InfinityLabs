@@ -37,6 +37,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
     disconnectSocket();
 
     if (!isAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset state when auth is lost
       setMessages([]);
       return;
     }

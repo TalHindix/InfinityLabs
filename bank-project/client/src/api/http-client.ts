@@ -25,8 +25,6 @@ httpClient.interceptors.response.use(
   (err: AxiosError) => {
     if (err.response?.status === 401) {
       authStorage.clearAuth();
-    } else if (err.request && !err.response) {
-      console.error('Network error: No response from server', err.message);
     }
     return Promise.reject(err);
   }

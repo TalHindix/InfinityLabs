@@ -9,6 +9,8 @@ import { getErrorMessage } from '../../types';
 import { getTimeBasedGreeting } from '../../shared/timeBasedGreeting';
 import { useAsyncOperation } from '../../shared/useAsyncOperation';
 
+const RESEND_OTP_COOLDOWN_SECONDS = 60;
+
 export const useLogin = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -31,6 +33,7 @@ export const useLogin = () => {
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync from URL param on mount
       setShowVerifiedMsg(true);
       navigate(ROUTES.LOGIN, { replace: true });
     }
@@ -95,7 +98,7 @@ export const useLogin = () => {
     try {
       await authService.resendOtp(email);
       setOtp('');
-      setResendCooldown(60);
+      setResendCooldown(RESEND_OTP_COOLDOWN_SECONDS);
     } catch (err) {
       otpAsync.setError(getIntelligentErrorMessage(getErrorMessage(err)));
     }

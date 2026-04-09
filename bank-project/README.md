@@ -17,7 +17,7 @@ A full-stack banking application with real-time AI chatbot, money transfers, and
 
 ## Features
 
-- **User Authentication** -- Signup with email verification, JWT login, secure logout
+- **User Authentication** -- Signup with email verification, JWT login, 2FA via email OTP, secure logout
 - **Dashboard** -- Account balance, recent transactions
 - **Money Transfers** -- ACID-compliant transfers between users
 - **Transaction History** -- Paginated, searchable transaction list with detail view
@@ -50,6 +50,15 @@ server/           Express backend
     utils/        JWT, validation, email utilities
 ```
 
+## Security
+
+- **Authentication** -- JWT stored in httpOnly cookies, 2FA with email OTP
+- **Password Policy** -- Enforced complexity (uppercase, lowercase, digit, 8+ chars)
+- **Rate Limiting** -- Login (5/15min), email verification (10/hr), transactions (10/min)
+- **Anti-Enumeration** -- Signup and password flows return identical responses regardless of whether an account exists
+- **Input Validation** -- Server-side validation on all endpoints with custom error handling
+- **ACID Transactions** -- MongoDB sessions for money transfers to prevent race conditions
+
 ## Quick Start
 
 ```bash
@@ -66,6 +75,19 @@ npm run dev
 ```
 
 See [docs/setup.md](docs/setup.md) for full setup instructions.
+
+## Testing
+
+```bash
+# Server tests (Jest + Supertest, uses in-memory MongoDB)
+cd server && npm test
+
+# Client tests (Vitest + React Testing Library)
+cd client && npm test
+
+# Client lint
+cd client && npx eslint .
+```
 
 ## Documentation
 
