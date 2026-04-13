@@ -34,7 +34,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
 
   const disconnectSocket = useCallback(() => {
     if (socketRef.current) {
-      socketRef.current.removeAllListeners()
+      socketRef.current.removeAllListeners();
       socketRef.current.disconnect();
       socketRef.current = null;
     }
@@ -97,7 +97,7 @@ export const useChatSocket = (isAuthenticated: boolean) => {
           type: 'bot',
           text: data.response,
           transactions: data.data?.transactions,
-          summary: data.data?.summary ?? undefined,
+          summary: data.data?.summary,
         },
       ]);
     });
