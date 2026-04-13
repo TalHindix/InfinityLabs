@@ -14,8 +14,29 @@ import {
   textFieldSx,
 } from './ChatAssistant.styles';
 import { useAuth } from '../shared/useAuth';
-import { useChatSocket } from './useChatSocket';
+import { useChatSocket, type Message, type Transaction } from './useChatSocket';
 import TransactionList from './TransactionList';
+
+interface TransactionData {
+  text: string;
+  transactions: Transaction[];
+  summary?: string;
+}
+
+function getTransactionData(msg: Message): TransactionData | null {
+  if (msg.transactions) {
+    return { text: msg.text, transactions: msg.transactions, summary: msg.summary };
+  }
+  try {
+    const parsed = JSON.parse(msg.text);
+    if (parsed && Array.isArray(parsed.transactions)) {
+      return { text: parsed.message ?? '', transactions: parsed.transactions, summary: parsed.summary };
+    }
+  } catch {
+    // Not JSON — fall through
+  }
+  return null;
+}
 
 const ChatAssistant = () => {
   const { isAuthenticated } = useAuth();
@@ -57,24 +78,29 @@ const ChatAssistant = () => {
       </Box>
 
       <Box sx={messagesContainerSx}>
-        {messages.map((msg, index) => (
-          <Box key={`${msg.type}-${index}`} sx={createMessageSx(msg.type === 'user')}>
-            {msg.type === 'bot' ? (
-              msg.transactions ? (
-                <Box>
-                  <Typography sx={{ fontSize: '0.875rem', mb: 0.75 }}>{msg.text}</Typography>
-                  <TransactionList transactions={msg.transactions} summary={msg.summary} />
-                </Box>
+        {messages.map((msg, index) => {
+          const txData = msg.type === 'bot' ? getTransactionData(msg) : null;
+          return (
+            <Box key={`${msg.type}-${index}`} sx={createMessageSx(msg.type === 'user')}>
+              {msg.type === 'bot' ? (
+                txData ? (
+                  <Box>
+                    {txData.text && (
+                      <Typography sx={{ fontSize: '0.875rem', mb: 0.75 }}>{txData.text}</Typography>
+                    )}
+                    <TransactionList transactions={txData.transactions} summary={txData.summary} />
+                  </Box>
+                ) : (
+                  <Box sx={botMarkdownSx}>
+                    <Markdown>{msg.text}</Markdown>
+                  </Box>
+                )
               ) : (
-                <Box sx={botMarkdownSx}>
-                  <Markdown>{msg.text}</Markdown>
-                </Box>
-              )
-            ) : (
-              msg.text
-            )}
-          </Box>
-        ))}
+                msg.text
+              )}
+            </Box>
+          );
+        })}
         <div ref={messagesEndRef} />
       </Box>
 
