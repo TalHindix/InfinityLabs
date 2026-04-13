@@ -24,6 +24,7 @@ export async function processMessage(message, chatHistory, context) {
     return {
       intent: 'chat',
       message: result.message,
+      data: result.data ?? null,
       chatHistory: result.chatHistory,
       transferCompleted: result.transferCompleted || false,
     };

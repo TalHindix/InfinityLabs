@@ -15,6 +15,7 @@ import {
 } from './ChatAssistant.styles';
 import { useAuth } from '../shared/useAuth';
 import { useChatSocket } from './useChatSocket';
+import TransactionList from './TransactionList';
 
 const ChatAssistant = () => {
   const { isAuthenticated } = useAuth();
@@ -59,9 +60,16 @@ const ChatAssistant = () => {
         {messages.map((msg, index) => (
           <Box key={`${msg.type}-${index}`} sx={createMessageSx(msg.type === 'user')}>
             {msg.type === 'bot' ? (
-              <Box sx={botMarkdownSx}>
-                <Markdown>{msg.text}</Markdown>
-              </Box>
+              msg.transactions ? (
+                <Box>
+                  <Typography sx={{ fontSize: '0.875rem', mb: 0.75 }}>{msg.text}</Typography>
+                  <TransactionList transactions={msg.transactions} summary={msg.summary} />
+                </Box>
+              ) : (
+                <Box sx={botMarkdownSx}>
+                  <Markdown>{msg.text}</Markdown>
+                </Box>
+              )
             ) : (
               msg.text
             )}

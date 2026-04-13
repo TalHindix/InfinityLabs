@@ -8,15 +8,20 @@ import { ROUTES } from '../constants/routePaths';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
-interface BotData {
-  userId?: string;
-  balance?: string;
+export interface Transaction {
+  id: number;
+  date: string;
+  type: 'Sent' | 'Received';
+  amount: string;
+  counterpart: string;
+  description: string;
 }
 
 export interface Message {
   type: 'user' | 'bot';
   text: string;
-  data?: BotData;
+  transactions?: Transaction[];
+  summary?: string;
 }
 
 export const useChatSocket = (isAuthenticated: boolean) => {
@@ -85,8 +90,16 @@ export const useChatSocket = (isAuthenticated: boolean) => {
       }
     });
 
-    socketRef.current.on('bot-message', (data: { response: string; data?: BotData }) => {
-      setMessages((prev) => [...prev, { type: 'bot', text: data.response, data: data.data }]);
+    socketRef.current.on('bot-message', (data: { response: string; data?: { transactions?: Transaction[]; summary?: string } }) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'bot',
+          text: data.response,
+          transactions: data.data?.transactions,
+          summary: data.data?.summary ?? undefined,
+        },
+      ]);
     });
 
     socketRef.current.on('transfer-completed', () => {

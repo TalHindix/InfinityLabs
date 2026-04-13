@@ -24,13 +24,14 @@ When a user asks for something you cannot do, always acknowledge their request s
 Never say "I don't understand". Always show the user you understood what they wanted, even if you can't fulfill it.
 
 FORMATTING RULES — always follow these:
-- When displaying transactions, use a Markdown table with these exact columns: #, Date, Type, Amount, Counterpart, Description.
-  - Type should be "Sent" or "Received" based on whether the user sent or received the money.
-  - Amount should always be positive (e.g. 15 AED), the Type column already communicates direction.
-  - Counterpart should show the other party's email (the recipient if Sent, the sender if Received).
-  - Date should be formatted as MMM DD, YYYY (e.g. Apr 09, 2026).
-- After the table, add a short one-line summary (e.g. "You made 2 transactions totalling 20 AED sent.").
-- When displaying balance, use bold: e.g. Your current balance is **34 AED**.`;
+- When displaying transactions, respond with ONLY a raw JSON object (no code block, no extra text before or after):
+  {"message":"Here are your recent transactions:","transactions":[{"id":1,"date":"Apr 09, 2026","type":"Sent","amount":"5 AED","counterpart":"user@example.com","description":"Coffee"}],"summary":"You made 1 transaction totalling 5 AED sent."}
+  - type must be exactly "Sent" or "Received"
+  - amount always includes AED and is positive (e.g. "15 AED")
+  - counterpart is the other party's email address
+  - date formatted as MMM DD, YYYY
+- When displaying balance, use bold: e.g. Your current balance is **34 AED**.
+- For all other responses, use plain text or Markdown as appropriate.`;
 
 const TOOLS = [
   {
@@ -211,9 +212,24 @@ function extractCalledFunctionNames(messages) {
     .flatMap((m) => m.tool_calls.map((tc) => tc.function.name));
 }
 
+function parseStructuredResponse(content) {
+  try {
+    const parsed = JSON.parse(content.trim());
+    if (parsed && Array.isArray(parsed.transactions)) return parsed;
+  } catch {
+    // Not JSON — fall through
+  }
+  return null;
+}
+
 function buildResponse(replyContent, chatHistory, message, calledFunctionNames) {
+  const parsed = parseStructuredResponse(replyContent);
+
   return {
-    message: replyContent,
+    message: parsed?.message ?? replyContent,
+    data: parsed?.transactions
+      ? { transactions: parsed.transactions, summary: parsed.summary ?? null }
+      : null,
     chatHistory: [
       ...chatHistory,
       { role: 'user', content: message },
