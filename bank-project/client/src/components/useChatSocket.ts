@@ -22,8 +22,10 @@ export interface Message {
 export const useChatSocket = (isAuthenticated: boolean) => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const networkErrorShownRef = useRef(false);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const disconnectSocket = useCallback(() => {
     if (socketRef.current) {
@@ -91,6 +93,9 @@ export const useChatSocket = (isAuthenticated: boolean) => {
       window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
     });
 
+    socketRef.current.on('typing', () => setIsOtherTyping(true));
+    socketRef.current.on('stop_typing', () => setIsOtherTyping(false));
+
     return () => {
       disconnectSocket();
     };
@@ -103,5 +108,17 @@ export const useChatSocket = (isAuthenticated: boolean) => {
     socketRef.current?.emit('user-message', text);
   }, []);
 
-  return { messages, sendMessage };
+  const emitTyping = useCallback(() => {
+    socketRef.current?.emit('typing');
+
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+
+    typingTimerRef.current = setTimeout(() => {
+      socketRef.current?.emit('stop_typing');
+    }, 1000);
+  }, []);
+
+  return { messages, sendMessage, emitTyping, isOtherTyping };
 };

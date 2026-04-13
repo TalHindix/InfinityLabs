@@ -18,7 +18,7 @@ import { useChatSocket } from './useChatSocket';
 
 const ChatAssistant = () => {
   const { isAuthenticated } = useAuth();
-  const { messages, sendMessage } = useChatSocket(isAuthenticated);
+  const { messages, sendMessage, emitTyping, isOtherTyping } = useChatSocket(isAuthenticated);
 
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -70,6 +70,12 @@ const ChatAssistant = () => {
         <div ref={messagesEndRef} />
       </Box>
 
+      {isOtherTyping && (
+        <Typography sx={{ px: 2, pb: 1, fontSize: '0.75rem', color: 'text.secondary', fontStyle: 'italic' }}>
+          Someone is typing...
+        </Typography>
+      )}
+
       <Box sx={inputContainerSx}>
         <TextField
           size="small"
@@ -77,7 +83,7 @@ const ChatAssistant = () => {
           multiline
           maxRows={4}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => { setInput(e.target.value); emitTyping(); }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();

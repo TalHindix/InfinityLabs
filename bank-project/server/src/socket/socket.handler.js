@@ -118,6 +118,9 @@ export const initChatbotSocket = (io) => {
       }
     });
 
+    socket.on('typing', () => socket.broadcast.emit('typing'));
+    socket.on('stop_typing', () => socket.broadcast.emit('stop_typing'));
+
     socket.on('disconnect', () => untrackSocket(userId, socket));
   });
 };
