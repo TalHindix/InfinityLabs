@@ -26,7 +26,7 @@ When a user asks for something you cannot do, always acknowledge their request s
 Never say "I don't understand". Always show the user you understood what they wanted, even if you can't fulfill it.
 
 FORMATTING RULES — always follow these:
-- When displaying transactions, respond with ONLY a raw JSON object (no code block, no extra text before or after).
+- When displaying transactions, respond with ONLY a single raw JSON object (no code block, no extra text before or after).
   The "message" and "summary" values MUST be written in the user's language. The "type" field is always "Sent" or "Received" in English.
   English example: {"message":"Here are your recent transactions:","transactions":[{"id":1,"date":"Apr 09, 2026","type":"Sent","amount":"5 AED","counterpart":"user@example.com","description":"Coffee"}],"summary":"You made 1 transaction totalling 5 AED sent."}
   Hebrew example:  {"message":"הנה העסקאות האחרונות שלך:","transactions":[{"id":1,"date":"Apr 09, 2026","type":"Sent","amount":"5 AED","counterpart":"user@example.com","description":"Coffee"}],"summary":"ביצעת עסקה אחת בסך 5 AED שנשלחו."}
@@ -34,6 +34,9 @@ FORMATTING RULES — always follow these:
   - counterpart is the other party's email address
   - date formatted as MMM DD, YYYY
 - When displaying balance, use bold: e.g. **34 AED** (the surrounding text must be in the user's language).
+- COMBINING MULTIPLE RESULTS: When the user asks for multiple things at once (e.g. transactions AND balance), you MUST respond with a SINGLE JSON object. Include ALL information in the "message" field. For example, if the user asks for both transactions and balance, put the balance info in the "message" field alongside the transaction intro text:
+  {"message":"Your balance is **34 AED**.\n\nHere are your recent transactions:","transactions":[...],"summary":"..."}
+  NEVER output multiple JSON objects. NEVER concatenate two separate JSON responses. Always merge everything into ONE response.
 - For all other responses, use plain text or Markdown as appropriate.`;
 
 const TOOLS = [
@@ -215,29 +218,77 @@ function extractCalledFunctionNames(messages) {
     .flatMap((m) => m.tool_calls.map((tc) => tc.function.name));
 }
 
+function findBalancedJson(str, startIndex) {
+  if (str[startIndex] !== '{') return null;
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = startIndex; i < str.length; i++) {
+    const ch = str[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return str.slice(startIndex, i + 1);
+    }
+  }
+  return null;
+}
+
 function parseStructuredResponse(content) {
   const str = content.trim();
 
-  // Find the first JSON object in the content (AI may prepend plain text)
-  const start = str.indexOf('{');
-  const end = str.lastIndexOf('}');
-  if (start === -1 || end <= start) return null;
+  // Try each top-level JSON object in the content until we find one with transactions
+  let pos = 0;
 
-  try {
-    const parsed = JSON.parse(str.slice(start, end + 1));
-    if (!parsed || !Array.isArray(parsed.transactions)) return null;
+  while (pos < str.length) {
+    const start = str.indexOf('{', pos);
+    if (start === -1) break;
 
-    const before = str.slice(0, start).trim();
-    const textParts = [before, parsed.message].filter(Boolean);
+    const jsonStr = findBalancedJson(str, start);
+    if (!jsonStr) break;
 
-    return {
-      message: textParts.join('\n\n'),
-      transactions: parsed.transactions,
-      summary: parsed.summary ?? null,
-    };
-  } catch {
-    return null;
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && Array.isArray(parsed.transactions)) {
+        // Collect any plain text before this JSON object
+        const before = str.slice(0, start).trim();
+        // Collect any remaining text/JSON after this object for extra info (e.g. balance)
+        const afterStart = start + jsonStr.length;
+        const after = str.slice(afterStart).trim();
+
+        // Try to extract message from remaining JSON objects (e.g. a separate balance response)
+        let extraMessage = '';
+        if (after) {
+          const extraJsonStr = findBalancedJson(after, after.indexOf('{'));
+          if (extraJsonStr) {
+            try {
+              const extraParsed = JSON.parse(extraJsonStr);
+              if (extraParsed.message) extraMessage = extraParsed.message;
+            } catch { /* ignore */ }
+          } else if (!after.startsWith('{')) {
+            extraMessage = after;
+          }
+        }
+
+        const textParts = [before, parsed.message, extraMessage].filter(Boolean);
+
+        return {
+          message: textParts.join('\n\n'),
+          transactions: parsed.transactions,
+          summary: parsed.summary ?? null,
+        };
+      }
+    } catch { /* not valid JSON, skip */ }
+
+    pos = start + (jsonStr ? jsonStr.length : 1);
   }
+
+  return null;
 }
 
 function buildResponse(replyContent, chatHistory, message, calledFunctionNames) {

@@ -23,22 +23,67 @@ interface TransactionData {
   summary?: string;
 }
 
-function extractJsonFromText(text: string): TransactionData | null {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end <= start) return null;
+function findBalancedJson(str: string, startIndex: number): string | null {
+  if (startIndex < 0 || str[startIndex] !== '{') return null;
+  let depth = 0;
+  let inString = false;
+  let escape = false;
 
-  try {
-    const parsed = JSON.parse(text.slice(start, end + 1));
-    if (!parsed || !Array.isArray(parsed.transactions)) return null;
-
-    const before = text.slice(0, start).trim();
-    const parts = [before, parsed.message].filter(Boolean);
-
-    return { text: parts.join('\n\n'), transactions: parsed.transactions, summary: parsed.summary };
-  } catch {
-    return null;
+  for (let i = startIndex; i < str.length; i++) {
+    const ch = str[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return str.slice(startIndex, i + 1);
+    }
   }
+  return null;
+}
+
+function extractJsonFromText(text: string): TransactionData | null {
+  let pos = 0;
+
+  while (pos < text.length) {
+    const start = text.indexOf('{', pos);
+    if (start === -1) break;
+
+    const jsonStr = findBalancedJson(text, start);
+    if (!jsonStr) break;
+
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && Array.isArray(parsed.transactions)) {
+        const before = text.slice(0, start).trim();
+        const afterStart = start + jsonStr.length;
+        const after = text.slice(afterStart).trim();
+
+        // Extract message from any remaining JSON object (e.g. separate balance response)
+        let extraMessage = '';
+        if (after) {
+          const extraJsonStr = findBalancedJson(after, after.indexOf('{'));
+          if (extraJsonStr) {
+            try {
+              const extraParsed = JSON.parse(extraJsonStr);
+              if (extraParsed.message) extraMessage = extraParsed.message;
+            } catch { /* ignore */ }
+          } else if (!after.startsWith('{')) {
+            extraMessage = after;
+          }
+        }
+
+        const parts = [before, parsed.message, extraMessage].filter(Boolean);
+        return { text: parts.join('\n\n'), transactions: parsed.transactions, summary: parsed.summary };
+      }
+    } catch { /* not valid JSON, skip */ }
+
+    pos = start + (jsonStr ? jsonStr.length : 1);
+  }
+
+  return null;
 }
 
 function getTransactionData(msg: Message): TransactionData | null {
