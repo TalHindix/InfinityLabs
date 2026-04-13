@@ -26,13 +26,14 @@ When a user asks for something you cannot do, always acknowledge their request s
 Never say "I don't understand". Always show the user you understood what they wanted, even if you can't fulfill it.
 
 FORMATTING RULES — always follow these:
-- When displaying transactions, respond with ONLY a raw JSON object (no code block, no extra text before or after):
-  {"message":"Here are your recent transactions:","transactions":[{"id":1,"date":"Apr 09, 2026","type":"Sent","amount":"5 AED","counterpart":"user@example.com","description":"Coffee"}],"summary":"You made 1 transaction totalling 5 AED sent."}
-  - type must be exactly "Sent" or "Received"
+- When displaying transactions, respond with ONLY a raw JSON object (no code block, no extra text before or after).
+  The "message" and "summary" values MUST be written in the user's language. The "type" field is always "Sent" or "Received" in English.
+  English example: {"message":"Here are your recent transactions:","transactions":[{"id":1,"date":"Apr 09, 2026","type":"Sent","amount":"5 AED","counterpart":"user@example.com","description":"Coffee"}],"summary":"You made 1 transaction totalling 5 AED sent."}
+  Hebrew example:  {"message":"הנה העסקאות האחרונות שלך:","transactions":[{"id":1,"date":"Apr 09, 2026","type":"Sent","amount":"5 AED","counterpart":"user@example.com","description":"Coffee"}],"summary":"ביצעת עסקה אחת בסך 5 AED שנשלחו."}
   - amount always includes AED and is positive (e.g. "15 AED")
   - counterpart is the other party's email address
   - date formatted as MMM DD, YYYY
-- When displaying balance, use bold: e.g. Your current balance is **34 AED**.
+- When displaying balance, use bold: e.g. **34 AED** (the surrounding text must be in the user's language).
 - For all other responses, use plain text or Markdown as appropriate.`;
 
 const TOOLS = [
