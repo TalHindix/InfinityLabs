@@ -91,12 +91,14 @@ const ChatAssistant = () => {
         {messages.map((msg, index) => {
           const txData = msg.type === 'bot' ? getTransactionData(msg) : null;
           return (
-            <Box key={`${msg.type}-${index}`} sx={createMessageSx(msg.type === 'user')}>
+            <Box key={`${msg.type}-${index}`} dir="auto" sx={createMessageSx(msg.type === 'user')}>
               {msg.type === 'bot' ? (
                 txData ? (
                   <Box>
                     {txData.text && (
-                      <Typography sx={{ fontSize: '0.875rem', mb: 0.75 }}>{txData.text}</Typography>
+                      <Box sx={{ ...botMarkdownSx, mb: 0.75 }}>
+                        <Markdown>{txData.text}</Markdown>
+                      </Box>
                     )}
                     <TransactionList transactions={txData.transactions} summary={txData.summary} />
                   </Box>

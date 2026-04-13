@@ -12,6 +12,7 @@ const TransactionList = ({ transactions, summary }: TransactionListProps) => (
       {transactions.map((tx) => (
         <Box
           key={tx.id}
+          dir="auto"
           sx={{
             border: '1px solid',
             borderColor: 'divider',
@@ -41,7 +42,7 @@ const TransactionList = ({ transactions, summary }: TransactionListProps) => (
             {tx.counterpart}
           </Typography>
           {tx.description && (
-            <Typography variant="caption" sx={{ display: 'block', mt: 0.25, fontStyle: 'italic' }}>
+            <Typography variant="caption" dir="auto" sx={{ display: 'block', mt: 0.25, fontStyle: 'italic' }}>
               {tx.description}
             </Typography>
           )}
@@ -49,7 +50,7 @@ const TransactionList = ({ transactions, summary }: TransactionListProps) => (
       ))}
     </Box>
     {summary && (
-      <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary' }}>
+      <Typography variant="caption" dir="auto" sx={{ display: 'block', mt: 1, color: 'text.secondary' }}>
         {summary}
       </Typography>
     )}
