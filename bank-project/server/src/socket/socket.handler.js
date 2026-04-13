@@ -100,7 +100,9 @@ export const initChatbotSocket = (io) => {
           return;
         }
 
+        socket.emit('typing');
         const result = await processMessage(message, socket.data.chatHistory, { userId });
+        socket.emit('stop_typing');
         socket.data.chatHistory = result.chatHistory;
         emitBot(
           socket,
@@ -114,6 +116,7 @@ export const initChatbotSocket = (io) => {
           socket.emit('transfer-completed');
         }
       } catch (err) {
+        socket.emit('stop_typing');
         emitBot(socket, MESSAGES.ERROR, 'error');
       }
     });
