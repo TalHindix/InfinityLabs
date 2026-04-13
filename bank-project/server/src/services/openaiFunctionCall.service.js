@@ -213,13 +213,28 @@ function extractCalledFunctionNames(messages) {
 }
 
 function parseStructuredResponse(content) {
+  const str = content.trim();
+
+  // Find the first JSON object in the content (AI may prepend plain text)
+  const start = str.indexOf('{');
+  const end = str.lastIndexOf('}');
+  if (start === -1 || end <= start) return null;
+
   try {
-    const parsed = JSON.parse(content.trim());
-    if (parsed && Array.isArray(parsed.transactions)) return parsed;
+    const parsed = JSON.parse(str.slice(start, end + 1));
+    if (!parsed || !Array.isArray(parsed.transactions)) return null;
+
+    const before = str.slice(0, start).trim();
+    const textParts = [before, parsed.message].filter(Boolean);
+
+    return {
+      message: textParts.join('\n\n'),
+      transactions: parsed.transactions,
+      summary: parsed.summary ?? null,
+    };
   } catch {
-    // Not JSON — fall through
+    return null;
   }
-  return null;
 }
 
 function buildResponse(replyContent, chatHistory, message, calledFunctionNames) {
@@ -227,8 +242,8 @@ function buildResponse(replyContent, chatHistory, message, calledFunctionNames) 
 
   return {
     message: parsed?.message ?? replyContent,
-    data: parsed?.transactions
-      ? { transactions: parsed.transactions, summary: parsed.summary ?? null }
+    data: parsed
+      ? { transactions: parsed.transactions, summary: parsed.summary }
       : null,
     chatHistory: [
       ...chatHistory,

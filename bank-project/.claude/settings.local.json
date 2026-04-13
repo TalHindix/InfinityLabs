@@ -3,7 +3,8 @@
     "allow": [
       "Bash(ls:*)",
       "Bash(python3 -c \"import sys,json; deps=json.load\\(sys.stdin\\).get\\(''''dependencies'''',{}\\); [print\\(f''''{k}: {v}''''\\) for k,v in sorted\\(deps.items\\(\\)\\)]\")",
-      "Bash(find /home/hindi/git/bank-project -maxdepth 2 -type f \\\\\\(-name *.md -o -name .github* -o -name .git* \\\\\\))"
+      "Bash(find /home/hindi/git/bank-project -maxdepth 2 -type f \\\\\\(-name *.md -o -name .github* -o -name .git* \\\\\\))",
+      "Bash(npm test:*)"
     ]
   }
 }

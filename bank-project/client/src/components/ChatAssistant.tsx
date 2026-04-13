@@ -23,19 +23,29 @@ interface TransactionData {
   summary?: string;
 }
 
+function extractJsonFromText(text: string): TransactionData | null {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end <= start) return null;
+
+  try {
+    const parsed = JSON.parse(text.slice(start, end + 1));
+    if (!parsed || !Array.isArray(parsed.transactions)) return null;
+
+    const before = text.slice(0, start).trim();
+    const parts = [before, parsed.message].filter(Boolean);
+
+    return { text: parts.join('\n\n'), transactions: parsed.transactions, summary: parsed.summary };
+  } catch {
+    return null;
+  }
+}
+
 function getTransactionData(msg: Message): TransactionData | null {
   if (msg.transactions) {
     return { text: msg.text, transactions: msg.transactions, summary: msg.summary };
   }
-  try {
-    const parsed = JSON.parse(msg.text);
-    if (parsed && Array.isArray(parsed.transactions)) {
-      return { text: parsed.message ?? '', transactions: parsed.transactions, summary: parsed.summary };
-    }
-  } catch {
-    // Not JSON — fall through
-  }
-  return null;
+  return extractJsonFromText(msg.text);
 }
 
 const ChatAssistant = () => {
