@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import config from '../config/index.js';
-import { getAccountSummary, findUserById } from './user.service.js';
+import { getAccountSummary } from './user.service.js';
 import { findRecentTransactions, executeTransfer } from './transaction.service.js';
 import logger from '../utils/logger.util.js';
 
@@ -111,13 +111,7 @@ function getSupportedServices() {
   };
 }
 
-async function getUserEmail(userId) {
-  const user = await findUserById(userId);
-  if (!user) throw new Error('User not found');
-  return user.email;
-}
-
-async function executeFunctionCall(functionName, args, userId) {
+async function executeFunctionCall(functionName, args, userId, userEmail) {
   switch (functionName) {
     case 'get_balance': {
       const summary = await getAccountSummary(userId);
@@ -125,14 +119,12 @@ async function executeFunctionCall(functionName, args, userId) {
     }
     case 'get_transaction_history': {
       const limit = args.limit || 5;
-      const email = await getUserEmail(userId);
-      const transactions = await findRecentTransactions(email, limit);
+      const transactions = await findRecentTransactions(userEmail, limit);
       return { transactions };
     }
     case 'transfer_money': {
-      const senderEmail = await getUserEmail(userId);
       const transaction = await executeTransfer(
-        senderEmail,
+        userEmail,
         args.recipientEmail,
         args.amount,
         args.description || ''
@@ -168,12 +160,12 @@ async function callOpenAI(messages, tools) {
   return response.choices[0].message;
 }
 
-async function processToolCall(toolCall, userId) {
+async function processToolCall(toolCall, userId, userEmail) {
   const { name: functionName, arguments: argsStr } = toolCall.function;
   const functionArguments = JSON.parse(argsStr || '{}');
 
   try {
-    const result = await executeFunctionCall(functionName, functionArguments, userId);
+    const result = await executeFunctionCall(functionName, functionArguments, userId, userEmail);
     return {
       role: 'tool',
       tool_call_id: toolCall.id,
@@ -189,18 +181,18 @@ async function processToolCall(toolCall, userId) {
   }
 }
 
-async function processAllToolCalls(toolCalls, userId) {
-  return Promise.all(toolCalls.map((toolCall) => processToolCall(toolCall, userId)));
+async function processAllToolCalls(toolCalls, userId, userEmail) {
+  return Promise.all(toolCalls.map((toolCall) => processToolCall(toolCall, userId, userEmail)));
 }
 
-async function handleToolCallLoop(initialResponse, messages, tools, userId) {
+async function handleToolCallLoop(initialResponse, messages, tools, userId, userEmail) {
   let assistantResponse = initialResponse;
   let toolCallRounds = 0;
 
   while (assistantResponse.tool_calls?.length > 0 && toolCallRounds < MAX_TOOL_CALL_ROUNDS) {
     toolCallRounds++;
     messages.push(assistantResponse);
-    const toolResults = await processAllToolCalls(assistantResponse.tool_calls, userId);
+    const toolResults = await processAllToolCalls(assistantResponse.tool_calls, userId, userEmail);
     messages.push(...toolResults);
     assistantResponse = await callOpenAI(messages, tools);
   }
@@ -319,14 +311,14 @@ function buildErrorResponse(chatHistory, message) {
 }
 
 export async function processWithFunctionCalling(message, chatHistory, context) {
-  const { userId } = context;
+  const { userId, userEmail } = context;
   const tools = userId ? TOOLS : [];
 
   const messages = buildMessagesForOpenAI(message, chatHistory);
 
   try {
     const initialResponse = await callOpenAI(messages, tools);
-    const finalResponse = await handleToolCallLoop(initialResponse, messages, tools, userId);
+    const finalResponse = await handleToolCallLoop(initialResponse, messages, tools, userId, userEmail);
 
     const replyContent = finalResponse.content || '';
     const calledFunctionNames = extractCalledFunctionNames(messages);

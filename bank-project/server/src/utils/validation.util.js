@@ -1,5 +1,4 @@
-const MIN_AMOUNT = 0.01;
-const MAX_AMOUNT = 1_000_000;
+import { MIN_AMOUNT, MAX_AMOUNT } from '../constants/index.js';
 
 export const validateTransactionAmount = (amount) => {
   const invalid = (error) => ({
@@ -25,7 +24,7 @@ export const validateTransactionAmount = (amount) => {
   }
 
   if (amount < MIN_AMOUNT) {
-    return invalid('Amount must be at least 0.01');
+    return invalid(`Amount must be at least ${MIN_AMOUNT}`);
   }
 
   if (amount > MAX_AMOUNT) {
@@ -43,3 +42,5 @@ export const validateTransactionAmount = (amount) => {
     sanitized: amount,
   };
 };
+
+export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;

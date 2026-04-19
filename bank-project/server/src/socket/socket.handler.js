@@ -101,7 +101,7 @@ export const initChatbotSocket = (io) => {
         }
 
         socket.emit('typing');
-        const result = await processMessage(message, socket.data.chatHistory, { userId });
+        const result = await processMessage(message, socket.data.chatHistory, { userId, userEmail: socket.data.user.email });
         socket.emit('stop_typing');
         socket.data.chatHistory = result.chatHistory;
         emitBot(

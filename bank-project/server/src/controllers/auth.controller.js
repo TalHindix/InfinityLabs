@@ -8,20 +8,18 @@ import {
   validatePassword,
   findAndVerifyUserByToken,
   regenerateVerificationToken,
-  saveOtp,
+  issueOtp,
   verifyOtp as verifyOtpService,
 } from '../services/user.service.js';
 import {
   sendVerificationEmailAsync,
   buildVerificationResultPage,
-  sendOtpEmailAsync,
 } from '../utils/email.util.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../utils/error.util.js';
 import { disconnectUser } from '../socket/socket.handler.js';
-import { getAuthenticatedUser } from '../middleware/auth.middleware.js';
-
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+import { getAuthenticatedUser } from '../utils/auth.util.js';
+import { PASSWORD_REGEX } from '../utils/validation.util.js';
 
 export const signup = async (req, res, next) => {
   try {
@@ -91,9 +89,7 @@ export const login = async (req, res, next) => {
     const isValidPassword = await validatePassword(password, user.password);
     if (!isValidPassword) throw new AppError('Invalid credentials', 401);
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    await saveOtp(user.id, otp);
-    sendOtpEmailAsync(user.email, otp);
+    await issueOtp(user);
 
     return response.ok(res, { otpRequired: true });
   } catch (error) {
@@ -143,9 +139,7 @@ export const resendOtp = async (req, res, next) => {
 
     const user = await findUserByEmail(email);
     if (user && user.status === USER_STATUS.ACTIVE) {
-      const otp = String(Math.floor(100000 + Math.random() * 900000));
-      await saveOtp(user.id, otp);
-      sendOtpEmailAsync(user.email, otp);
+      await issueOtp(user);
     }
 
     return response.ok(res, { message: 'If the account exists, a new OTP has been sent.' });

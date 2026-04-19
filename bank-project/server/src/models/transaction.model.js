@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
-
-const MIN_AMOUNT = 0.01;
-const MAX_AMOUNT = 1_000_000;
+import { MIN_AMOUNT, MAX_AMOUNT } from '../constants/index.js';
 
 const counterSchema = new mongoose.Schema({
   _id: { type: String, required: true },
@@ -47,8 +45,8 @@ const transactionSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: [true, 'Amount is required'],
-      min: [MIN_AMOUNT, 'Amount must be at least 0.01'],
-      max: [MAX_AMOUNT, 'Amount cannot exceed 1,000,000'],
+      min: [MIN_AMOUNT, `Amount must be at least ${MIN_AMOUNT}`],
+      max: [MAX_AMOUNT, `Amount cannot exceed ${MAX_AMOUNT.toLocaleString()}`],
       validate: {
         validator: function (v) {
           return Number.isFinite(v) && v > 0;

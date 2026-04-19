@@ -1,5 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import { validateTransactionAmount } from '../../utils/validation.util.js';
+import { MIN_AMOUNT, MAX_AMOUNT } from '../../constants/index.js';
 
 describe('validateTransactionAmount - Unit Test', () => {
   
@@ -60,7 +61,7 @@ describe('validateTransactionAmount - Unit Test', () => {
     const error = result.error;
     
     const expectedIsValid = false;
-    const expectedError = 'Amount must be at least 0.01';
+    const expectedError = `Amount must be at least ${MIN_AMOUNT}`;
     
     expect(isValid).toBe(expectedIsValid);
     expect(error).toBe(expectedError);
@@ -97,7 +98,7 @@ describe('validateTransactionAmount - Unit Test', () => {
   });
 
   it('should accept exactly minimum amount (0.01)', () => {
-    const exactMinimumAmount = 0.01;
+    const exactMinimumAmount = MIN_AMOUNT;
     
     const result = validateTransactionAmount(exactMinimumAmount);
     
@@ -109,7 +110,7 @@ describe('validateTransactionAmount - Unit Test', () => {
   });
 
   it('should accept exactly maximum amount (1,000,000)', () => {
-    const exactMaximumAmount = 1000000;
+    const exactMaximumAmount = MAX_AMOUNT;
     
     const result = validateTransactionAmount(exactMaximumAmount);
     

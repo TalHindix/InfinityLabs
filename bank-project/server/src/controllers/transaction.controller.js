@@ -1,20 +1,15 @@
-import { DEFAULT_PAGE_SIZE } from '../constants/index.js';
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MAX_ANALYTICS_MONTHS, DEFAULT_ANALYTICS_MONTHS } from '../constants/index.js';
 import {
-  findTransactionById,
   findTransactionsByUserEmail,
+  findTransactionById,
   executeTransfer,
-  sendTransferEmailNotification,
-  generateVideoCallRoomName,
+  notifyTransferRecipient,
   getMonthlySpending,
   getMonthlyReceived,
   getTopRecipients,
 } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../utils/error.util.js';
-import { validateTransactionAmount } from '../utils/validation.util.js';
-import User from '../models/user.model.js';
-
-const MAX_PAGE_SIZE = 100;
 
 export const getTransactions = async (req, res, next) => {
   try {
@@ -51,21 +46,7 @@ export const createTransaction = async (req, res, next) => {
     const { receiverEmail, amount, description } = req.body;
     const senderEmail = req.user.email;
 
-    if (!receiverEmail) {
-      throw new AppError('Receiver email is required', 400);
-    }
-
-    const amountValidation = validateTransactionAmount(amount);
-    if (!amountValidation.isValid) {
-      throw new AppError(amountValidation.error, 400);
-    }
-
-    const transaction = await executeTransfer(
-      senderEmail,
-      receiverEmail,
-      amountValidation.sanitized,
-      description
-    );
+    const transaction = await executeTransfer(senderEmail, receiverEmail, amount, description);
 
     return response.created(res, { transaction });
   } catch (error) {
@@ -76,7 +57,7 @@ export const createTransaction = async (req, res, next) => {
 export const getSpendingAnalytics = async (req, res, next) => {
   try {
     const userEmail = req.user.email;
-    const months = Math.min(12, Math.max(1, Number(req.query.months) || 6));
+    const months = Math.min(MAX_ANALYTICS_MONTHS, Math.max(1, Number(req.query.months) || DEFAULT_ANALYTICS_MONTHS));
 
     const [monthlySpending, monthlyReceived, topRecipients] = await Promise.all([
       getMonthlySpending(userEmail, months),
@@ -104,33 +85,11 @@ export const sendTransferNotification = async (req, res, next) => {
     const { transactionId } = req.params;
     const userEmail = req.user.email;
 
-    const transaction = await findTransactionById(transactionId, userEmail);
-    if (!transaction) throw new AppError('Transaction not found', 404);
-
-    const isSender =
-      transaction.fromEmail.toLowerCase() === userEmail.toLowerCase();
-    if (!isSender) {
-      throw new AppError(
-        'You can only send notifications for your own transfers',
-        403
-      );
-    }
-
-    const [sender, receiver] = await Promise.all([
-      User.findOne({ email: transaction.fromEmail }),
-      User.findOne({ email: transaction.toEmail }),
-    ]);
-
-    if (!sender) throw new AppError('Sender not found', 404);
-    if (!receiver) throw new AppError('Receiver not found', 404);
-
-    await sendTransferEmailNotification(transaction, sender, receiver);
-
-    const roomName = generateVideoCallRoomName(sender.email, receiver.email);
+    const result = await notifyTransferRecipient(transactionId, userEmail);
 
     return response.ok(res, {
       message: 'Notification email sent successfully',
-      roomName,
+      roomName: result.roomName,
     });
   } catch (error) {
     next(error);

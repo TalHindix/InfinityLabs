@@ -7,7 +7,7 @@ function sanitizeInput(input) {
 }
 
 export async function processMessage(message, chatHistory, context) {
-  const { userId } = context;
+  const { userId, userEmail } = context;
   const cleanMessage = sanitizeInput(message);
 
   if (!cleanMessage) {
@@ -19,7 +19,7 @@ export async function processMessage(message, chatHistory, context) {
   }
 
   try {
-    const result = await processWithFunctionCalling(cleanMessage, chatHistory, { userId });
+    const result = await processWithFunctionCalling(cleanMessage, chatHistory, { userId, userEmail });
 
     return {
       intent: 'chat',

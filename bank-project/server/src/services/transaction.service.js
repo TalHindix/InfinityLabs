@@ -5,13 +5,23 @@ import User from '../models/user.model.js';
 import { DEFAULT_PAGE_SIZE } from '../constants/index.js';
 import { AppError } from '../utils/error.util.js';
 import { sendTransferNotificationEmailAsync } from '../utils/email.util.js';
+import { validateTransactionAmount } from '../utils/validation.util.js';
+import { findUserByEmail } from './user.service.js';
 import config from '../config/index.js';
 
-function transactionsForUserQuery(userEmail) {
-  return { $or: [{ fromEmail: userEmail }, { toEmail: userEmail }] };
-}
+const transactionsForUserQuery = (userEmail) => ({
+  $or: [{ fromEmail: userEmail }, { toEmail: userEmail }],
+});
 
-export async function findTransactionsByUserEmail(userEmail, page = 1, pageSize = DEFAULT_PAGE_SIZE) {
+const startOfMonthNMonthsAgo = (months) => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - months);
+  date.setDate(1);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+export const findTransactionsByUserEmail = async (userEmail, page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
   const firstItemIndex = (page - 1) * pageSize;
   const query = transactionsForUserQuery(userEmail);
 
@@ -26,19 +36,19 @@ export async function findTransactionsByUserEmail(userEmail, page = 1, pageSize 
     totalPages: Math.ceil(total / pageSize),
     currentPage: page,
   };
-}
+};
 
-export async function findRecentTransactions(userEmail, pageSize = 10) {
+export const findRecentTransactions = async (userEmail, pageSize = DEFAULT_PAGE_SIZE) => {
   const query = transactionsForUserQuery(userEmail);
   return Transaction.find(query).sort({ createdAt: -1 }).limit(pageSize);
-}
+};
 
-export async function findTransactionById(transactionId, userEmail) {
+export const findTransactionById = async (transactionId, userEmail) => {
   const query = { id: Number(transactionId), ...transactionsForUserQuery(userEmail) };
   return Transaction.findOne(query);
-}
+};
 
-async function deductSenderBalance(senderEmail, amount, session) {
+const deductSenderBalance = async (senderEmail, amount, session) => {
   const sender = await User.findOneAndUpdate(
     { email: senderEmail, balance: { $gte: amount } },
     { $inc: { balance: -amount } },
@@ -46,9 +56,9 @@ async function deductSenderBalance(senderEmail, amount, session) {
   );
   if (!sender) throw new AppError('Insufficient funds', 400);
   return sender;
-}
+};
 
-async function addReceiverBalance(receiverEmail, amount, session) {
+const addReceiverBalance = async (receiverEmail, amount, session) => {
   const receiver = await User.findOneAndUpdate(
     { email: receiverEmail },
     { $inc: { balance: amount } },
@@ -56,18 +66,27 @@ async function addReceiverBalance(receiverEmail, amount, session) {
   );
   if (!receiver) throw new AppError('Receiver not found', 404);
   return receiver;
-}
+};
 
-async function createTransactionRecord(senderEmail, receiverEmail, amount, description, session) {
+const createTransactionRecord = async (senderEmail, receiverEmail, amount, description, session) => {
   const nextId = await getNextTransactionId(session);
   const [transaction] = await Transaction.create(
     [{ id: nextId, fromEmail: senderEmail, toEmail: receiverEmail, amount, description }],
     { session }
   );
   return transaction;
-}
+};
 
-export async function executeTransfer(senderEmail, receiverEmail, amount, description) {
+export const executeTransfer = async (senderEmail, receiverEmail, amount, description) => {
+  if (!receiverEmail) {
+    throw new AppError('Receiver email is required', 400);
+  }
+
+  const amountValidation = validateTransactionAmount(amount);
+  if (!amountValidation.isValid) {
+    throw new AppError(amountValidation.error, 400);
+  }
+
   if (receiverEmail.toLowerCase() === senderEmail.toLowerCase()) {
     throw new AppError('Cannot transfer to yourself', 400);
   }
@@ -76,12 +95,12 @@ export async function executeTransfer(senderEmail, receiverEmail, amount, descri
   session.startTransaction();
 
   try {
-    await deductSenderBalance(senderEmail, amount, session);
-    await addReceiverBalance(receiverEmail, amount, session);
+    await deductSenderBalance(senderEmail, amountValidation.sanitized, session);
+    await addReceiverBalance(receiverEmail, amountValidation.sanitized, session);
     const transaction = await createTransactionRecord(
       senderEmail,
       receiverEmail,
-      amount,
+      amountValidation.sanitized,
       description,
       session
     );
@@ -93,27 +112,23 @@ export async function executeTransfer(senderEmail, receiverEmail, amount, descri
   } finally {
     session.endSession();
   }
-}
+};
 
-export function generateVideoCallRoomName(firstEmail, secondEmail) {
+export const generateVideoCallRoomName = (firstEmail, secondEmail) => {
   const emails = [firstEmail.toLowerCase(), secondEmail.toLowerCase()].sort();
   const pair = emails.join('|');
   const hash = crypto.createHash('sha256').update(pair).digest('hex');
   return hash.slice(0, 16);
-}
+};
 
-export async function getMonthlySpending(userEmail, months = 6) {
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - months);
-  startDate.setDate(1);
-  startDate.setHours(0, 0, 0, 0);
-
+const aggregateMonthlyByDirection = async (emailField, totalKey, userEmail, months) => {
+  const startDate = startOfMonthNMonthsAgo(months);
   return Transaction.aggregate([
-    { $match: { fromEmail: userEmail, createdAt: { $gte: startDate } } },
+    { $match: { [emailField]: userEmail, createdAt: { $gte: startDate } } },
     {
       $group: {
         _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-        totalSpent: { $sum: '$amount' },
+        total: { $sum: '$amount' },
         transactionCount: { $count: {} },
       },
     },
@@ -123,46 +138,21 @@ export async function getMonthlySpending(userEmail, months = 6) {
         _id: 0,
         year: '$_id.year',
         month: '$_id.month',
-        totalSpent: { $round: ['$totalSpent', 2] },
+        [totalKey]: { $round: ['$total', 2] },
         transactionCount: 1,
       },
     },
   ]);
-}
+};
 
-export async function getMonthlyReceived(userEmail, months = 6) {
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - months);
-  startDate.setDate(1);
-  startDate.setHours(0, 0, 0, 0);
+export const getMonthlySpending = (userEmail, months = 6) =>
+  aggregateMonthlyByDirection('fromEmail', 'totalSpent', userEmail, months);
 
-  return Transaction.aggregate([
-    { $match: { toEmail: userEmail, createdAt: { $gte: startDate } } },
-    {
-      $group: {
-        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-        totalReceived: { $sum: '$amount' },
-        transactionCount: { $count: {} },
-      },
-    },
-    { $sort: { '_id.year': 1, '_id.month': 1 } },
-    {
-      $project: {
-        _id: 0,
-        year: '$_id.year',
-        month: '$_id.month',
-        totalReceived: { $round: ['$totalReceived', 2] },
-        transactionCount: 1,
-      },
-    },
-  ]);
-}
+export const getMonthlyReceived = (userEmail, months = 6) =>
+  aggregateMonthlyByDirection('toEmail', 'totalReceived', userEmail, months);
 
-export async function getTopRecipients(userEmail, months = 6, limit = 5) {
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - months);
-  startDate.setDate(1);
-  startDate.setHours(0, 0, 0, 0);
+export const getTopRecipients = async (userEmail, months = 6, limit = 5) => {
+  const startDate = startOfMonthNMonthsAgo(months);
 
   return Transaction.aggregate([
     { $match: { fromEmail: userEmail, createdAt: { $gte: startDate } } },
@@ -184,9 +174,9 @@ export async function getTopRecipients(userEmail, months = 6, limit = 5) {
       },
     },
   ]);
-}
+};
 
-export async function sendTransferEmailNotification(transaction, sender, receiver) {
+export const sendTransferEmailNotification = async (transaction, sender, receiver) => {
   const roomName = generateVideoCallRoomName(sender.email, receiver.email);
   const videoCallUrl = `${config.clientUrl}/video-call/${roomName}`;
   const receiverName = `${receiver.firstName} ${receiver.lastName}`;
@@ -202,4 +192,28 @@ export async function sendTransferEmailNotification(transaction, sender, receive
     transactionId: transaction.id,
     videoCallUrl,
   });
-}
+};
+
+export const notifyTransferRecipient = async (transactionId, actingUserEmail) => {
+  const transaction = await findTransactionById(transactionId, actingUserEmail);
+  if (!transaction) throw new AppError('Transaction not found', 404);
+
+  const isSender = transaction.fromEmail.toLowerCase() === actingUserEmail.toLowerCase();
+  if (!isSender) {
+    throw new AppError('You can only send notifications for your own transfers', 403);
+  }
+
+  const [sender, receiver] = await Promise.all([
+    findUserByEmail(transaction.fromEmail),
+    findUserByEmail(transaction.toEmail),
+  ]);
+
+  if (!sender) throw new AppError('Sender not found', 404);
+  if (!receiver) throw new AppError('Receiver not found', 404);
+
+  await sendTransferEmailNotification(transaction, sender, receiver);
+
+  const roomName = generateVideoCallRoomName(sender.email, receiver.email);
+
+  return { roomName };
+};

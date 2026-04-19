@@ -1,7 +1,9 @@
 import bcrypt from 'bcrypt';
+import crypto from 'node:crypto';
 import User from '../models/user.model.js';
 import { SALT_ROUNDS, USER_STATUS } from '../constants/index.js';
 import { generateVerificationToken, hashToken } from '../utils/generate.util.js';
+import { sendOtpEmailAsync } from '../utils/email.util.js';
 import { AppError } from '../utils/error.util.js';
 
 export const findAndVerifyUserByToken = async (token) => {
@@ -97,4 +99,10 @@ export const verifyOtp = async (user, otp) => {
     { id: user.id },
     { $unset: { otpHash: '', otpExpiry: '' }, $set: { otpAttempts: 0 } }
   );
+};
+
+export const issueOtp = async (user) => {
+  const otp = String(crypto.randomInt(100000, 1000000)).padStart(6, '0');
+  await saveOtp(user.id, otp);
+  sendOtpEmailAsync(user.email, otp);
 };

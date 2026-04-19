@@ -1,3 +1,4 @@
+import { RECENT_TRANSACTIONS_LIMIT } from '../constants/index.js';
 import { findUserById } from '../services/user.service.js';
 import { findRecentTransactions } from '../services/transaction.service.js';
 import * as response from '../utils/response.util.js';
@@ -9,7 +10,7 @@ export const getCurrentUser = async (req, res, next) => {
     const user = await findUserById(userId);
     if (!user) throw new AppError('User not found', 404);
 
-    const recentTransactions = await findRecentTransactions(user.email, 10);
+    const recentTransactions = await findRecentTransactions(user.email, RECENT_TRANSACTIONS_LIMIT);
     return response.ok(res, {
       user: {
         id: user.id,
