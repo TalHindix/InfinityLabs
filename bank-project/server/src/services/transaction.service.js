@@ -48,6 +48,10 @@ export const findTransactionById = async (transactionId, userEmail) => {
   return Transaction.findOne(query);
 };
 
+// Atomic check-and-decrement: the `balance: { $gte: amount }` filter and the
+// `$inc: -amount` update happen in a single Mongo operation, so two concurrent
+// transfers can never both "see enough" and each withdraw — one will miss the
+// filter and get null.
 const deductSenderBalance = async (senderEmail, amount, session) => {
   const sender = await User.findOneAndUpdate(
     { email: senderEmail, balance: { $gte: amount } },
@@ -77,6 +81,10 @@ const createTransactionRecord = async (senderEmail, receiverEmail, amount, descr
   return transaction;
 };
 
+// Money movement runs in a Mongo multi-document transaction: deduct, credit,
+// and insert the ledger row either all commit or all roll back. Requires the
+// database to be a replica set (single-node rs0 is fine for dev) — standalone
+// mongod will throw on startSession.
 export const executeTransfer = async (senderEmail, receiverEmail, amount, description) => {
   if (!receiverEmail) {
     throw new AppError('Receiver email is required', 400);
@@ -114,6 +122,10 @@ export const executeTransfer = async (senderEmail, receiverEmail, amount, descri
   }
 };
 
+// Deterministic, order-independent room id for a pair of users:
+// sorting makes (A,B) and (B,A) hash to the same room; hashing keeps raw
+// emails out of the URL; 16 hex chars (64 bits) is long enough that a
+// stranger can't guess a real call while staying short enough for a URL.
 export const generateVideoCallRoomName = (firstEmail, secondEmail) => {
   const emails = [firstEmail.toLowerCase(), secondEmail.toLowerCase()].sort();
   const pair = emails.join('|');

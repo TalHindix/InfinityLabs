@@ -17,10 +17,8 @@ function getInitialThemeFromStorage(): ThemeMode {
 }
 
 export function ThemeContextProvider({ children }: Props) {
-  // Initial value comes from localStorage (runs once on mount).
   const [mode, setMode] = useState<ThemeMode>(getInitialThemeFromStorage);
 
-  // Save theme to localStorage whenever it changes.
   useEffect(() => {
     localStorage.setItem('theme', mode);
   }, [mode]);
@@ -29,8 +27,6 @@ export function ThemeContextProvider({ children }: Props) {
     setMode((m) => (m === 'light' ? 'dark' : 'light'));
   }
 
-  // ThemeContext = our mode + toggle for the app;
-  //  MuiThemeProvider = MUI colors/fonts.
   const isDark = mode === 'dark';
   const theme = isDark ? darkTheme : lightTheme;
 

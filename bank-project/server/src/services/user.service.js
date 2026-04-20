@@ -34,6 +34,9 @@ export const getAccountSummary = async (userId) => {
   return { userId: user.id, balance: user.balance };
 };
 
+// The plaintext token is emailed to the user; only the hash is persisted.
+// If the users collection ever leaks, attackers still can't verify accounts
+// because the raw token was never stored.
 export const createUser = async (userData) => {
   const { firstName, lastName, email, phone, password } = userData;
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -79,6 +82,8 @@ export const saveOtp = async (userId, otp) => {
   );
 };
 
+// Brute-force guard: counts misses per user and locks after MAX_OTP_ATTEMPTS
+// until a fresh code is requested (which resets the counter via saveOtp).
 export const verifyOtp = async (user, otp) => {
   if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
     throw new AppError('Too many failed attempts. Please request a new OTP.', 429);

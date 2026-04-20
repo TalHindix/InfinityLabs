@@ -36,6 +36,9 @@ export const signup = async (req, res, next) => {
     sendVerificationEmailAsync(user.email, verificationToken);
     return response.created(res, { message: 'Please check your email to verify your account.' });
   } catch (error) {
+    // Anti-enumeration: a duplicate-email insert returns the same success
+    // response as a fresh signup so an attacker can't use this endpoint to
+    // discover which emails already have an account.
     if (error.code === 11000) {
       return response.created(res, { message: 'Please check your email to verify your account.' });
     }
@@ -76,6 +79,8 @@ export const resendVerification = async (req, res, next) => {
   }
 };
 
+// Login is step 1 of 2: password check only issues a one-time code by email.
+// The JWT cookie is issued by verifyOtp once the code is confirmed.
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;

@@ -8,6 +8,9 @@ function validateRequiredEnvVars() {
 
 validateRequiredEnvVars();
 
+// When the frontend and API live on different origins (e.g. Vercel + Render),
+// browsers will only send the auth cookie if it's SameSite=None + Secure. We
+// flip both defaults below based on this.
 const isCrossOrigin = (() => {
   try {
     const clientOrigin = new URL(process.env.CLIENT_URL || '').origin;

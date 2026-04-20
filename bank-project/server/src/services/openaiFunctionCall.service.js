@@ -185,6 +185,9 @@ async function processAllToolCalls(toolCalls, userId, userEmail) {
   return Promise.all(toolCalls.map((toolCall) => processToolCall(toolCall, userId, userEmail)));
 }
 
+// The model may call tools, read their output, then call more tools. We loop
+// until it stops asking, with a hard cap to bound cost/latency if the model
+// ever gets stuck in a tool-call loop.
 async function handleToolCallLoop(initialResponse, messages, tools, userId, userEmail) {
   let assistantResponse = initialResponse;
   let toolCallRounds = 0;
@@ -210,6 +213,12 @@ function extractCalledFunctionNames(messages) {
     .flatMap((m) => m.tool_calls.map((tc) => tc.function.name));
 }
 
+// The model is instructed to return a raw JSON object when listing
+// transactions, but in practice it sometimes wraps it in prose ("Here are your
+// transactions: { ... }"). JSON.parse on the whole string fails, so we walk
+// the text ourselves tracking brace depth + string escapes to pull out the
+// first balanced {...} block. Duplicated (by necessity) in the client so the
+// chat bubble can re-parse if the server ever ships raw content through.
 function findBalancedJson(str, startIndex) {
   if (str[startIndex] !== '{') return null;
   let depth = 0;

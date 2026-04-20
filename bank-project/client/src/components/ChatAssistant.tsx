@@ -23,6 +23,10 @@ interface TransactionData {
   summary?: string;
 }
 
+// Mirror of the server-side parser in openaiFunctionCall.service.js. The
+// server normally extracts the transaction JSON before sending, but if a
+// message slips through with raw text+JSON mixed (or arrives via an older
+// socket path) we re-parse here so the chat bubble can still render cards.
 function findBalancedJson(str: string, startIndex: number): string | null {
   if (startIndex < 0 || str[startIndex] !== '{') return null;
   let depth = 0;

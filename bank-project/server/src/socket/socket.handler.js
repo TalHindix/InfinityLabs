@@ -25,6 +25,9 @@ const emitBot = (socket, response, intent, data = null, requiresAuth = false) =>
   });
 };
 
+// Re-verify the JWT on every incoming message (not just at handshake) so a
+// socket that was authenticated hours ago can't keep talking after its token
+// expires or gets revoked.
 const isTokenValid = (socket) => {
   const cookieHeader = socket.handshake.headers?.cookie;
   const token = socket.handshake.auth?.token ?? getTokenFromCookie(cookieHeader);
@@ -62,6 +65,9 @@ export const disconnectUser = (userId) => {
   activeSocketsByUserId.delete(userId);
 };
 
+// Fixed-window rate limit kept in-process: fine for a single node, but if
+// this ever runs behind multiple instances it should move to Redis so the
+// counter is shared.
 const checkRateLimit = (userId) => {
   const now = Date.now();
   const entry = userMessageCounts.get(userId);
