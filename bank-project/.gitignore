@@ -17,6 +17,13 @@ interview-questions.html
 questions.md
 SPENDING_ANALYTICS_GUIDE.md
 TWO_FACTOR_AUTH_EXPLAINED.md
+SECURITY_BREAKDOWN.md
+dubai-bank-summary.md
+interview_prep.md
+SESSION_SUMMARY.md
+
+# Local Claude Code config and memory
+.claude/
 
 # Docker override files (local development only)
 docker-compose.override.yml
