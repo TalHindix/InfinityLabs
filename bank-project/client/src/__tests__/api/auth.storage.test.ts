@@ -22,7 +22,14 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { authStorage } from '../../api/auth.storage';
-import type { User } from '../../types';
+import type { User, StoredUser } from '../../types';
+
+const toStored = (u: User): StoredUser => ({
+  id: u.id,
+  firstName: u.firstName,
+  lastName: u.lastName,
+  email: u.email,
+});
 
 describe('authStorage - Critical Edge Case Tests', () => {
   beforeEach(() => {
@@ -43,27 +50,24 @@ describe('authStorage - Critical Edge Case Tests', () => {
     });
 
     it('should return parsed user when valid JSON exists', () => {
-      const mockUser: User = {
+      const stored: StoredUser = {
         id: '1',
-        _id: '1',
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        phone: '+972526006496',
-        balance: 1000,
       };
 
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      localStorage.setItem('user', JSON.stringify(stored));
 
       const result = authStorage.getUser();
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(stored);
     });
 
-    it('should throw error when JSON is invalid', () => {
+    it('should return null when JSON is invalid', () => {
       localStorage.setItem('user', 'invalid json{');
 
-      expect(() => authStorage.getUser()).toThrow();
+      expect(authStorage.getUser()).toBeNull();
     });
 
     it('should handle null value from localStorage', () => {
@@ -84,7 +88,7 @@ describe('authStorage - Critical Edge Case Tests', () => {
   });
 
   describe('setUser', () => {
-    it('should save user to localStorage as JSON string', () => {
+    it('should save user to localStorage as JSON string, stripping sensitive fields', () => {
       const mockUser: User = {
         id: '1',
         _id: '1',
@@ -98,10 +102,13 @@ describe('authStorage - Critical Edge Case Tests', () => {
       authStorage.setUser(mockUser);
 
       const stored = localStorage.getItem('user');
-      expect(stored).toBe(JSON.stringify(mockUser));
-      
+      expect(stored).toBe(JSON.stringify(toStored(mockUser)));
+
       const result = authStorage.getUser();
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(toStored(mockUser));
+      // phone and balance must NOT be persisted
+      expect(stored).not.toContain('phone');
+      expect(stored).not.toContain('balance');
     });
 
     it('should overwrite existing user in localStorage', () => {
@@ -126,15 +133,13 @@ describe('authStorage - Critical Edge Case Tests', () => {
       };
 
       authStorage.setUser(firstUser);
-      // Verify first user was set
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(firstUser));
-      
+      expect(localStorage.getItem('user')).toBe(JSON.stringify(toStored(firstUser)));
+
       authStorage.setUser(secondUser);
-      // Verify second user overwrote first
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(secondUser));
+      expect(localStorage.getItem('user')).toBe(JSON.stringify(toStored(secondUser)));
 
       const result = authStorage.getUser();
-      expect(result).toEqual(secondUser);
+      expect(result).toEqual(toStored(secondUser));
     });
   });
 
