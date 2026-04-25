@@ -2,6 +2,7 @@ import { Box, Typography, CircularProgress, Alert, Button } from '../../shared/m
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useSpendingAnalytics } from './useSpendingAnalytics';
 import { formatAmount } from '../../shared/displayFormatters';
+import { mergeMonthlyData } from './chartUtils';
 import {
   dashboardRootSx,
   headerRowSx,
@@ -34,51 +35,17 @@ import {
   COLORS,
 } from './SpendingChart.styles';
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 const FILTER_OPTIONS = [
   { label: '3M', value: 3 },
   { label: '6M', value: 6 },
   { label: '12M', value: 12 },
 ];
 
-interface ChartDataPoint {
-  label: string;
-  spent: number;
-  received: number;
-}
-
 function getInitials(email: string): string {
   const name = email.split('@')[0];
   const parts = name.split(/[._-]/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
-}
-
-function mergeMonthlyData(
-  spending: { year: number; month: number; totalSpent: number }[],
-  received: { year: number; month: number; totalReceived: number }[],
-): ChartDataPoint[] {
-  const map = new Map<string, ChartDataPoint>();
-
-  for (const s of spending) {
-    const key = `${s.year}-${s.month}`;
-    map.set(key, { label: `${MONTH_LABELS[s.month - 1]} ${s.year}`, spent: s.totalSpent, received: 0 });
-  }
-  for (const r of received) {
-    const key = `${r.year}-${r.month}`;
-    const existing = map.get(key);
-    if (existing) {
-      existing.received = r.totalReceived;
-    } else {
-      map.set(key, { label: `${MONTH_LABELS[r.month - 1]} ${r.year}`, spent: 0, received: r.totalReceived });
-    }
-  }
-
-  return [...map.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, v]) => v);
 }
 
 export const SpendingChart = () => {
