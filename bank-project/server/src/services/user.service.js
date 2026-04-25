@@ -90,6 +90,10 @@ export const verifyOtp = async (user, otp) => {
   }
 
   if (!user.otpHash || !user.otpExpiry || user.otpExpiry < new Date()) {
+    await User.findOneAndUpdate(
+      { id: user.id },
+      { $unset: { otpHash: '', otpExpiry: '' }, $set: { otpAttempts: 0 } }
+    );
     throw new AppError('OTP has expired. Please request a new one.', 400);
   }
 

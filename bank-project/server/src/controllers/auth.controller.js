@@ -17,6 +17,7 @@ import {
 } from '../utils/email.util.js';
 import * as response from '../utils/response.util.js';
 import { AppError } from '../utils/error.util.js';
+import logger from '../utils/logger.util.js';
 import { disconnectUser } from '../socket/socket.handler.js';
 import { getAuthenticatedUser } from '../utils/auth.util.js';
 import { PASSWORD_REGEX } from '../utils/validation.util.js';
@@ -59,7 +60,8 @@ export const verifyEmail = async (req, res) => {
     }
 
     return res.send(buildVerificationResultPage(true));
-  } catch {
+  } catch (error) {
+    logger.error('verifyEmail failed', { error });
     return res.status(500).send(buildVerificationResultPage(false, 'Something went wrong. Please try again later.'));
   }
 };

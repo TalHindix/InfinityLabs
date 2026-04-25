@@ -95,10 +95,10 @@ export const useLogin = () => {
   };
 
   const handleResendOtp = async () => {
+    setResendCooldown(RESEND_OTP_COOLDOWN_SECONDS);
     try {
       await authService.resendOtp(email);
       setOtp('');
-      setResendCooldown(RESEND_OTP_COOLDOWN_SECONDS);
     } catch (err) {
       otpAsync.setError(getIntelligentErrorMessage(getErrorMessage(err)));
     }
