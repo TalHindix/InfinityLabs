@@ -9,7 +9,7 @@ import { AppError } from '../utils/error.util.js';
 export const findAndVerifyUserByToken = async (token) => {
   const user = await User.findOneAndUpdate(
     { verificationToken: hashToken(token), status: USER_STATUS.PENDING },
-    { status: USER_STATUS.ACTIVE, verificationToken: undefined },
+    { $set: { status: USER_STATUS.ACTIVE }, $unset: { verificationToken: '' } },
     { new: true }
   );
   return user;
