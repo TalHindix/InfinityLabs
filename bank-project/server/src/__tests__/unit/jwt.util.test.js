@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { createToken, verifyToken } from '../../utils/jwt.util.js';
+import { createToken, verifyTokenOrThrow } from '../../utils/jwt.util.js';
 
 describe('JWT Utils', () => {
   it('should create a token for a user with id and email', () => {
@@ -44,7 +44,7 @@ describe('JWT Utils', () => {
     const user = { id: userId, email: userEmail };
     
     const token = createToken(user);
-    const decoded = verifyToken(token);
+    const decoded = verifyTokenOrThrow(token);
     
     const decodedId = decoded.id;
     const decodedEmail = decoded.email;
@@ -60,7 +60,7 @@ describe('JWT Utils', () => {
     const invalidToken = 'not.a.valid.token';
     
     expect(() => {
-      verifyToken(invalidToken);
+      verifyTokenOrThrow(invalidToken);
     }).toThrow();
   });
 });

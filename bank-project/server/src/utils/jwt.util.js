@@ -13,4 +13,4 @@ export const createToken = (user) => {
   );
 };
 
-export const verifyToken = (token) => jwt.verify(token, config.jwt.secret);
+export const verifyTokenOrThrow = (token) => jwt.verify(token, config.jwt.secret);

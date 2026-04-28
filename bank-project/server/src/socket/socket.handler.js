@@ -1,6 +1,6 @@
 import { processMessage } from '../services/chatbot.service.js';
 import { authenticateSocket, getTokenFromCookie } from '../middleware/socketAuth.middleware.js';
-import { verifyToken } from '../utils/jwt.util.js';
+import { verifyTokenOrThrow } from '../utils/jwt.util.js';
 
 const MESSAGES = {
   ERROR: 'Sorry, something went wrong. Please try again.',
@@ -34,7 +34,7 @@ const isTokenValid = (socket) => {
   if (!token) return false;
 
   try {
-    verifyToken(token);
+    verifyTokenOrThrow(token);
     return true;
   } catch (err) {
     if (err?.name === 'TokenExpiredError' || err?.name === 'JsonWebTokenError') return false;

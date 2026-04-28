@@ -15,10 +15,10 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { userService } from '../../api/user.service';
-import { httpClient } from '../../api/http-client';
+import { httpClient } from '../../api/http.client';
 
 // Mock the httpClient module
-vi.mock('../../api/http-client', () => ({
+vi.mock('../../api/http.client', () => ({
   httpClient: {
     get: vi.fn(),
   },
@@ -33,16 +33,14 @@ describe('userService - Critical API Service Tests', () => {
     it('should call httpClient.get with correct endpoint', async () => {
       const mockResponse = {
         data: {
-          data: {
-            user: {
-              id: '1',
-              _id: '1',
-              firstName: 'John',
-              lastName: 'Doe',
-              email: 'john@example.com',
-              phone: '+972526006496',
-              balance: 1000,
-            },
+          user: {
+            id: '1',
+            _id: '1',
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john@example.com',
+            phone: '+972526006496',
+            balance: 1000,
           },
         },
       };
@@ -66,9 +64,7 @@ describe('userService - Critical API Service Tests', () => {
       };
       const mockResponse = {
         data: {
-          data: {
-            user: mockUser,
-          },
+          user: mockUser,
         },
       };
       vi.mocked(httpClient.get).mockResolvedValue(mockResponse);

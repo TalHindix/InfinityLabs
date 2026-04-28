@@ -5,7 +5,6 @@ import {
   findUserByEmailWithPassword,
   findUserByEmail,
   createUser,
-  validatePassword,
   findAndVerifyUserByToken,
   regenerateVerificationToken,
   issueOtp,
@@ -19,7 +18,7 @@ import * as response from '../utils/response.util.js';
 import { AppError } from '../utils/error.util.js';
 import logger from '../utils/logger.util.js';
 import { disconnectUser } from '../socket/socket.handler.js';
-import { getAuthenticatedUser } from '../utils/auth.util.js';
+import { getAuthenticatedUser, validatePassword } from '../utils/auth.util.js';
 import { PASSWORD_REGEX } from '../utils/validation.util.js';
 
 export const signup = async (req, res, next) => {

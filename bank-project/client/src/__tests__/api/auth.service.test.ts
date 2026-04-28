@@ -19,11 +19,11 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { authService } from '../../api/auth.service';
-import { httpClient } from '../../api/http-client';
+import { httpClient } from '../../api/http.client';
 import type { SignupData } from '../../types';
 
 // Mock the httpClient module
-vi.mock('../../api/http-client', () => ({
+vi.mock('../../api/http.client', () => ({
   httpClient: {
     post: vi.fn(),
   },
@@ -38,9 +38,7 @@ describe('authService - Critical API Service Tests', () => {
     it('should call httpClient.post with correct endpoint and data', async () => {
       const mockResponse = {
         data: {
-          data: {
-            user: { id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' },
-          },
+          user: { id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' },
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);
@@ -58,9 +56,7 @@ describe('authService - Critical API Service Tests', () => {
       const mockUser = { id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' };
       const mockResponse = {
         data: {
-          data: {
-            user: mockUser,
-          },
+          user: mockUser,
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);
@@ -84,9 +80,7 @@ describe('authService - Critical API Service Tests', () => {
     it('should call httpClient.post with correct endpoint and signup data', async () => {
       const mockResponse = {
         data: {
-          data: {
-            message: 'User created successfully',
-          },
+          message: 'User created successfully',
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);
@@ -108,9 +102,7 @@ describe('authService - Critical API Service Tests', () => {
     it('should extract data.data from signup response', async () => {
       const mockResponse = {
         data: {
-          data: {
-            message: 'User created successfully',
-          },
+          message: 'User created successfully',
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);
@@ -148,9 +140,7 @@ describe('authService - Critical API Service Tests', () => {
     it('should call httpClient.post with correct endpoint and email', async () => {
       const mockResponse = {
         data: {
-          data: {
-            message: 'Verification email sent',
-          },
+          message: 'Verification email sent',
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);
@@ -166,9 +156,7 @@ describe('authService - Critical API Service Tests', () => {
     it('should extract data.data from resendVerification response', async () => {
       const mockResponse = {
         data: {
-          data: {
-            message: 'Verification email sent',
-          },
+          message: 'Verification email sent',
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);

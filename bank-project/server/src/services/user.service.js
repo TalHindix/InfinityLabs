@@ -16,15 +16,12 @@ export const findAndVerifyUserByToken = async (token) => {
 };
 
 export const findUserByEmailWithPassword = async (email) => {
-  return User.findOne({ email: email.toLowerCase() }).select('+password');
-};
-
-export const findUserById = async (id) => {
-  return User.findOne({ id });
+  return User.findOne({ email: email.trim().toLowerCase() }).select('+password');
 };
 
 export const findActiveUserById = async (id) => {
-  const user = await User.findOne({ id }).select('id email status');
+  if (!id) return null;
+  const user = await User.findOne({ id });
   return user?.status === USER_STATUS.ACTIVE ? user : null;
 };
 
@@ -45,7 +42,7 @@ export const createUser = async (userData) => {
   const user = await User.create({
     firstName,
     lastName,
-    email: email.toLowerCase(),
+    email: email.trim().toLowerCase(),
     phone,
     password: hashedPassword,
     status: USER_STATUS.PENDING,
@@ -55,7 +52,7 @@ export const createUser = async (userData) => {
 };
 
 export const regenerateVerificationToken = async (email) => {
-  const user = await User.findOne({ email: email.toLowerCase(), status: USER_STATUS.PENDING });
+  const user = await User.findOne({ email: email.trim().toLowerCase(), status: USER_STATUS.PENDING });
   if (!user) return null;
   const verificationToken = generateVerificationToken();
   user.verificationToken = hashToken(verificationToken);
@@ -63,18 +60,17 @@ export const regenerateVerificationToken = async (email) => {
   return { verificationToken };
 };
 
-export const validatePassword = async (inputPassword, hashedPassword) => {
-  return bcrypt.compare(inputPassword, hashedPassword);
-};
-
 export const findUserByEmail = async (email) => {
-  return User.findOne({ email: email.toLowerCase() });
+  return User.findOne({ email: email.trim().toLowerCase() });
 };
 
 const OTP_EXPIRY_MS = 5 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
+const OTP_DIGITS = 6;
+const OTP_MIN = 10 ** (OTP_DIGITS - 1);
+const OTP_MAX = 10 ** OTP_DIGITS;
 
-export const saveOtp = async (userId, otp) => {
+const saveOtp = async (userId, otp) => {
   const otpHash = await bcrypt.hash(otp, SALT_ROUNDS);
   await User.findOneAndUpdate(
     { id: userId },
@@ -90,10 +86,6 @@ export const verifyOtp = async (user, otp) => {
   }
 
   if (!user.otpHash || !user.otpExpiry || user.otpExpiry < new Date()) {
-    await User.findOneAndUpdate(
-      { id: user.id },
-      { $unset: { otpHash: '', otpExpiry: '' }, $set: { otpAttempts: 0 } }
-    );
     throw new AppError('OTP has expired. Please request a new one.', 400);
   }
 
@@ -111,7 +103,7 @@ export const verifyOtp = async (user, otp) => {
 };
 
 export const issueOtp = async (user) => {
-  const otp = String(crypto.randomInt(100000, 1000000)).padStart(6, '0');
+  const otp = String(crypto.randomInt(OTP_MIN, OTP_MAX)).padStart(OTP_DIGITS, '0');
   await saveOtp(user.id, otp);
   sendOtpEmailAsync(user.email, otp);
 };

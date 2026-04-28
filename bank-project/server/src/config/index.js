@@ -1,12 +1,24 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-function validateRequiredEnvVars() {
-  if (!process.env.JWT_SECRET) throw new Error('Missing required environment variable: JWT_SECRET');
-  if (!process.env.MONGO_URI) throw new Error('Missing required environment variable: MONGO_URI');
+const isProd = process.env.NODE_ENV === 'production';
+
+const alwaysRequired = ['JWT_SECRET'];
+const prodOnly = ['MONGO_URI', 'BREVO_API_KEY', 'EMAIL_FROM'];
+
+for (const v of alwaysRequired) {
+  if (!process.env[v]) throw new Error(`Missing required env var: ${v}`);
 }
 
-validateRequiredEnvVars();
+if (isProd) {
+  for (const v of prodOnly) {
+    if (!process.env[v]) throw new Error(`Missing required env var: ${v}`);
+  }
+} else {
+  for (const v of prodOnly) {
+    if (!process.env[v]) console.warn(`[config] Missing env var: ${v} (using default)`);
+  }
+}
 
 // When the frontend and API live on different origins (e.g. Vercel + Render),
 // browsers will only send the auth cookie if it's SameSite=None + Secure. We
@@ -36,7 +48,7 @@ const config = {
     tokenName: 'token',
     maxAgeSeconds: 3600,
     sameSite: process.env.COOKIE_SAME_SITE || (isCrossOrigin ? 'none' : 'lax'),
-    secure: process.env.NODE_ENV === 'production' || isCrossOrigin,
+    secure: isProd || isCrossOrigin,
   },
 
   email: {

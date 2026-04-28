@@ -14,7 +14,7 @@ const startServer = async () => {
   httpServer = app.listen(config.port, () => {
     logger.info(`Listening on ${config.port}`);
   });
-
+  
   const io = new Server(httpServer, {
     cors: {
       origin: config.clientUrl || 'http://localhost:5173',

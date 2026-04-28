@@ -1,4 +1,4 @@
-import { verifyToken } from '../utils/jwt.util.js';
+import { verifyTokenOrThrow } from '../utils/jwt.util.js';
 import { findActiveUserById } from '../services/user.service.js';
 
 export function getTokenFromCookie(cookieHeader) {
@@ -16,7 +16,7 @@ export const authenticateSocket = async (socket, next) => {
       return next(new Error('Authentication token is required'));
     }
 
-    const decoded = verifyToken(token);
+    const decoded = verifyTokenOrThrow(token);
     const user = await findActiveUserById(decoded.id);
 
     if (!user) {

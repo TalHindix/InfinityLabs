@@ -18,11 +18,11 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { transactionService } from '../../api/transaction.service';
-import { httpClient } from '../../api/http-client';
+import { httpClient } from '../../api/http.client';
 import type { TransferData } from '../../types';
 
 // Mock the httpClient module
-vi.mock('../../api/http-client', () => ({
+vi.mock('../../api/http.client', () => ({
   httpClient: {
     get: vi.fn(),
     post: vi.fn(),
@@ -38,12 +38,10 @@ describe('transactionService - Critical API Service Tests', () => {
     it('should call httpClient.get with default pagination parameters', async () => {
       const mockResponse = {
         data: {
-          data: {
-            transactions: [],
-            total: 0,
-            totalPages: 1,
-            currentPage: 1,
-          },
+          transactions: [],
+          total: 0,
+          totalPages: 1,
+          currentPage: 1,
         },
       };
       vi.mocked(httpClient.get).mockResolvedValue(mockResponse);
@@ -87,12 +85,10 @@ describe('transactionService - Critical API Service Tests', () => {
       ];
       const mockResponse = {
         data: {
-          data: {
-            transactions: mockTransactions,
-            total: 1,
-            totalPages: 1,
-            currentPage: 1,
-          },
+          transactions: mockTransactions,
+          total: 1,
+          totalPages: 1,
+          currentPage: 1,
         },
       };
       vi.mocked(httpClient.get).mockResolvedValue(mockResponse);
@@ -119,15 +115,13 @@ describe('transactionService - Critical API Service Tests', () => {
     it('should call httpClient.get with correct transaction id', async () => {
       const mockResponse = {
         data: {
-          data: {
-            transaction: {
-              _id: '123',
-              id: 1,
-              fromEmail: 'sender@example.com',
-              toEmail: 'receiver@example.com',
-              amount: 100,
-              createdAt: '2026-01-01T00:00:00Z',
-            },
+          transaction: {
+            _id: '123',
+            id: 1,
+            fromEmail: 'sender@example.com',
+            toEmail: 'receiver@example.com',
+            amount: 100,
+            createdAt: '2026-01-01T00:00:00Z',
           },
         },
       };
@@ -151,9 +145,7 @@ describe('transactionService - Critical API Service Tests', () => {
       };
       const mockResponse = {
         data: {
-          data: {
-            transaction: mockTransaction,
-          },
+          transaction: mockTransaction,
         },
       };
       vi.mocked(httpClient.get).mockResolvedValue(mockResponse);
@@ -175,15 +167,13 @@ describe('transactionService - Critical API Service Tests', () => {
     it('should call httpClient.post with correct endpoint and transfer data', async () => {
       const mockResponse = {
         data: {
-          data: {
-            transaction: {
-              _id: '123',
-              id: 1,
-              fromEmail: 'sender@example.com',
-              toEmail: 'receiver@example.com',
-              amount: 100,
-              createdAt: '2026-01-01T00:00:00Z',
-            },
+          transaction: {
+            _id: '123',
+            id: 1,
+            fromEmail: 'sender@example.com',
+            toEmail: 'receiver@example.com',
+            amount: 100,
+            createdAt: '2026-01-01T00:00:00Z',
           },
         },
       };
@@ -213,9 +203,7 @@ describe('transactionService - Critical API Service Tests', () => {
       };
       const mockResponse = {
         data: {
-          data: {
-            transaction: mockTransaction,
-          },
+          transaction: mockTransaction,
         },
       };
       vi.mocked(httpClient.post).mockResolvedValue(mockResponse);
