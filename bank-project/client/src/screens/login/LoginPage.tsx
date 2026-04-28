@@ -22,7 +22,7 @@ import {
   createAuthCardSx,
   themeToggleSx,
 } from './LoginPage.styles';
-import { logoContainerSx, createTitleSx, createSubtitleSx } from './BrandHeader.styles';
+import { logoContainerSx, createTitleSx, createSubtitleSx } from '../../shared/brandHeader.styles';
 import { createContainerSx, createDotSx, createTextSx } from './SecurityIndicator.styles';
 
 const LoginPage = () => {
@@ -118,7 +118,7 @@ const LoginPage = () => {
           </CardContent>
         </Card>
 
-        <PageFooterCaption isDark={isDark} variant="login" />
+        <PageFooterCaption isDark={isDark} />
       </Container>
     </Box>
   );

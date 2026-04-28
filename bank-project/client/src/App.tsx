@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import { ROUTES } from './constants/routePaths';
 import ChatAssistant from './components/ChatAssistant';
-import LoginPage from './screens/login-signup/LoginPage';
-import SignupPage from './screens/login-signup/SignupPage';
+import LoginPage from './screens/login/LoginPage';
+import SignupPage from './screens/signup/SignupPage';
 import DashboardPage from './screens/dashboard/DashboardPage';
 import TransferPage from './screens/transfer-money/TransferPage';
 import TransactionsPage from './screens/transaction-history/TransactionsPage';

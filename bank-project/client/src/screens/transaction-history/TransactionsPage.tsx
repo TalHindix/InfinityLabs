@@ -13,6 +13,7 @@ import {
 } from '../../shared/muiExports';
 import { AppHeader } from '../../layout/AppHeader';
 import { PageFooter } from '../../layout/PageFooter';
+import { EmptyState } from '../../components/EmptyState';
 import { useTransactions } from './useTransactions';
 import { useTransactionDetail } from './useTransactionDetail';
 import { TransactionTable } from './TransactionTable';
@@ -26,13 +27,6 @@ import {
   primaryButtonSx,
 } from './TransactionsPage.styles';
 import {
-  contentSx as emptyContentSx,
-  spinnerSx as emptySpinnerSx,
-  emptyIconContainerSx,
-  emptyIconTextSx,
-  emptyTextSx,
-} from './TransactionEmptyState.styles';
-import {
   paginationButtonSx,
   pageIndicatorSx,
 } from './Pagination.styles';
@@ -40,7 +34,6 @@ import {
 const TransactionsPage = () => {
   const navigate = useNavigate();
 
-  // Data: paginated list and selected transaction detail
   const {
     transactions,
     loading,
@@ -66,7 +59,6 @@ const TransactionsPage = () => {
 
       <Container maxWidth="lg" sx={containerSx}>
         <Stack spacing={4}>
-          {/* Page Header */}
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Box>
               <Typography variant="h4" sx={titleSx}>
@@ -87,27 +79,16 @@ const TransactionsPage = () => {
           {error && <Alert severity="error">{error}</Alert>}
 
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-            {/* Transactions List */}
             <Box sx={listColSx}>
               {loading || transactions.length === 0 ? (
                 <Card>
-                  <CardContent sx={emptyContentSx}>
-                    {loading ? (
-                      <CircularProgress sx={emptySpinnerSx} />
-                    ) : (
-                      <>
-                        <Box sx={emptyIconContainerSx}>
-                          <Typography variant="h3" sx={emptyIconTextSx}>
-                            $
-                          </Typography>
-                        </Box>
-
-                        <Typography sx={emptyTextSx}>
-                          No transactions found
-                        </Typography>
-                      </>
-                    )}
-                  </CardContent>
+                  {loading ? (
+                    <CardContent sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+                      <CircularProgress sx={{ color: 'secondary.main' }} />
+                    </CardContent>
+                  ) : (
+                    <EmptyState title="No transactions found" />
+                  )}
                 </Card>
               ) : (
                 <>
@@ -148,7 +129,6 @@ const TransactionsPage = () => {
               )}
             </Box>
 
-            {/* Transaction Detail Panel */}
             <Box sx={detailColSx}>
               <TransactionDetailPanel
                 transaction={selectedTransaction}

@@ -178,5 +178,3 @@ export const DubaiBankLogoFull: React.FC<LogoProps & { showTagline?: boolean }> 
     </div>
   );
 };
-
-export default DubaiBankLogo;

@@ -1,4 +1,5 @@
 import type { SxProps, Theme } from '@mui/material';
+import { goldButtonSx } from '../../shared/buttonStyles';
 
 export const balanceCardSx: SxProps<Theme> = {
   background: 'linear-gradient(135deg, #0D1B2A 0%, #1B3A4B 100%)',
@@ -46,19 +47,8 @@ export const amountCurrencySx: SxProps<Theme> = {
 };
 
 export const primaryButtonSx: SxProps<Theme> = {
-  background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
-  color: '#0D1B2A',
+  ...goldButtonSx,
   px: { xs: 3, sm: 4 },
   py: { xs: 1, sm: 1.5 },
   fontSize: { xs: '0.85rem', sm: '0.875rem' },
-  fontWeight: 700,
-  boxShadow: '0 12px 30px rgba(201,162,39,0.22)',
-  transition: 'all 200ms ease',
-  '&:hover': {
-    background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
-    boxShadow: '0 14px 34px rgba(201,162,39,0.28)',
-  },
-  '&:active': {
-    transform: 'translateY(1px)',
-  },
 };

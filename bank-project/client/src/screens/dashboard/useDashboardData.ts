@@ -4,8 +4,7 @@ import { userService } from '../../api/user.service';
 import { transactionService } from '../../api/transaction.service';
 import { type User, type Transaction } from '../../types';
 import { getErrorMessage } from '../../types';
-
-export const DASHBOARD_REFRESH_EVENT = 'dashboard:refresh';
+import { useDashboardRefresh } from '../../shared/useDashboardRefresh';
 
 export const useDashboardData = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -35,11 +34,7 @@ export const useDashboardData = () => {
     loadData();
   }, [loadData]);
 
-  useEffect(() => {
-    const handleRefresh = () => loadData(false);
-    window.addEventListener(DASHBOARD_REFRESH_EVENT, handleRefresh);
-    return () => window.removeEventListener(DASHBOARD_REFRESH_EVENT, handleRefresh);
-  }, [loadData]);
+  useDashboardRefresh(useCallback(() => loadData(false), [loadData]));
 
   return {
     user,

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants/routePaths';
 import { TextField, Button, Typography, Alert, Stack, Box } from '../../shared/muiExports';
 import { useThemeContext } from '../../context/ThemeContext';
+import { OtpForm } from './OtpForm';
 import {
   createFieldSx,
   primaryButtonSx,
@@ -9,6 +10,7 @@ import {
   footerContainerSx,
   errorAlertSx,
   errorCaptionSx,
+  resendLinkButtonSx,
   signUpLinkStyle,
 } from './LoginForm.styles';
 
@@ -60,62 +62,16 @@ export const LoginForm = ({
 
   if (otpRequired) {
     return (
-      <>
-        {otpError && (
-          <Alert severity="error" sx={errorAlertSx}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>{otpError}</Typography>
-          </Alert>
-        )}
-
-        <form onSubmit={onVerifyOtp}>
-          <Stack spacing={2.5}>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              A 6-digit code was sent to <strong>{email}</strong>
-            </Typography>
-
-            <TextField
-              fullWidth
-              label="Verification Code"
-              value={otp}
-              onChange={(e) => onOtpChange(e.target.value)}
-              inputProps={{ maxLength: 6 }}
-              placeholder="000000"
-              autoComplete="one-time-code"
-              disabled={otpLoading}
-              sx={fieldSx}
-            />
-
-            <Button
-              fullWidth
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={otpLoading || otp.length !== 6}
-              sx={primaryButtonSx}
-            >
-              {otpLoading ? 'Verifying…' : 'Verify Code'}
-            </Button>
-
-            <Box sx={{ textAlign: 'center' }}>
-              <Button
-                variant="text"
-                size="small"
-                onClick={onResendOtp}
-                disabled={resendCooldown > 0}
-                sx={{
-                  textTransform: 'none',
-                  color: isDark ? '#90caf9' : '#1976d2',
-                  '&:hover': {
-                    backgroundColor: isDark ? 'rgba(144, 202, 249, 0.08)' : 'rgba(25, 118, 210, 0.08)',
-                  },
-                }}
-              >
-                {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
-              </Button>
-            </Box>
-          </Stack>
-        </form>
-      </>
+      <OtpForm
+        email={email}
+        otp={otp}
+        otpLoading={otpLoading}
+        otpError={otpError}
+        resendCooldown={resendCooldown}
+        onOtpChange={onOtpChange}
+        onVerifyOtp={onVerifyOtp}
+        onResendOtp={onResendOtp}
+      />
     );
   }
 
@@ -123,7 +79,6 @@ export const LoginForm = ({
 
   return (
     <>
-      {/* Alerts: verified, resend success, error */}
       {showVerifiedMsg && (
         <Alert severity="success">Email verified successfully! You can now sign in.</Alert>
       )}
@@ -145,7 +100,6 @@ export const LoginForm = ({
         </Alert>
       )}
 
-      {/* Form fields and actions */}
       <form onSubmit={onSubmit}>
         <Stack spacing={2.5}>
           <TextField
@@ -205,13 +159,7 @@ export const LoginForm = ({
                 size="small"
                 onClick={onResendVerification}
                 disabled={resendLoading || !email}
-                sx={{
-                  textTransform: 'none',
-                  color: isDark ? '#90caf9' : '#1976d2',
-                  '&:hover': {
-                    backgroundColor: isDark ? 'rgba(144, 202, 249, 0.08)' : 'rgba(25, 118, 210, 0.08)',
-                  },
-                }}
+                sx={resendLinkButtonSx(isDark)}
               >
                 {resendLoading ? 'Sending...' : 'Resend verification email'}
               </Button>

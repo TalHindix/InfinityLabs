@@ -1,7 +1,5 @@
 import type { SxProps, Theme } from '@mui/material';
 
-export const GOLD_COLOR = '#C9A227';
-
 export const createDetailPanelSx = (hasSelection: boolean): SxProps<Theme> => ({
   position: 'sticky',
   top: 20,
@@ -48,25 +46,4 @@ export const statusBadgeSx: SxProps<Theme> = {
   borderRadius: 2,
   bgcolor: 'rgba(16, 185, 129, 0.1)',
   color: 'success.main',
-};
-
-export const emptyStateSx: SxProps<Theme> = {
-  py: 6,
-  textAlign: 'center',
-};
-
-export const emptyIconContainerSx: SxProps<Theme> = {
-  width: 80,
-  height: 80,
-  mx: 'auto',
-  mb: 2,
-  borderRadius: '50%',
-  bgcolor: 'rgba(13, 27, 42, 0.05)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
-
-export const emptyIconTextSx: SxProps<Theme> = {
-  opacity: 0.3,
 };

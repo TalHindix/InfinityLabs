@@ -20,3 +20,9 @@ export const loadingScreenSx: SxProps<Theme> = {
 export const loadingSpinnerSx: SxProps<Theme> = {
   color: 'secondary.main',
 };
+
+export const welcomeHeadingSx: SxProps<Theme> = {
+  fontSize: { xs: '1.4rem', sm: '2.125rem' },
+  fontWeight: 600,
+  color: 'primary.main',
+};

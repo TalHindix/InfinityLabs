@@ -10,6 +10,7 @@ import {
   containerSx,
   loadingScreenSx,
   loadingSpinnerSx,
+  welcomeHeadingSx,
 } from './DashboardPage.styles';
 
 const DashboardPage = () => {
@@ -30,7 +31,7 @@ const DashboardPage = () => {
       <Container maxWidth="lg" sx={containerSx}>
         <Stack spacing={4}>
           <Box>
-            <Typography sx={{ fontSize: { xs: '1.4rem', sm: '2.125rem' }, fontWeight: 400 }}>
+            <Typography sx={welcomeHeadingSx}>
               Welcome back, {user?.firstName || 'User'}
             </Typography>
             <Typography color="text.secondary" variant="body2">

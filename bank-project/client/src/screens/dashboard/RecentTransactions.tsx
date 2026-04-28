@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../constants/routePaths';
-import {Card,CardContent,Typography,Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box,}
-from '../../shared/muiExports';
+import { Card, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '../../shared/muiExports';
 import { type Transaction } from '../../types';
 import { formatAmount } from '../../shared/displayFormatters';
-import { headerBarSx, sectionTitleSx, viewAllButtonSx, emptyCardContentSx, emptyIconSx, emptyIconTextSx,
-          emptySubtextSx, tableContainerSx, amountCellSx, createAmountTextSx,}
-from './RecentTransactions.styles';
+import { EmptyState } from '../../components/EmptyState';
+import {
+  headerBarSx, sectionTitleSx, viewAllButtonSx,
+  tableContainerSx, amountCellSx, createAmountTextSx,
+} from './RecentTransactions.styles';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
@@ -29,17 +30,10 @@ export const RecentTransactions = ({ transactions, userEmail }: RecentTransactio
 
       {transactions.length === 0 ? (
         <Card>
-          <CardContent sx={emptyCardContentSx}>
-            <Box sx={emptyIconSx}>
-              <Typography variant="h3" sx={emptyIconTextSx}>
-                $
-              </Typography>
-            </Box>
-            <Typography color="text.secondary">No transactions yet</Typography>
-            <Typography variant="body2" color="text.secondary" sx={emptySubtextSx}>
-              Make your first transfer to get started
-            </Typography>
-          </CardContent>
+          <EmptyState
+            title="No transactions yet"
+            subtitle="Make your first transfer to get started"
+          />
         </Card>
       ) : (
         <TableContainer component={Paper} sx={tableContainerSx}>

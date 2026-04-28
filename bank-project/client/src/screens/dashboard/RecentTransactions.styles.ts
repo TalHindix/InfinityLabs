@@ -18,31 +18,6 @@ export const viewAllButtonSx: SxProps<Theme> = {
   '&:hover': { bgcolor: 'rgba(201, 162, 39, 0.08)' },
 };
 
-export const emptyCardContentSx: SxProps<Theme> = {
-  py: 6,
-  textAlign: 'center',
-};
-
-export const emptyIconSx: SxProps<Theme> = {
-  width: 80,
-  height: 80,
-  mx: 'auto',
-  mb: 2,
-  borderRadius: '50%',
-  bgcolor: 'rgba(13, 27, 42, 0.05)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
-
-export const emptyIconTextSx: SxProps<Theme> = {
-  opacity: 0.3,
-};
-
-export const emptySubtextSx: SxProps<Theme> = {
-  mt: 0.5,
-};
-
 export const tableContainerSx: SxProps<Theme> = {
   borderRadius: 3,
   overflowX: 'auto',

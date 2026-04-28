@@ -10,7 +10,7 @@ import { DubaiBankLogoFull } from '../components/DubaiBankLogo';
 import { useThemeContext } from '../context/ThemeContext';
 import { authStorage } from '../api/auth.storage';
 import { authService } from '../api/auth.service';
-import { headerContainerSx, logoContainerSx, themeToggleSx, outlinedButtonSx, mobileIconButtonSx } from './appHeaderStyles';
+import { headerContainerSx, logoContainerSx, themeToggleSx, outlinedButtonSx, mobileIconButtonSx } from './AppHeader.styles';
 
 interface AppHeaderProps {
   showThemeToggle?: boolean;

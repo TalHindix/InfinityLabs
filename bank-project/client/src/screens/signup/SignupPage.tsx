@@ -23,14 +23,12 @@ import { SignupForm } from './SignupForm';
 import { PageFooterCaption } from '../../layout/PageFooterCaption';
 import { DubaiBankLogo } from '../../components/DubaiBankLogo';
 import {
-  createSignupBackgroundSx,
-  createSignupCardSx,
-  signupThemeToggleSx,
   logoContainerSx,
-  pageTitleSx,
-  pageSubtitleSx,
-  goldDividerSx,
-} from './SignupPage.styles';
+  createTitleSx,
+  createSubtitleSx,
+} from '../../shared/brandHeader.styles';
+import { createPageBackgroundSx, themeToggleSx } from '../login/LoginPage.styles';
+import { createSignupCardSx, goldDividerSx } from './SignupPage.styles';
 import {
   rootSx as verificationRootSx,
   verificationIconSx,
@@ -55,23 +53,27 @@ const SignupPage = () => {
   } = useSignup();
 
   return (
-    <Box sx={createSignupBackgroundSx(isDark)}>
-      <IconButton onClick={toggleTheme} sx={signupThemeToggleSx}>
+    <Box sx={createPageBackgroundSx(isDark)}>
+      <IconButton
+        onClick={toggleTheme}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        sx={themeToggleSx}
+      >
         {isDark ? <LightModeIcon /> : <DarkModeIcon />}
       </IconButton>
 
-      <Container maxWidth="xs">
+      <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 1 }}>
         <Card sx={createSignupCardSx(isDark)}>
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
             <Stack spacing={3}>
               <Box textAlign="center">
                 <Box sx={logoContainerSx}>
                   <DubaiBankLogo size={80} animated={true} />
                 </Box>
-                <Typography variant="h4" sx={pageTitleSx}>
+                <Typography variant="h4" sx={createTitleSx(isDark)}>
                   Dubai Bank
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={pageSubtitleSx}>
+                <Typography variant="body2" sx={createSubtitleSx(isDark)}>
                   Open your premium account today
                 </Typography>
               </Box>
@@ -127,7 +129,7 @@ const SignupPage = () => {
           </CardContent>
         </Card>
 
-        <PageFooterCaption isDark={isDark} variant="signup" />
+        <PageFooterCaption isDark={isDark} />
       </Container>
     </Box>
   );

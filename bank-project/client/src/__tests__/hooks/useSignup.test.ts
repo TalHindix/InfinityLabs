@@ -19,7 +19,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useSignup } from '../../screens/login-signup/useSignup';
+import { useSignup } from '../../screens/signup/useSignup';
 import { authService } from '../../api/auth.service';
 
 vi.mock('../../api/auth.service', () => ({

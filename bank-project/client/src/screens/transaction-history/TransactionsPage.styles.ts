@@ -1,4 +1,5 @@
 import type { SxProps, Theme } from '@mui/material';
+import { goldButtonSx } from '../../shared/buttonStyles';
 
 export const pageRootSx: SxProps<Theme> = {
   minHeight: '100vh',
@@ -24,16 +25,4 @@ export const detailColSx: SxProps<Theme> = {
   minWidth: 300,
 };
 
-export const primaryButtonSx: SxProps<Theme> = {
-  background: 'linear-gradient(135deg, #C9A227 0%, #E5C158 100%)',
-  color: '#0D1B2A',
-  boxShadow: '0 12px 30px rgba(201,162,39,0.22)',
-  transition: 'all 200ms ease',
-  '&:hover': {
-    background: 'linear-gradient(135deg, #A17F1A 0%, #C9A227 100%)',
-    boxShadow: '0 14px 34px rgba(201,162,39,0.28)',
-  },
-  '&:active': {
-    transform: 'translateY(1px)',
-  },
-};
+export const primaryButtonSx = goldButtonSx;

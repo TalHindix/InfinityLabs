@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { authStorage } from '../api/auth.storage';
-import { DASHBOARD_REFRESH_EVENT } from '../screens/dashboard/useDashboardData';
+import { DASHBOARD_REFRESH_EVENT } from '../shared/useDashboardRefresh';
 import { ROUTES } from '../constants/routePaths';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';

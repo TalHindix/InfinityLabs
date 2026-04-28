@@ -1,10 +1,8 @@
 import type { SxProps, Theme } from '@mui/material';
-import type { CSSProperties } from 'react';
-import { createFieldSx } from '../../shared/authFormStyles';
 
-export { createFieldSx };
-
-const primaryButtonBase: SxProps<Theme> = {
+// Single source of truth for the brand gold gradient button (used as the primary
+// CTA on Login, Signup, Transfer, Transactions, Balance card, dialogs, etc).
+export const goldButtonSx: SxProps<Theme> = {
   py: 1.45,
   borderRadius: 12,
   fontSize: '1rem',
@@ -26,14 +24,4 @@ const primaryButtonBase: SxProps<Theme> = {
     background:
       'linear-gradient(135deg, rgba(201,162,39,0.65) 0%, rgba(229,193,88,0.65) 100%)',
   },
-};
-
-export const submitButtonSx: SxProps<Theme> = {
-  ...primaryButtonBase,
-  py: 1.5,
-  mt: 1,
-};
-
-export const signInLinkStyle: CSSProperties = {
-  fontWeight: 600,
 };

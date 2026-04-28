@@ -1,5 +1,5 @@
 // Paginated transaction list from URL search params and auth.
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { transactionService } from '../../api/transaction.service';
 import { authStorage } from '../../api/auth.storage';
@@ -16,8 +16,6 @@ export const useTransactions = (pageSize = 10) => {
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const userEmail = authStorage.getUser()?.email;
-
-  const loadingRef = useRef(false);
 
   const handlePageChange = (page: number) => {
     const next = new URLSearchParams(searchParams);
@@ -41,10 +39,7 @@ export const useTransactions = (pageSize = 10) => {
 
     const loadTransactions = async () => {
       setError('');
-      if (!loadingRef.current) {
-        loadingRef.current = true;
-        setLoading(true);
-      }
+      setLoading(true);
 
       try {
         const data = await transactionService.getAll(currentPage, pageSize);
@@ -60,7 +55,6 @@ export const useTransactions = (pageSize = 10) => {
         }
       } finally {
         if (!cancelled) setLoading(false);
-        loadingRef.current = false;
       }
     };
 

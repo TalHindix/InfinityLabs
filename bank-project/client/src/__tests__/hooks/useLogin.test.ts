@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useLogin } from '../../screens/login-signup/useLogin';
+import { useLogin } from '../../screens/login/useLogin';
 import { authService } from '../../api/auth.service';
 import { authStorage } from '../../api/auth.storage';
 

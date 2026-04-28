@@ -6,7 +6,7 @@ import {
   type TopRecipient,
   getErrorMessage,
 } from '../../types';
-import { DASHBOARD_REFRESH_EVENT } from './useDashboardData';
+import { useDashboardRefresh } from '../../shared/useDashboardRefresh';
 
 export const useSpendingAnalytics = () => {
   const [months, setMonths] = useState(6);
@@ -40,11 +40,7 @@ export const useSpendingAnalytics = () => {
     loadAnalytics();
   }, [loadAnalytics]);
 
-  useEffect(() => {
-    const handleRefresh = () => loadAnalytics(false);
-    window.addEventListener(DASHBOARD_REFRESH_EVENT, handleRefresh);
-    return () => window.removeEventListener(DASHBOARD_REFRESH_EVENT, handleRefresh);
-  }, [loadAnalytics]);
+  useDashboardRefresh(useCallback(() => loadAnalytics(false), [loadAnalytics]));
 
   return {
     months,
