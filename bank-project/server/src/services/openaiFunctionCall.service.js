@@ -39,104 +39,78 @@ FORMATTING RULES — always follow these:
   NEVER output multiple JSON objects. NEVER concatenate two separate JSON responses. Always merge everything into ONE response.
 - For all other responses, use plain text or Markdown as appropriate.`;
 
-const TOOLS = [
-  {
-    type: 'function',
-    function: {
-      name: 'get_balance',
+const toolRegistry = {
+  get_balance: {
+    schema: {
       description: 'Get the current account balance for the authenticated user.',
       parameters: { type: 'object', properties: {}, required: [] },
     },
+    handler: async (_args, ctx) => {
+      const summary = await getAccountSummary(ctx.userId);
+      return { balance: summary.balance };
+    },
   },
-  {
-    type: 'function',
-    function: {
-      name: 'get_transaction_history',
+
+  get_transaction_history: {
+    schema: {
       description: 'Get the recent transaction history for the authenticated user.',
       parameters: {
         type: 'object',
         properties: {
-          limit: {
-            type: 'number',
-            description: 'Number of recent transactions to return. Defaults to 5.',
-          },
+          limit: { type: 'number', description: 'Number of recent transactions to return. Defaults to 5.' },
         },
         required: [],
       },
     },
+    handler: async ({ limit = 5 } = {}, ctx) => {
+      const transactions = await findRecentTransactions(ctx.userEmail, limit);
+      return { transactions };
+    },
   },
-  {
-    type: 'function',
-    function: {
-      name: 'transfer_money',
+
+  transfer_money: {
+    schema: {
       description: 'Transfer money from the authenticated user to another user by email.',
       parameters: {
         type: 'object',
         properties: {
-          recipientEmail: {
-            type: 'string',
-            description: 'The email address of the recipient.',
-          },
-          amount: {
-            type: 'number',
-            description: 'The amount in AED to transfer.',
-          },
-          description: {
-            type: 'string',
-            description: 'The reason or description for the transfer. Ask the user if not provided.',
-          },
+          recipientEmail: { type: 'string', description: 'The email address of the recipient.' },
+          amount: { type: 'number', description: 'The amount in AED to transfer.' },
+          description: { type: 'string', description: 'The reason or description for the transfer. Ask the user if not provided.' },
         },
         required: ['recipientEmail', 'amount'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_supported_services',
-      description:
-        'Returns a list of all services the chatbot currently supports. Call this when the user asks what you can do, asks for help, or wants to know available options.',
-      parameters: { type: 'object', properties: {}, required: [] },
+    handler: async ({ recipientEmail, amount, description = '' }, ctx) => {
+      const transaction = await executeTransfer(ctx.userEmail, recipientEmail, amount, description);
+      return { transaction };
     },
   },
-];
 
-function getSupportedServices() {
-  return {
-    services: [
-      { name: 'Check Balance', description: 'View your current account balance' },
-      { name: 'Transaction History', description: 'View your recent transactions' },
-      { name: 'Transfer Money', description: 'Send money to another Dubai-Bank user' },
-    ],
-  };
-}
+  get_supported_services: {
+    schema: {
+      description: 'Returns a list of all services the chatbot currently supports. Call this when the user asks what you can do, asks for help, or wants to know available options.',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
+    handler: async () => ({
+      services: [
+        { name: 'Check Balance', description: 'View your current account balance' },
+        { name: 'Transaction History', description: 'View your recent transactions' },
+        { name: 'Transfer Money', description: 'Send money to another Dubai-Bank user' },
+      ],
+    }),
+  },
+};
+
+const TOOLS = Object.entries(toolRegistry).map(([name, { schema }]) => ({
+  type: 'function',
+  function: { name, ...schema },
+}));
 
 async function executeFunctionCall(functionName, args, userId, userEmail) {
-  switch (functionName) {
-    case 'get_balance': {
-      const summary = await getAccountSummary(userId);
-      return { balance: summary.balance };
-    }
-    case 'get_transaction_history': {
-      const limit = args.limit || 5;
-      const transactions = await findRecentTransactions(userEmail, limit);
-      return { transactions };
-    }
-    case 'transfer_money': {
-      const transaction = await executeTransfer(
-        userEmail,
-        args.recipientEmail,
-        args.amount,
-        args.description || ''
-      );
-      return { transaction };
-    }
-    case 'get_supported_services': {
-      return getSupportedServices();
-    }
-    default:
-      return { error: `Unknown function: ${functionName}` };
-  }
+  const tool = toolRegistry[functionName];
+  if (!tool) return { error: `Unknown function: ${functionName}` };
+  return tool.handler(args, { userId, userEmail });
 }
 
 function buildMessagesForOpenAI(message, chatHistory) {
