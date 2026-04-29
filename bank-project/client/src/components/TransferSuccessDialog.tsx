@@ -68,7 +68,6 @@ export const TransferSuccessDialog = ({
       <VideoCall
         roomName={videoRoomName}
         userName={`${currentUser.firstName} ${currentUser.lastName}`}
-        userEmail={currentUser.email}
         onClose={handleCloseVideoCall}
       />
     );

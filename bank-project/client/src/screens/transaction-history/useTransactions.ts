@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { transactionService } from '../../api/transaction.service';
-import { authStorage } from '../../api/auth.storage';
+import { userService } from '../../api/user.service';
 import { type Transaction } from '../../types';
 import { getErrorMessage } from '../../types';
 
@@ -13,15 +13,19 @@ export const useTransactions = (pageSize = 10) => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
 
   const currentPage = Number(searchParams.get('page')) || 1;
-  const userEmail = authStorage.getUser()?.email;
 
   const handlePageChange = (page: number) => {
     const next = new URLSearchParams(searchParams);
     next.set('page', String(page));
     setSearchParams(next);
   };
+
+  useEffect(() => {
+    userService.getMe().then((res) => setUserEmail(res.user.email)).catch(() => {});
+  }, []);
 
   // Normalize URL: ensure ?page= is set so currentPage is stable and effect doesn't re-run unnecessarily.
   useEffect(() => {

@@ -6,7 +6,7 @@ export const AUTH_CHANGE_EVENT = 'auth-state-change';
 function parseStoredUser(raw: string): StoredUser | null {
   try {
     const parsed = JSON.parse(raw);
-    if (!parsed?.id || !parsed?.email) return null;
+    if (!parsed?.id) return null;
     return parsed as StoredUser;
   } catch {
     return null;
@@ -38,7 +38,6 @@ class AuthStorage {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
-      email: user.email,
     };
     this.#storage.setItem('user', JSON.stringify(stored));
     this.#bus.dispatchEvent(new Event(AUTH_CHANGE_EVENT));

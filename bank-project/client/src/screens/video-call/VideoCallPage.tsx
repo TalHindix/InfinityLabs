@@ -21,7 +21,6 @@ const VideoCallPage = () => {
     <VideoCall
       roomName={roomName}
       userName={`${currentUser.firstName} ${currentUser.lastName}`}
-      userEmail={currentUser.email}
       onClose={() => navigate(ROUTES.DASHBOARD)}
     />
   );

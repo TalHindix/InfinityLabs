@@ -9,9 +9,9 @@ export interface User {
   balance: number;
 }
 
-// Subset of User persisted to localStorage. Sensitive fields (phone, balance)
+// Subset of User persisted to localStorage. Sensitive fields (phone, balance, email)
 // are intentionally excluded — fetch them from the server when needed.
-export type StoredUser = Pick<User, 'id' | 'firstName' | 'lastName' | 'email'>;
+export type StoredUser = Pick<User, 'id' | 'firstName' | 'lastName'>;
 
 // Auth types
 export interface SignupData {

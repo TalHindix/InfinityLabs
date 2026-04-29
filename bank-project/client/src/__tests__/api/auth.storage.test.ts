@@ -28,7 +28,6 @@ const toStored = (u: User): StoredUser => ({
   id: u.id,
   firstName: u.firstName,
   lastName: u.lastName,
-  email: u.email,
 });
 
 describe('authStorage - Critical Edge Case Tests', () => {
@@ -106,9 +105,10 @@ describe('authStorage - Critical Edge Case Tests', () => {
 
       const result = authStorage.getUser();
       expect(result).toEqual(toStored(mockUser));
-      // phone and balance must NOT be persisted
+      // phone, balance, and email must NOT be persisted
       expect(stored).not.toContain('phone');
       expect(stored).not.toContain('balance');
+      expect(stored).not.toContain('email');
     });
 
     it('should overwrite existing user in localStorage', () => {

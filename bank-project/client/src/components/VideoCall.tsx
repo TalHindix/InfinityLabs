@@ -5,11 +5,10 @@ import CloseIcon from '@mui/icons-material/Close';
 interface VideoCallProps {
   roomName: string;
   userName: string;
-  userEmail: string;
   onClose: () => void;
 }
 
-export const VideoCall = ({ roomName, userName, userEmail, onClose }: VideoCallProps) => (
+export const VideoCall = ({ roomName, userName, onClose }: VideoCallProps) => (
   <Box
     sx={{
       position: 'fixed',
@@ -49,7 +48,7 @@ export const VideoCall = ({ roomName, userName, userEmail, onClose }: VideoCallP
         SHOW_BRAND_WATERMARK: false,
         MOBILE_APP_PROMO: false,
       }}
-      userInfo={{ displayName: userName, email: userEmail }}
+      userInfo={{ displayName: userName, email: '' }}
       onReadyToClose={onClose}
       getIFrameRef={(iframeRef) => {
         iframeRef.style.height = '100%';

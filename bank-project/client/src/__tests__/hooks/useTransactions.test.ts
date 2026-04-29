@@ -24,7 +24,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useTransactions } from '../../screens/transaction-history/useTransactions';
 import { transactionService } from '../../api/transaction.service';
-import { authStorage } from '../../api/auth.storage';
+import { userService } from '../../api/user.service';
 import { useSearchParams } from 'react-router-dom';
 
 vi.mock('../../api/transaction.service', () => ({
@@ -33,9 +33,9 @@ vi.mock('../../api/transaction.service', () => ({
   },
 }));
 
-vi.mock('../../api/auth.storage', () => ({
-  authStorage: {
-    getUser: vi.fn(),
+vi.mock('../../api/user.service', () => ({
+  userService: {
+    getMe: vi.fn(),
   },
 }));
 
@@ -57,7 +57,7 @@ describe('useTransactions - Critical SearchParams and Pagination Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+    vi.mocked(userService.getMe).mockResolvedValue({ user: mockUser });
   });
 
   describe('Initial state', () => {
@@ -94,12 +94,14 @@ describe('useTransactions - Critical SearchParams and Pagination Tests', () => {
       expect(result.current.currentPage).toBe(1);
     });
 
-    it('should get user email from authStorage', () => {
+    it('should get user email from userService', async () => {
       vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams('?page=1'), mockSetSearchParams]);
 
       const { result } = renderHook(() => useTransactions());
 
-      expect(result.current.userEmail).toBe('john@example.com');
+      await waitFor(() => {
+        expect(result.current.userEmail).toBe('john@example.com');
+      });
     });
   });
 
