@@ -15,7 +15,6 @@ import {
 } from './ChatAssistant.styles';
 import { useAuth } from '../shared/useAuth';
 import { useChatSocket } from './useChatSocket';
-import { getTransactionData } from './transactionJsonParser';
 import TransactionList from './TransactionList';
 
 const ChatAssistant = () => {
@@ -59,18 +58,18 @@ const ChatAssistant = () => {
 
       <Box sx={messagesContainerSx}>
         {messages.map((msg, index) => {
-          const txData = msg.type === 'bot' ? getTransactionData(msg) : null;
+          const hasTransactions = msg.type === 'bot' && msg.transactions && msg.transactions.length > 0;
           return (
             <Box key={`${msg.type}-${index}`} dir="auto" sx={createMessageSx(msg.type === 'user')}>
               {msg.type === 'bot' ? (
-                txData ? (
+                hasTransactions ? (
                   <Box>
-                    {txData.text && (
+                    {msg.text && (
                       <Box sx={{ ...botMarkdownSx, mb: 0.75 }}>
-                        <Markdown>{txData.text}</Markdown>
+                        <Markdown>{msg.text}</Markdown>
                       </Box>
                     )}
-                    <TransactionList transactions={txData.transactions} summary={txData.summary} />
+                    <TransactionList transactions={msg.transactions!} summary={msg.summary} />
                   </Box>
                 ) : (
                   <Box sx={botMarkdownSx}>
