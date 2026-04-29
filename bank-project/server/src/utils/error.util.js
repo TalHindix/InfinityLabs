@@ -5,29 +5,22 @@ export class AppError extends Error {
   }
 }
 
-export function mapErrorToResponse(error) {
-  if (error.statusCode) {
-    return { statusCode: error.statusCode, message: error.message };
+export class ValidationFailedError extends AppError {
+  constructor(mongooseError) {
+    const messages = Object.values(mongooseError.errors).map((e) => e.message);
+    super(messages.join(', ') || 'Validation failed', 400);
   }
+}
 
-  if (error.name === 'ValidationError') {
-    const messages = Object.values(error.errors).map((e) => e.message);
-    return {
-      statusCode: 400,
-      message: messages.join(', ') || 'Validation failed',
-    };
+export class ConflictError extends AppError {
+  constructor(field) {
+    super(`This ${field} is already registered`, 409);
   }
+}
 
-  if (error.code === 11000) {
-    const field = Object.keys(error.keyPattern || {})[0] || 'field';
-    return {
-      statusCode: 409,
-      message: `This ${field} is already registered`,
-    };
-  }
-
-  return {
-    statusCode: 500,
-    message: 'Internal server error',
-  };
+export function toAppError(err) {
+  if (err instanceof AppError) return err;
+  if (err.name === 'ValidationError') return new ValidationFailedError(err);
+  if (err.code === 11000) return new ConflictError(Object.keys(err.keyPattern || {})[0] ?? 'field');
+  return new AppError('Internal server error', 500);
 }

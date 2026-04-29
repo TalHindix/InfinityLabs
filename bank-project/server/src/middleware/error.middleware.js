@@ -1,4 +1,4 @@
-import { AppError, mapErrorToResponse } from '../utils/error.util.js';
+import { AppError, toAppError } from '../utils/error.util.js';
 import logger from '../utils/logger.util.js';
 
 export function notFoundHandler(req, res, next) {
@@ -11,6 +11,6 @@ export function errorHandler(err, req, res, next) {
     logger.debug(err);
   }
 
-  const { statusCode, message } = mapErrorToResponse(err);
+  const { statusCode, message } = toAppError(err);
   res.status(statusCode).json({ success: false, error: message });
 }
