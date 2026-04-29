@@ -17,13 +17,18 @@ export const validatePassword = async (inputPassword, hashedPassword) => {
   return bcrypt.compare(inputPassword, hashedPassword);
 };
 
-export async function getAuthenticatedUser(req) {
-  const token = getTokenFromRequest(req);
+// Core: verify a raw token string and return the active user, or null on any failure.
+// Used by both HTTP and socket auth so the verify+lookup logic lives in one place.
+export async function authenticate(token) {
   if (!token) return null;
   try {
-    const decoded = verifyTokenOrThrow(token);
-    return await findActiveUserById(decoded.id);
+    const { id } = verifyTokenOrThrow(token);
+    return await findActiveUserById(id);
   } catch {
     return null;
   }
+}
+
+export async function getAuthenticatedUser(req) {
+  return authenticate(getTokenFromRequest(req));
 }

@@ -1,5 +1,4 @@
-import { verifyTokenOrThrow } from '../utils/jwt.util.js';
-import { findActiveUserById } from '../services/user.service.js';
+import { authenticate } from '../utils/auth.util.js';
 
 export function getTokenFromCookie(cookieHeader) {
   if (!cookieHeader || typeof cookieHeader !== 'string') return null;
@@ -8,29 +7,12 @@ export function getTokenFromCookie(cookieHeader) {
 }
 
 export const authenticateSocket = async (socket, next) => {
-  try {
-    const cookieHeader = socket.handshake.headers?.cookie;
-    const token = socket.handshake.auth?.token ?? getTokenFromCookie(cookieHeader);
+  const cookieHeader = socket.handshake.headers?.cookie;
+  const token = socket.handshake.auth?.token ?? getTokenFromCookie(cookieHeader);
 
-    if (!token) {
-      return next(new Error('Authentication token is required'));
-    }
+  const user = await authenticate(token);
+  if (!user) return next(new Error('Authentication failed'));
 
-    const decoded = verifyTokenOrThrow(token);
-    const user = await findActiveUserById(decoded.id);
-
-    if (!user) {
-      return next(new Error('User not found or account is not active'));
-    }
-
-    socket.data.user = user;
-    next();
-  } catch (error) {
-    const isJwtError =
-      error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError';
-    if (isJwtError) {
-      return next(new Error('Invalid or expired authentication token'));
-    }
-    return next(new Error('Authentication failed'));
-  }
+  socket.data.user = user;
+  next();
 };
