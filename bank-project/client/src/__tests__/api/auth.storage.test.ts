@@ -53,7 +53,6 @@ describe('authStorage - Critical Edge Case Tests', () => {
         id: '1',
         firstName: 'John',
         lastName: 'Doe',
-        email: 'john@example.com',
       };
 
       localStorage.setItem('user', JSON.stringify(stored));
