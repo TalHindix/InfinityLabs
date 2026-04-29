@@ -1,6 +1,6 @@
-import config from '../config/index.js';
 import { USER_STATUS } from '../constants/index.js';
 import { createToken } from '../utils/jwt.util.js';
+import { setAuthCookie, clearAuthCookie } from '../utils/authCookie.util.js';
 import {
   findUserByEmailWithPassword,
   findUserByEmail,
@@ -116,13 +116,7 @@ export const verifyOtp = async (req, res, next) => {
     await verifyOtpService(user, otp);
 
     const token = createToken(user);
-    res.cookie(config.cookie.tokenName, token, {
-      httpOnly: true,
-      secure: config.cookie.secure,
-      sameSite: config.cookie.sameSite,
-      maxAge: config.cookie.maxAgeSeconds * 1000,
-      path: '/',
-    });
+    setAuthCookie(res, token);
 
     return response.ok(res, {
       user: {
@@ -158,11 +152,6 @@ export const logout = async (req, res) => {
   const user = await getAuthenticatedUser(req);
   if (user?.id) disconnectUser(user.id);
 
-  res.clearCookie(config.cookie.tokenName, {
-    path: '/',
-    httpOnly: true,
-    secure: config.cookie.secure,
-    sameSite: config.cookie.sameSite,
-  });
+  clearAuthCookie(res);
   return response.ok(res, null);
 };
