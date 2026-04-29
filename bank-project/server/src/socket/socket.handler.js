@@ -12,8 +12,59 @@ const MESSAGES = {
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 10;
 
-const activeSocketsByUserId = new Map();
-const userMessageCounts = new Map();
+class SocketRegistry {
+  #sockets = new Map();
+
+  add(userId, socket) {
+    if (!this.#sockets.has(userId)) this.#sockets.set(userId, new Set());
+    this.#sockets.get(userId).add(socket);
+  }
+
+  remove(userId, socket) {
+    const set = this.#sockets.get(userId);
+    if (!set) return;
+    set.delete(socket);
+    if (set.size === 0) this.#sockets.delete(userId);
+  }
+
+  disconnectUser(userId, message) {
+    const set = this.#sockets.get(userId);
+    if (!set) return;
+    for (const socket of set) {
+      emitBot(socket, message, 'error');
+      socket.disconnect();
+    }
+    this.#sockets.delete(userId);
+  }
+}
+
+// Fixed-window rate limit kept in-process: fine for a single node, but if
+// this ever runs behind multiple instances it should move to Redis so the
+// counter is shared. Swap by passing a Redis-backed class that implements allow(key).
+class RateLimiter {
+  #counts = new Map();
+  #windowMs;
+  #max;
+
+  constructor(windowMs, max) {
+    this.#windowMs = windowMs;
+    this.#max = max;
+  }
+
+  allow(key) {
+    const now = Date.now();
+    const entry = this.#counts.get(key);
+
+    if (!entry || now > entry.resetAt) {
+      this.#counts.set(key, { count: 1, resetAt: now + this.#windowMs });
+      return true;
+    }
+
+    if (entry.count >= this.#max) return false;
+    entry.count++;
+    return true;
+  }
+}
 
 const emitBot = (socket, response, intent, data = null, requiresAuth = false) => {
   socket.emit('bot-message', {
@@ -42,46 +93,11 @@ const isTokenValid = (socket) => {
   }
 };
 
-const trackSocket = (userId, socket) => {
-  if (!activeSocketsByUserId.has(userId)) activeSocketsByUserId.set(userId, new Set());
-  activeSocketsByUserId.get(userId).add(socket);
-};
+const registry = new SocketRegistry();
+const limiter = new RateLimiter(RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX);
 
-const untrackSocket = (userId, socket) => {
-  const set = activeSocketsByUserId.get(userId);
-  if (!set) return;
-  set.delete(socket);
-  if (set.size === 0) activeSocketsByUserId.delete(userId);
-};
-
-export const disconnectUser = (userId) => {
-  const set = activeSocketsByUserId.get(userId);
-  if (!set) return;
-
-  for (const socket of set) {
-    emitBot(socket, MESSAGES.LOGGED_OUT, 'error');
-    socket.disconnect();
-  }
-  activeSocketsByUserId.delete(userId);
-};
-
-// Fixed-window rate limit kept in-process: fine for a single node, but if
-// this ever runs behind multiple instances it should move to Redis so the
-// counter is shared.
-const checkRateLimit = (userId) => {
-  const now = Date.now();
-  const entry = userMessageCounts.get(userId);
-
-  if (!entry || now > entry.resetAt) {
-    userMessageCounts.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX) return false;
-
-  entry.count++;
-  return true;
-};
+export const disconnectUser = (userId) =>
+  registry.disconnectUser(userId, MESSAGES.LOGGED_OUT);
 
 export const initChatbotSocket = (io) => {
   const chat = io.of('/chat');
@@ -90,7 +106,7 @@ export const initChatbotSocket = (io) => {
   chat.on('connection', (socket) => {
     const userId = socket.data.user.id;
 
-    trackSocket(userId, socket);
+    registry.add(userId, socket);
     socket.data.chatHistory = [];
 
     socket.on('user-message', async (message) => {
@@ -101,7 +117,7 @@ export const initChatbotSocket = (io) => {
           return;
         }
 
-        if (!checkRateLimit(userId)) {
+        if (!limiter.allow(userId)) {
           emitBot(socket, MESSAGES.RATE_LIMITED, 'error');
           return;
         }
@@ -130,6 +146,8 @@ export const initChatbotSocket = (io) => {
     socket.on('typing', () => socket.broadcast.emit('typing'));
     socket.on('stop_typing', () => socket.broadcast.emit('stop_typing'));
 
-    socket.on('disconnect', () => untrackSocket(userId, socket));
+    socket.on('disconnect', () => registry.remove(userId, socket));
   });
 };
+
+export { SocketRegistry, RateLimiter };
